@@ -1,0 +1,15 @@
+{
+  "id": ".",
+  "name": "RUMA — Ruang untuk Semua",
+  "short_name": "RUMA",
+  "description": "Media sosial dan forum diskusi untuk berbagi ide dan percakapan.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "./logoruma.png", "sizes": "any", "type": "image/png", "purpose": "any" }
+  ]
+}
