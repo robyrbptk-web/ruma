@@ -35,6 +35,8 @@ function doPost(e) {
     // Authenticated Endpoints
     const user = getUserByToken(token);
     if (!user) return reply(false, "Sesi telah berakhir. Silakan login kembali.", "UNAUTH");
+    if (action === "notifications") return reply(true, "", null, getNotifications(user));
+    if (action === "markNotificationsRead") return reply(true, "", null, markNotificationsRead(user));
     if (action === "uploadMedia") return reply(true, "", null, uploadMedia(req, user));
     if (action === "reportPost") return reply(true, "", null, reportPost(req, user));
     if (["adminOverview", "adminUsers", "adminPosts", "adminReports", "adminUpdateUser", "adminDeletePost", "adminResolveReport"].indexOf(action) >= 0) {
@@ -91,7 +93,8 @@ function ensureColumns(sheet, name) {
     Users: ["role", "status"],
     Posts: ["mediaUrl", "mediaType", "mediaName"],
     Reels: ["mediaUrl", "mediaType"],
-    Reports: ["id", "postId", "reporterUserId", "reporterHandle", "reason", "status", "createdAt", "resolvedAt"]
+    Reports: ["id", "postId", "reporterUserId", "reporterHandle", "reason", "status", "createdAt", "resolvedAt"],
+    Notifications: ["id", "userId", "type", "actorUserId", "actorName", "actorHandle", "entityId", "message", "read", "createdAt"]
   }[name] || [];
   if (!expected.length) return;
   const last = Math.max(1, sheet.getLastColumn());
@@ -120,7 +123,8 @@ function initSheetHeader(sheet, name) {
     ReelLikes: ["reelId", "userId"],
     ReelSaves: ["reelId", "userId"],
     Gifts: ["id", "reelId", "senderUserId", "giftName", "coins", "createdAt"],
-    Reports: ["id", "postId", "reporterUserId", "reporterHandle", "reason", "status", "createdAt", "resolvedAt"]
+    Reports: ["id", "postId", "reporterUserId", "reporterHandle", "reason", "status", "createdAt", "resolvedAt"],
+    Notifications: ["id", "userId", "type", "actorUserId", "actorName", "actorHandle", "entityId", "message", "read", "createdAt"]
   };
   if (headers[name]) {
     sheet.appendRow(headers[name]);
@@ -170,7 +174,7 @@ function setupAdminAccount() {
 }
 
 function setupRuma() {
-  ["Users", "Posts", "Comments", "Likes", "Saves", "Reposts", "Followers", "Rooms", "RoomMembers", "RoomPosts", "Reels", "ReelLikes", "ReelSaves", "Gifts", "Reports"].forEach(getSheet);
+  ["Users", "Posts", "Comments", "Likes", "Saves", "Reposts", "Followers", "Rooms", "RoomMembers", "RoomPosts", "Reels", "ReelLikes", "ReelSaves", "Gifts", "Reports", "Notifications"].forEach(getSheet);
   return setupAdminAccount();
 }
 
@@ -190,6 +194,36 @@ function sanitizeUser(u) {
     role: u.role || "user",
     status: u.status || "active"
   };
+}
+
+function createNotification(userId, type, actor, entityId, message) {
+  if (!userId || !actor || String(userId) === String(actor.id)) return;
+  getSheet("Notifications").appendRow([
+    "N_" + Utilities.getUuid(), String(userId), type, String(actor.id || ""),
+    String(actor.name || actor.username || "Pengguna"), "@" + String(actor.username || "").replace(/^@/, ""),
+    String(entityId || ""), message, false, Date.now()
+  ]);
+}
+
+function getNotifications(user) {
+  const items = getRows("Notifications").filter(n => String(n.userId) === String(user.id));
+  return {
+    items: items.reverse().slice(0, 100).map(n => ({
+      id: String(n.id), type: String(n.type || "activity"), actorName: String(n.actorName || "Pengguna"),
+      actorHandle: String(n.actorHandle || ""), entityId: String(n.entityId || ""), message: String(n.message || "Aktivitas baru di akunmu."),
+      read: String(n.read).toLowerCase() === "true" || Number(n.read) === 1, createdAt: Number(n.createdAt) || Date.now()
+    })),
+    unread: items.filter(n => !(String(n.read).toLowerCase() === "true" || Number(n.read) === 1)).length
+  };
+}
+
+function markNotificationsRead(user) {
+  const sheet = getSheet("Notifications");
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][1]) === String(user.id) && String(data[i][8]).toLowerCase() !== "true") sheet.getRange(i + 1, 9).setValue(true);
+  }
+  return true;
 }
 
 /* ================= AUTHENTICATION ================= */
@@ -357,13 +391,23 @@ function deletePost(req, user) {
 }
 
 function toggleLike(req, user) {
-  return toggleRelation("Likes", "postId", req.id, user.id);
+  const result = toggleRelation("Likes", "postId", req.id, user.id);
+  if (result.on) {
+    const post = getRows("Posts").find(p => String(p.id) === String(req.id));
+    if (post) createNotification(post.userId, "like", user, req.id, user.name + " menyukai postinganmu.");
+  }
+  return result;
 }
 function toggleSave(req, user) {
   return toggleRelation("Saves", "postId", req.id, user.id);
 }
 function toggleRepost(req, user) {
-  return toggleRelation("Reposts", "postId", req.id, user.id);
+  const result = toggleRelation("Reposts", "postId", req.id, user.id);
+  if (result.on) {
+    const post = getRows("Posts").find(p => String(p.id) === String(req.id));
+    if (post) createNotification(post.userId, "repost", user, req.id, user.name + " merepost postinganmu.");
+  }
+  return result;
 }
 
 function toggleRelation(sheetName, keyField, keyVal, userId) {
@@ -405,6 +449,9 @@ function addComment(req, user) {
   const createdAt = Date.now();
   getSheet("Comments").appendRow([id, req.postId, user.id, user.name, text, createdAt]);
 
+  const post = getRows("Posts").find(p => String(p.id) === String(req.postId));
+  if (post) createNotification(post.userId, "comment", user, req.postId, user.name + " mengomentari postinganmu.");
+
   return { id, name: user.name, text, createdAt };
 }
 
@@ -422,6 +469,8 @@ function toggleFollow(req, user) {
     }
   }
   sheet.appendRow([followerHandle, targetHandle]);
+  const target = getRows("Users").find(u => ("@" + String(u.username)).toLowerCase() === String(targetHandle).toLowerCase());
+  if (target) createNotification(target.id, "follow", user, targetHandle, user.name + " mulai mengikutimu.");
   return { on: true };
 }
 
@@ -630,6 +679,9 @@ function likeRoomPost(req, user) {
     if (String(data[i][0]) === String(req.id)) {
       const current = Number(data[i][6]) || 0;
       sheet.getRange(i + 1, 7).setValue(current + 1);
+      const room = getRows("Rooms").find(r => String(r.id) === String(data[i][1]));
+      const owner = room && getUserByUsername(String(room.ownerHandle || "").replace(/^@/, ""));
+      if (owner) createNotification(owner.id, "room_like", user, req.id, user.name + " menyukai diskusi di Ruangmu.");
       return true;
     }
   }
@@ -670,7 +722,13 @@ function getReels(req, token) {
 }
 
 function toggleReelLike(req, user) {
-  return toggleRelation("ReelLikes", "reelId", req.id, user.id);
+  const result = toggleRelation("ReelLikes", "reelId", req.id, user.id);
+  if (result.on) {
+    const reel = getRows("Reels").find(r => String(r.id) === String(req.id));
+    const owner = reel && getUserByUsername(String(reel.handle || "").replace(/^@/, ""));
+    if (owner) createNotification(owner.id, "reel_like", user, req.id, user.name + " menyukai videomu.");
+  }
+  return result;
 }
 function toggleReelSave(req, user) {
   return toggleRelation("ReelSaves", "reelId", req.id, user.id);

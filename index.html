@@ -44,6 +44,7 @@ a{color:inherit;text-decoration:none}
 .auth-link:hover{background:var(--soft);color:var(--ink)}
 .auth-link.primary-link{background:var(--ink);color:#fff}
 .icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#fff}
+.notification-button{position:relative}.notification-badge{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#e34e6b;color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center}
 .avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e8efff;color:#2859a8;font-size:13px;font-weight:800;flex-shrink:0;border:0}
 .layout{display:grid;grid-template-columns:200px minmax(0,650px) 270px;gap:24px;padding:24px}
 .leftnav{position:sticky;top:92px;align-self:start;display:flex;flex-direction:column;gap:5px}
@@ -119,6 +120,7 @@ a{color:inherit;text-decoration:none}
 .modal{width:min(100%,480px);max-height:90dvh;overflow:auto;background:#fff;border-radius:23px;padding:21px}
 .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:17px}
 .modal-head h2{font-size:19px;margin:0}
+.notification-modal{width:min(100%,560px)}.permission-card{padding:14px;border:1px solid #dfe7f3;border-radius:15px;background:#f7faff;margin-bottom:16px}.permission-card p{margin:7px 0 12px;line-height:1.5}.permission-actions{display:flex;flex-wrap:wrap;gap:7px}.permission-actions .secondary{padding:8px 11px;color:#2859a8}.notification-list{display:grid;gap:8px;max-height:360px;overflow:auto}.notification-item{display:flex;gap:10px;padding:12px;border-radius:13px;background:#fafbfc;border:1px solid #eef0f4}.notification-item.unread{background:#eef5ff;border-color:#d9e7ff}.notification-item strong{font-size:12px}.notification-item p{margin:3px 0 0;font-size:12px;line-height:1.45}.notification-item time{display:block;margin-top:5px;color:#969da8;font-size:10px}
 .close{width:34px;height:34px;border:0;border-radius:50%;background:var(--soft);font-size:20px}
 .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
 .field label{font-size:12px;font-weight:750}
@@ -203,7 +205,7 @@ a{color:inherit;text-decoration:none}
 .search{flex:1;max-width:none}
 .search input{font-size:12px;padding:10px 10px 10px 34px}
 .search-icon{left:11px;top:9px}
-.top-actions .icon-btn{display:none}
+.top-actions .icon-btn{display:none}.top-actions .notification-button{display:grid;place-items:center;width:34px;height:34px}
 .auth-actions{display:flex;gap:0}
 .auth-link{font-size:10px;padding:7px 5px}
 .auth-link.primary-link{display:none}
@@ -249,7 +251,7 @@ a{color:inherit;text-decoration:none}
       <a class="auth-link" href="./auth.html?mode=login">Masuk</a>
       <a class="auth-link primary-link" href="./auth.html?mode=register">Daftar</a>
     </div>
-    <button class="icon-btn" onclick="toast('Notifikasi akan tersedia setelah backend terhubung.')" aria-label="Notifikasi">♧</button>
+    <button class="icon-btn notification-button" id="notificationButton" onclick="openNotifications()" aria-label="Notifikasi">♧<span class="notification-badge hidden" id="notificationBadge">0</span></button>
     <button class="avatar" onclick="openProfile('@roby','Roby','@roby')" aria-label="Profil saya">R</button>
   </div>
 </header>
@@ -445,6 +447,14 @@ a{color:inherit;text-decoration:none}
   </section>
 </div>
 
+<div class="modal-backdrop" id="notificationModal" onclick="if(event.target===this)closeModal('notificationModal')">
+  <section class="modal notification-modal" role="dialog" aria-modal="true" aria-labelledby="notificationTitle">
+    <div class="modal-head"><h2 id="notificationTitle">Notifikasi</h2><button class="close" onclick="closeModal('notificationModal')">×</button></div>
+    <div class="permission-card"><strong>Perangkat Android</strong><p class="muted small">Aktifkan izin agar RUMA dapat mengirim notifikasi dan memakai fitur kamera serta lokasi saat kamu membutuhkannya.</p><div class="permission-actions"><button class="secondary" onclick="requestNotificationPermission()">Notifikasi</button><button class="secondary" onclick="requestCameraPermission()">Kamera</button><button class="secondary" onclick="requestLocationPermission()">Lokasi</button></div><div id="permissionStatus" class="muted small"></div></div>
+    <div id="notificationList" class="notification-list"><div class="empty">Memuat notifikasi...</div></div>
+  </section>
+</div>
+
 <div class="modal-backdrop" id="giftModal" onclick="if(event.target===this)closeModal('giftModal')">
   <section class="modal">
     <div class="modal-head"><h2 id="giftTitle">Kirim gift</h2><button class="close" onclick="closeModal('giftModal')">×</button></div>
@@ -503,6 +513,8 @@ let profit=86500;
 const followed=new Set();
 const unlockedRooms=new Set();
 const configuredApiUrl=localStorage.getItem('ruma_api_url')||'';
+let notifications=[];
+restoreLocalNotifications();
 
 async function apiRequest(action,payload={}){
   if(!configuredApiUrl)return null;
@@ -511,6 +523,90 @@ async function apiRequest(action,payload={}){
   const result=await response.json();
   if(!result.ok)throw new Error(result.message||'Permintaan API gagal.');
   return result.data;
+}
+
+function saveLocalNotifications(){
+  try{localStorage.setItem('ruma_demo_notifications',JSON.stringify(notifications.slice(0,100)))}catch(_){}
+}
+
+function restoreLocalNotifications(){
+  try{const saved=JSON.parse(localStorage.getItem('ruma_demo_notifications')||'[]');if(Array.isArray(saved))notifications=saved}catch(_){notifications=[]}
+}
+
+function addLocalNotification(message,type='activity'){
+  notifications.unshift({id:'local-'+Date.now(),type,actorName:'Aktivitas RUMA',message,read:false,createdAt:Date.now()});
+  notifications=notifications.slice(0,100);
+  saveLocalNotifications();
+  updateNotificationBadge();
+}
+
+function notificationTime(value){
+  const diff=Math.max(0,Date.now()-Number(value||Date.now()));
+  if(diff<60000)return'baru saja';
+  if(diff<3600000)return Math.floor(diff/60000)+' menit lalu';
+  if(diff<86400000)return Math.floor(diff/3600000)+' jam lalu';
+  return new Date(Number(value)).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+}
+
+function updateNotificationBadge(){
+  const badge=$('notificationBadge');
+  if(!badge)return;
+  const unread=notifications.filter(item=>!item.read).length;
+  badge.textContent=unread>99?'99+':String(unread);
+  badge.classList.toggle('hidden',unread===0);
+}
+
+function renderNotifications(){
+  const list=$('notificationList');
+  if(!list)return;
+  list.innerHTML=notifications.length?notifications.map(item=>'<article class="notification-item '+(item.read?'':'unread')+'"><div class="avatar">'+esc((item.actorName||'R').charAt(0).toUpperCase())+'</div><div><strong>'+esc(item.actorName||'Aktivitas RUMA')+'</strong><p>'+esc(item.message||'Ada aktivitas baru di akunmu.')+'</p><time>'+notificationTime(item.createdAt)+'</time></div></article>').join(''):'<div class="empty">Belum ada notifikasi baru.</div>';
+}
+
+async function refreshNotifications(){
+  try{
+    if(configuredApiUrl&&localStorage.getItem('ruma_token')){
+      const data=await apiRequest('notifications');
+      if(data&&Array.isArray(data.items))notifications=data.items;
+    }else{
+      restoreLocalNotifications();
+    }
+  }catch(_){}
+  updateNotificationBadge();
+  renderNotifications();
+}
+
+async function openNotifications(){
+  openModal('notificationModal');
+  renderNotifications();
+  await refreshNotifications();
+  notifications=notifications.map(item=>({...item,read:true}));
+  if(configuredApiUrl&&localStorage.getItem('ruma_token'))apiRequest('markNotificationsRead').catch(()=>{});
+  saveLocalNotifications();
+  updateNotificationBadge();
+  renderNotifications();
+}
+
+async function requestNotificationPermission(){
+  if(!('Notification' in window)){toast('Browser ini belum mendukung notifikasi.');return}
+  const permission=await Notification.requestPermission();
+  const message=permission==='granted'?'Notifikasi perangkat aktif.':permission==='denied'?'Izin notifikasi ditolak. Aktifkan dari Pengaturan Android.':'Izin notifikasi belum diberikan.';
+  $('permissionStatus').textContent=message;
+  if(permission==='granted')toast('Notifikasi RUMA aktif.');
+}
+
+async function requestCameraPermission(){
+  if(!navigator.mediaDevices?.getUserMedia){toast('Kamera hanya dapat diakses melalui HTTPS atau localhost.');return}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true});
+    stream.getTracks().forEach(track=>track.stop());
+    $('permissionStatus').textContent='Izin kamera aktif. Kamu dapat mengunggah foto atau video.';
+    toast('Izin kamera diberikan.');
+  }catch(error){$('permissionStatus').textContent='Izin kamera belum diberikan atau diblokir.';toast('Kamera tidak dapat diakses.')}
+}
+
+function requestLocationPermission(){
+  if(!navigator.geolocation){toast('Browser ini belum mendukung lokasi.');return}
+  navigator.geolocation.getCurrentPosition(()=>{$('permissionStatus').textContent='Izin lokasi aktif.';toast('Izin lokasi diberikan.')},()=>{$('permissionStatus').textContent='Izin lokasi belum diberikan atau diblokir.';toast('Lokasi tidak dapat diakses.')},{enableHighAccuracy:false,timeout:10000});
 }
 
 function restoreDemoState(){
@@ -737,6 +833,7 @@ function toggleLike(id){
   p.likes+=p.liked?1:-1;
   persistDemoState();
   apiRequest('toggleLike',{id}).catch(()=>{});
+  if(p.liked)addLocalNotification('Kamu menyukai sebuah postingan.','like');
   renderFeed();
 }
 
@@ -757,6 +854,7 @@ function toggleRepost(id){
   p.reposts+=p.reposted?1:-1;
   persistDemoState();
   apiRequest('toggleRepost',{id}).catch(()=>{});
+  if(p.reposted)addLocalNotification('Kamu merepost sebuah postingan.','repost');
   renderFeed();
   toast(p.reposted?'Postingan direpost.':'Repost dibatalkan.');
 }
@@ -777,6 +875,7 @@ function addComment(event,id){
   p.comments.push({name:'Roby',text});
   persistDemoState();
   apiRequest('addComment',{postId:id,text}).catch(()=>{});
+  addLocalNotification('Komentar kamu berhasil ditambahkan.','comment');
   p.commentsOpen=true;
   renderFeed();
   toast('Komentar ditambahkan.');
@@ -813,6 +912,7 @@ function toggleFollow(handle){
   if(followed.has(handle))followed.delete(handle);
   else followed.add(handle);
   apiRequest('toggleFollow',{handle}).catch(()=>{});
+  if(followed.has(handle))addLocalNotification('Kamu mulai mengikuti '+handle+'.','follow');
   renderPeople();
   if(profileUser&&profileUser.handle===handle)updateProfileFollow();
   toast(followed.has(handle)?'Kamu mulai mengikuti akun ini.':'Kamu berhenti mengikuti akun ini.');
@@ -1330,6 +1430,7 @@ document.addEventListener('keydown',event=>{
 });
 
 syncSessionUI();
+refreshNotifications();
 renderFeed();
 renderRooms();
 renderReels();
