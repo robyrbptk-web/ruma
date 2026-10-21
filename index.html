@@ -556,6 +556,7 @@ restoreLocalNotifications();
 async function apiRequest(action,payload={}){
   if(!configuredApiUrl)return null;
   const token=localStorage.getItem('ruma_token')||'';
+  if(!token||token.indexOf('LOCAL_')===0)return null;
   const response=await fetch(configuredApiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,token,...payload})});
   const result=await response.json();
   if(!result.ok)throw new Error(result.message||'Permintaan API gagal.');
@@ -689,10 +690,10 @@ function syncSessionUI(){
   if(avatar&&session){
     avatar.innerHTML=session.avatarUrl?'<img src="'+esc(session.avatarUrl)+'" alt="'+esc(session.name||'Profil')+'">':esc(session.initial||session.name?.charAt(0).toUpperCase()||'R');
     avatar.setAttribute('aria-label','Profil '+session.name);
-    avatar.setAttribute('onclick',"openProfile('"+session.username+"','"+String(session.name||'Roby').replace(/'/g,"\\'")+"','@"+session.username+"')");
+    avatar.setAttribute('onclick','openMyProfile()');
     const profileNav=document.querySelector('.leftnav > .professional-item:nth-of-type(6)');
     const mobileProfile=document.querySelector('.mobile-nav button:last-child');
-    const profileClick="openProfile('"+session.username+"','"+String(session.name||'Roby').replace(/'/g,"\\'")+"','@"+session.username+"')";
+    const profileClick='openMyProfile()';
     if(profileNav)profileNav.setAttribute('onclick',profileClick);
     if(mobileProfile)mobileProfile.setAttribute('onclick',profileClick);
   }
@@ -717,11 +718,18 @@ function toast(message){
 function openModal(id){$(id).classList.add('open')}
 function closeModal(id){$(id).classList.remove('open')}
 
+function profileArg(value){return encodeURIComponent(String(value??'')).replace(/'/g,'%27')}
+function openProfileEncoded(id,name,avatarUrl='',bannerUrl='',verified=''){
+  const rawId=decodeURIComponent(id);
+  const handle=rawId.charAt(0)==='@'?rawId:'@'+rawId;
+  openProfile(rawId,decodeURIComponent(name),handle,decodeURIComponent(avatarUrl),decodeURIComponent(bannerUrl),decodeURIComponent(verified));
+}
+
 function avatarHTML(person){
   const color=person.color||'#e8efff';
   const ink=person.ink||'#2859a8';
   const image=person.avatarUrl?'<img src="'+esc(person.avatarUrl)+'" alt="">':'';
-  return `<button class="avatar" style="background:${esc(color)};color:${esc(ink)}" onclick="openProfile('${esc(person.handle)}','${esc(person.name)}','${esc(person.handle)}','${esc(person.avatarUrl||'')}','${esc(person.bannerUrl||'')}','${person.verified?'true':''}')">${image||esc(person.initial||person.name[0])}</button>`;
+  return `<button class="avatar" style="background:${esc(color)};color:${esc(ink)}" onclick="openProfileEncoded('${profileArg(person.handle)}','${profileArg(person.name)}','${profileArg(person.avatarUrl||'')}','${profileArg(person.bannerUrl||'')}','${profileArg(person.verified?'true':'')}')">${image||esc(person.initial||person.name[0])}</button>`;
 }
 
 function formatText(text){
@@ -736,7 +744,7 @@ function postHTML(p){
     <div class="post-head">
       ${avatarHTML(p)}
       <div class="post-meta">
-        <div><button class="post-name" onclick="openProfile('${esc(p.handle)}','${esc(p.name)}','${esc(p.handle)}','${esc(p.avatarUrl||'')}','${esc(p.bannerUrl||'')}')">${esc(p.name)}${p.verified?'<span class="verified-mark">✓</span>':''}</button><span class="handle">${esc(p.handle)}</span></div>
+        <div><button class="post-name" onclick="openProfileEncoded('${profileArg(p.handle)}','${profileArg(p.name)}','${profileArg(p.avatarUrl||'')}','${profileArg(p.bannerUrl||'')}','${profileArg(p.verified?'true':'')}')">${esc(p.name)}${p.verified?'<span class="verified-mark">✓</span>':''}</button><span class="handle">${esc(p.handle)}</span></div>
         <div class="post-time">${esc(p.time)} · ${esc(p.topic)}</div>
       </div>
       <button class="more" onclick="openPostMenu(${p.id})" aria-label="Opsi postingan">•••</button>
@@ -818,7 +826,7 @@ async function publishPost(){
 
   const tags=text.match(/#([\p{L}\d_]+)/gu)||[];
   let session=null;
-  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   const authorName=session?.name||'Roby';
   const authorUsername=session?.username||'roby';
   posts.unshift({
@@ -970,7 +978,7 @@ function openPostMenu(id){
   if(!post)return;
   selectedPostId=id;
   $('postMenuTitle').textContent='Tindakan postingan';
-  const session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null');
+  const session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null');
   const isMine=!!(session&&post.handle.toLowerCase()==='@'+String(session.username||'').toLowerCase());
   $('postMenuActions').innerHTML='<button onclick="postMenuSave()">▣ '+(post.saved?'Hapus dari simpanan':'Simpan postingan')+'</button><button onclick="postMenuShare()">↗ Bagikan postingan</button><button onclick="postMenuReport()">⚑ Laporkan postingan</button>'+(isMine?'<button class="danger-action" onclick="postMenuDelete()">Hapus postingan</button>':'');
   openModal('postMenuModal');
@@ -1011,19 +1019,18 @@ function openMyProfile(){
 function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){
   profileUser={id,name,handle};
   let session=null;
-  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   const isOwn=!!(session&&handle.toLowerCase()==='@'+session.username.toLowerCase());
   if(isOwn){avatarUrl=session.avatarUrl||avatarUrl;bannerUrl=session.bannerUrl||bannerUrl;verified=session.verified||verified}
   $('fullProfileAvatar').innerHTML=avatarUrl?'<img src="'+esc(avatarUrl)+'" alt="'+esc(name)+'">':esc((name||'R').charAt(0).toUpperCase());
   $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
-  $('fullProfileVerified').classList.toggle('hidden',!(verified===true||verified==='true'||handle.toLowerCase()==='@roby'));
-  $('verificationNote').classList.toggle('hidden',isOwn||verified===true||verified==='true'||handle.toLowerCase()==='@roby');
-  $('fullProfileName').textContent=name;
+  $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
+  $('fullProfileVerified')?.classList.toggle('hidden',!(verified===true||verified==='true'||handle.toLowerCase()==='@roby'));
+  $('verificationNote')?.classList.toggle('hidden',isOwn||verified===true||verified==='true'||handle.toLowerCase()==='@roby');
   $('fullProfileHandle').textContent=handle;
-  $('fullProfileAvatar').textContent=(name||'R').charAt(0).toUpperCase();
   $('fullProfilePosts').textContent=posts.filter(p=>p.handle===handle).length;
   $('fullProfileBio').textContent=isOwn
-    ?'Senang bertukar ide dan belajar hal baru bersama komunitas.'
+    ?(session?.bio||'Senang bertukar ide dan belajar hal baru bersama komunitas.')
     :'Anggota RUMA yang senang berbagi cerita dan berdiskusi.';
   $('fullProfileFollow').style.display=isOwn?'none':'inline-block';
   $('fullProfileEdit').classList.toggle('hidden',!isOwn);
@@ -1031,13 +1038,36 @@ function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){
   showProfilePosts('posts',document.querySelector('#profileView .profile-tabs button'));
   setView('profile');
   $('headAction').classList.toggle('hidden',!isOwn);
+  loadProfileDetails(handle);
+}
+
+async function loadProfileDetails(handle){
+  if(!handle||String(localStorage.getItem('ruma_token')||'').indexOf('LOCAL_')===0)return;
+  try{
+    const data=await apiRequest('profile',{handle});
+    const person=data?.user;
+    if(!person||!profileUser||profileUser.handle!==handle)return;
+    profileUser={id:person.id,name:person.name,handle:'@'+person.username};
+    $('fullProfileAvatar').innerHTML=person.avatarUrl?'<img src="'+esc(person.avatarUrl)+'" alt="'+esc(person.name)+'">':esc((person.name||'R').charAt(0).toUpperCase());
+    $('fullProfileCover').style.backgroundImage=person.bannerUrl?'url("'+String(person.bannerUrl).replace(/"/g,'&quot;')+'")':'';
+    $('fullProfileName').innerHTML=esc(person.name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
+    $('fullProfileVerified')?.classList.toggle('hidden',!person.verified);
+    $('verificationNote')?.classList.toggle('hidden',profileUser.handle.toLowerCase()==='@roby'||!!person.verified);
+    $('fullProfileHandle').textContent=profileUser.handle;
+    $('fullProfileBio').textContent=person.bio||'Anggota RUMA yang senang berbagi cerita dan berdiskusi.';
+    $('fullProfilePosts').textContent=String(data.posts||0);
+    $('fullProfileFollow').style.display=profileUser.handle.toLowerCase()==='@'+String(JSON.parse(localStorage.getItem('ruma_user')||'{}').username||'').toLowerCase()?'none':'inline-block';
+    $('fullProfileEdit').classList.toggle('hidden',profileUser.handle.toLowerCase()!=='@'+String(JSON.parse(localStorage.getItem('ruma_user')||'{}').username||'').toLowerCase());
+    if(data.isFollowing)followed.add(profileUser.handle);
+    updateProfileFollow();
+  }catch(_){ }
 }
 
 function openEditProfile(){
   let session=null;
-  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   if(!session||profileUser.handle.toLowerCase()!=='@'+session.username.toLowerCase())return;
-  $('profilePageContent').innerHTML='<form onsubmit="saveLocalProfile(event)"><div class="field"><label for="editProfileName">Nama lengkap</label><input id="editProfileName" maxlength="40" value="'+esc(session?.name||profileUser.name)+'" required></div><div class="field"><label for="editProfileUsername">Username</label><input id="editProfileUsername" maxlength="20" value="'+esc(session?.username||'roby')+'" pattern="[a-z0-9_]{3,20}" required></div><div class="field"><label for="editProfileBio">Bio</label><textarea id="editProfileBio" maxlength="160" required>Senang bertukar ide dan belajar hal baru bersama komunitas.</textarea></div><button class="primary" type="submit">Simpan perubahan</button></form>';
+  $('profilePageContent').innerHTML='<form onsubmit="saveLocalProfile(event)"><div class="field"><label for="editProfileName">Nama lengkap</label><input id="editProfileName" maxlength="40" value="'+esc(session?.name||profileUser.name)+'" required></div><div class="field"><label for="editProfileUsername">Username</label><input id="editProfileUsername" maxlength="20" value="'+esc(session?.username||'roby')+'" pattern="[a-z0-9_]{3,20}" required></div><div class="field"><label for="editProfileBio">Bio</label><textarea id="editProfileBio" maxlength="160" required>'+esc(session?.bio||'')+'</textarea></div><button class="primary" type="submit">Simpan perubahan</button></form>';
   $('editProfileBio').insertAdjacentHTML('afterend','<div class="field"><label for="profileAvatarFile">Foto profil</label><input id="profileAvatarFile" type="file" accept="image/*"></div><div class="field"><label for="profileBannerFile">Banner profil</label><input id="profileBannerFile" type="file" accept="image/*"></div><p id="profileUploadStatus" class="muted small"></p>');
 }
 
@@ -1064,6 +1094,9 @@ async function uploadProfileImage(file,kind){
 
 async function saveLocalProfile(event){
   event.preventDefault();
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){session=null}
+  if(!session){toast('Sesi login tidak ditemukan. Silakan masuk kembali.');return}
   const name=$('editProfileName').value.trim();
   const username=$('editProfileUsername').value.trim().toLowerCase().replace(/^@/,'');
   const bio=$('editProfileBio').value.trim();
@@ -1071,7 +1104,7 @@ async function saveLocalProfile(event){
   if(!/^[a-z0-9_]{3,20}$/.test(username)){toast('Username harus 3-20 karakter dan hanya boleh huruf kecil, angka, atau _.');return;}
   let users=[];
   try{users=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){}
-  const current=users.find(user=>user.username===String(JSON.parse(localStorage.getItem('ruma_demo_session')||'{}').username||'roby'));
+  const current=users.find(user=>user.username===String(session.username||'roby'));
   if(current&&users.some(user=>user!==current&&user.username===username)){toast('Username sudah digunakan.');return;}
   let avatarUrl=current?.avatarUrl||session.avatarUrl||'';
   let bannerUrl=current?.bannerUrl||session.bannerUrl||'';
@@ -1085,14 +1118,16 @@ async function saveLocalProfile(event){
   users.push(updated);
   localStorage.setItem('ruma_demo_users',JSON.stringify(users));
   localStorage.setItem('ruma_demo_session',JSON.stringify(updated));
+  localStorage.setItem('ruma_user',JSON.stringify(updated));
   persistDemoState();
   apiRequest('updateProfile',{name,bio,username,avatarUrl,bannerUrl}).catch(error=>toast('Profil tersimpan lokal, sinkronisasi gagal: '+error.message));
   profileUser={id:'@'+username,name,handle:'@'+username};
-  $('fullProfileName').textContent=name;
+  $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
   $('fullProfileHandle').textContent='@'+username;
+  $('fullProfileBio').textContent=bio||'Senang bertukar ide dan belajar hal baru bersama komunitas.';
   $('fullProfileAvatar').innerHTML=avatarUrl?'<img src="'+esc(avatarUrl)+'" alt="'+esc(name)+'">':esc(updated.initial);
   $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
-  $('fullProfileVerified').classList.toggle('hidden',!(updated.verified||username==='roby'));
+  $('fullProfileVerified')?.classList.toggle('hidden',!(updated.verified||username==='roby'));
   $('profilePageContent').innerHTML='<p class="muted small">Profil berhasil diperbarui.</p>';
   syncSessionUI();
   toast('Profil berhasil diperbarui.');
