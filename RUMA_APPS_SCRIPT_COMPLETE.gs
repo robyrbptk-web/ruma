@@ -92,6 +92,7 @@ function ensureColumns(sheet, name) {
   const expected = {
     Users: ["role", "status", "avatarUrl", "bannerUrl", "verified"],
     Posts: ["mediaUrl", "mediaType", "mediaName"],
+    Comments: ["handle"],
     Reels: ["mediaUrl", "mediaType"],
     Reports: ["id", "postId", "reporterUserId", "reporterHandle", "reason", "status", "createdAt", "resolvedAt"],
     Notifications: ["id", "userId", "type", "actorUserId", "actorName", "actorHandle", "entityId", "message", "read", "createdAt"]
@@ -111,7 +112,7 @@ function initSheetHeader(sheet, name) {
   const headers = {
     Users: ["id", "username", "password", "name", "token", "bio", "color", "ink", "coins", "createdAt", "role", "status", "avatarUrl", "bannerUrl", "verified"],
     Posts: ["id", "userId", "name", "handle", "initial", "color", "ink", "topic", "text", "createdAt", "mediaUrl", "mediaType", "mediaName"],
-    Comments: ["id", "postId", "userId", "name", "text", "createdAt"],
+    Comments: ["id", "postId", "userId", "name", "text", "createdAt", "handle"],
     Likes: ["postId", "userId"],
     Saves: ["postId", "userId"],
     Reposts: ["postId", "userId"],
@@ -446,7 +447,7 @@ function toggleRelation(sheetName, keyField, keyVal, userId) {
 function getComments(req) {
   const comments = getRows("Comments").filter(c => String(c.postId) === String(req.postId));
   return comments.map(c => ({
-    id: c.id, name: c.name, text: c.text, createdAt: Number(c.createdAt)
+    id: c.id, userId: c.userId, name: c.name, handle: c.handle || "", text: c.text, createdAt: Number(c.createdAt)
   }));
 }
 
@@ -456,12 +457,13 @@ function addComment(req, user) {
 
   const id = "C_" + Date.now();
   const createdAt = Date.now();
-  getSheet("Comments").appendRow([id, req.postId, user.id, user.name, text, createdAt]);
+  const handle = "@" + String(user.username || "").replace(/^@/, "");
+  getSheet("Comments").appendRow([id, req.postId, user.id, user.name, text, createdAt, handle]);
 
   const post = getRows("Posts").find(p => String(p.id) === String(req.postId));
   if (post) createNotification(post.userId, "comment", user, req.postId, user.name + " mengomentari postinganmu.");
 
-  return { id, name: user.name, text, createdAt };
+  return { id, userId: user.id, name: user.name, handle, text, createdAt };
 }
 
 /* ================= FOLLOW ================= */

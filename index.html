@@ -887,6 +887,22 @@ function getCurrentSession(){
   try{return JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){return null}
 }
 
+async function refreshCurrentSession(){
+  const token=localStorage.getItem('ruma_token')||'';
+  if(!token||token.startsWith('LOCAL_'))return getCurrentSession();
+  try{
+    const remote=await apiRequest('me');
+    if(remote&&remote.username){
+      const current={...getCurrentSession(),...remote,initial:remote.initial||remote.name?.charAt(0)?.toUpperCase()||'P'};
+      localStorage.setItem('ruma_user',JSON.stringify(current));
+      localStorage.setItem('ruma_demo_session',JSON.stringify(current));
+      syncSessionUI();
+      return current;
+    }
+  }catch(_){ }
+  return getCurrentSession();
+}
+
 async function loadPeopleDirectory(query=''){
   const token=localStorage.getItem('ruma_token')||'';
   if(!token){renderPeople();return}
@@ -906,10 +922,10 @@ async function publishPost(){
   const mediaToUpload=selectedMedia;
 
   const tags=text.match(/#([\p{L}\d_]+)/gu)||[];
-  let session=null;
-  try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
-  const authorName=session?.name||'Roby';
-  const authorUsername=session?.username||'roby';
+  const session=await refreshCurrentSession();
+  if(!session?.username){toast('Silakan masuk sebelum membuat postingan.');return}
+  const authorName=session.name||session.username;
+  const authorUsername=session.username;
   posts.unshift({
     id:Date.now(),name:authorName,handle:'@'+authorUsername,initial:session?.initial||authorName.charAt(0).toUpperCase(),
     color:'#e8efff',ink:'#2859a8',time:'Baru saja',
@@ -998,23 +1014,42 @@ function toggleRepost(id){
   toast(p.reposted?'Postingan direpost.':'Repost dibatalkan.');
 }
 
-function toggleComments(id){
+async function toggleComments(id){
   const p=posts.find(x=>x.id===id);
   if(!p)return;
   p.commentsOpen=!p.commentsOpen;
   renderFeed();
+  if(p.commentsOpen){
+    try{
+      const remote=await apiRequest('comments',{postId:id});
+      if(Array.isArray(remote)){
+        p.comments=remote.map(comment=>({...comment,name:comment.name||comment.handle?.replace(/^@/,'')||'Pengguna RUMA',handle:comment.handle||''}));
+        persistDemoState();
+        renderFeed();
+      }
+    }catch(_){ }
+  }
 }
 
-function addComment(event,id){
+async function addComment(event,id){
   event.preventDefault();
   const p=posts.find(x=>x.id===id);
   const input=event.target.querySelector('input');
   const text=input.value.trim();
   if(!p||!text)return;
-  const session=getCurrentSession();
-  p.comments.push({name:session?.name||'Pengguna RUMA',handle:session?.username?'@'+session.username:'',text});
+  const session=await refreshCurrentSession();
+  if(!session?.username){toast('Silakan masuk untuk berkomentar.');return}
+  const comment={name:session.name||session.username,handle:'@'+session.username,text};
+  p.comments.push(comment);
   persistDemoState();
-  apiRequest('addComment',{postId:id,text}).catch(()=>{});
+  apiRequest('addComment',{postId:id,text}).then(remote=>{
+    if(remote?.name&&p.comments.length){
+      const last=p.comments[p.comments.length-1];
+      last.name=remote.name;
+      last.handle=remote.handle||last.handle;
+    }
+    persistDemoState();
+  }).catch(()=>{});
   addLocalNotification('Komentar kamu berhasil ditambahkan.','comment');
   p.commentsOpen=true;
   renderFeed();
@@ -1715,10 +1750,12 @@ document.addEventListener('keydown',event=>{
 });
 
 syncSessionUI();
-refreshNotifications();
-renderFeed();
-loadRemoteFeed();
-loadPeopleDirectory();
+refreshCurrentSession().finally(()=>{
+  refreshNotifications();
+  renderFeed();
+  loadRemoteFeed();
+  loadPeopleDirectory();
+});
 renderRooms();
 renderReels();
 </script>
