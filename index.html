@@ -127,6 +127,7 @@ a{color:inherit;text-decoration:none}
 .modal-head h2{font-size:19px;margin:0}
 .profile-page{display:grid;gap:16px}.profile-hero{overflow:hidden;border:1px solid var(--line);border-radius:20px;background:#fff}.profile-page .profile-cover{height:150px;background:linear-gradient(120deg,#1c2940,#6d8ed1)}.profile-page .profile-main{padding:0 24px 24px}.profile-page .profile-row{margin-top:-25px;align-items:end}.profile-page .profile-row .avatar{width:76px;height:76px;border:5px solid #fff;font-size:24px}.profile-page h2{margin:15px 0 3px;font-size:26px;letter-spacing:-.7px}.profile-page .profile-tabs{margin-top:22px;display:flex;gap:6px;border-bottom:1px solid var(--line);overflow:auto}.profile-page .profile-tabs button{border:0;background:transparent;padding:12px 14px;color:var(--muted);font-size:12px;font-weight:800;white-space:nowrap}.profile-page .profile-tabs button.active{color:var(--ink);border-bottom:2px solid var(--ink)}.profile-page .profile-content{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}.profile-back{margin-bottom:2px}
 .notification-modal{width:min(100%,560px)}.permission-card{padding:14px;border:1px solid #dfe7f3;border-radius:15px;background:#f7faff;margin-bottom:16px}.permission-card p{margin:7px 0 12px;line-height:1.5}.permission-actions{display:flex;flex-wrap:wrap;gap:7px}.permission-actions .secondary{padding:8px 11px;color:#2859a8}.notification-list{display:grid;gap:8px;max-height:360px;overflow:auto}.notification-item{display:flex;gap:10px;padding:12px;border-radius:13px;background:#fafbfc;border:1px solid #eef0f4}.notification-item.unread{background:#eef5ff;border-color:#d9e7ff}.notification-item strong{font-size:12px}.notification-item p{margin:3px 0 0;font-size:12px;line-height:1.45}.notification-item time{display:block;margin-top:5px;color:#969da8;font-size:10px}
+.image-preview-modal{position:relative;max-width:min(92vw,760px);max-height:92dvh}.image-preview-modal img{display:block;max-width:92vw;max-height:88dvh;object-fit:contain;border-radius:16px;box-shadow:0 20px 60px #0008}.image-preview-close{position:absolute;right:-12px;top:-12px;z-index:1;background:#fff}
 .close{width:34px;height:34px;border:0;border-radius:50%;background:var(--soft);font-size:20px}
 .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
 .field label{font-size:12px;font-weight:750}
@@ -489,6 +490,13 @@ a{color:inherit;text-decoration:none}
   </section>
 </div>
 
+<div class="modal-backdrop" id="imagePreviewModal" onclick="if(event.target===this)closeModal('imagePreviewModal')">
+  <section class="image-preview-modal" role="dialog" aria-modal="true" aria-label="Pratinjau foto profil">
+    <button class="close image-preview-close" onclick="closeModal('imagePreviewModal')">×</button>
+    <img id="imagePreview" alt="Foto profil diperbesar">
+  </section>
+</div>
+
 <div class="modal-backdrop" id="notificationModal" onclick="if(event.target===this)closeModal('notificationModal')">
   <section class="modal notification-modal" role="dialog" aria-modal="true" aria-labelledby="notificationTitle">
     <div class="modal-head"><h2 id="notificationTitle">Notifikasi</h2><button class="close" onclick="closeModal('notificationModal')">×</button></div>
@@ -526,6 +534,20 @@ function avatarMarkup(url,alt,fallback){
   const initial=String(fallback||'R').charAt(0).toUpperCase();
   const imageUrl=normalizeImageUrl(url);
   return imageUrl?'<img src="'+esc(imageUrl)+'" alt="'+esc(alt||'Profil')+'" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'"> <span class="avatar-fallback">'+esc(initial)+'</span>':esc(initial);
+}
+
+function openImagePreview(url,alt='Foto profil'){
+  const imageUrl=normalizeImageUrl(url);
+  if(!imageUrl){toast('Foto profil belum tersedia.');return}
+  const image=$('imagePreview');
+  image.src=imageUrl;
+  image.alt=alt;
+  openModal('imagePreviewModal');
+}
+
+function postArg(id){
+  if(typeof id==='number')return String(id);
+  return "'" + String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + "'";
 }
 
 function normalizeImageUrl(url){
@@ -811,6 +833,17 @@ function postHTML(p){
   </article>`;
 }
 
+function postHTML(p){
+  const media=p.mediaUrl?((String(p.mediaType||'').indexOf('video')===0?'<video controls preload="metadata" style="width:100%;max-height:420px;border-radius:12px;margin-top:12px" src="'+esc(p.mediaUrl)+'"></video>':'<img loading="lazy" style="width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-top:12px" src="'+esc(p.mediaUrl)+'" alt="Media postingan">')):'';
+  const id=postArg(p.id);
+  return `<article class="post" id="post-${esc(p.id)}">
+    <div class="post-head">${avatarHTML(p)}<div class="post-meta"><div><button class="post-name" onclick="openProfileEncoded('${profileArg(p.handle)}','${profileArg(p.name)}','${profileArg(p.avatarUrl||'')}','${profileArg(p.bannerUrl||'')}','${profileArg(p.verified?'true':'')}')">${esc(p.name)}${p.verified?'<span class="verified-mark">✓</span>':''}</button><span class="handle">${esc(p.handle)}</span></div><div class="post-time">${esc(p.time)} · ${esc(p.topic)}</div></div><button class="more" onclick="openPostMenu(${id})" aria-label="Opsi postingan">•••</button></div>
+    <div class="post-text">${formatText(p.text)}</div>${media}
+    <div class="post-actions"><button class="action ${p.liked?'liked':''}" onclick="toggleLike(${id})">Like ${p.likes}</button><button class="action" onclick="toggleComments(${id})">Komentar ${p.comments.length||''}</button><button class="action ${p.reposted?'reposted':''}" onclick="toggleRepost(${id})">Repost ${p.reposts}</button><button class="action ${p.saved?'saved':''}" onclick="toggleSave(${id})">${p.saved?'Tersimpan':'Simpan'}</button><button class="action" onclick="sharePost(${id})">Bagikan</button></div>
+    <div class="comment-area ${p.commentsOpen?'open':''}" id="comments-${esc(p.id)}"><div class="comment-list">${p.comments.map(c=>`<p><strong>${esc(c.name)}</strong> ${esc(c.text)}</p>`).join('')||'Belum ada komentar.'}</div><form class="comment-form" onsubmit="addComment(event,${id})"><input maxlength="240" placeholder="Tulis komentar..." required><button>Kirim</button></form></div>
+  </article>`;
+}
+
 function adCardHTML(){
   return `<article class="ad-card">
     <span class="ad-label">IKLAN · BERSPONSOR</span>
@@ -1083,13 +1116,19 @@ function filterTag(tag){
   renderFeed();
 }
 
-function toggleFollow(handle){
+async function toggleFollow(handle){
   if(followed.has(handle))followed.delete(handle);
   else followed.add(handle);
-  apiRequest('toggleFollow',{handle}).catch(()=>{});
+  try{
+    const result=await apiRequest('toggleFollow',{handle});
+    if(result&&typeof result.on==='boolean'){
+      if(result.on)followed.add(handle);else followed.delete(handle);
+    }
+  }catch(_){}
   if(followed.has(handle))addLocalNotification('Kamu mulai mengikuti '+handle+'.','follow');
   renderPeople();
   if(profileUser&&profileUser.handle===handle)updateProfileFollow();
+  if(profileUser&&profileUser.handle===handle)loadProfileDetails(handle);
   toast(followed.has(handle)?'Kamu mulai mengikuti akun ini.':'Kamu berhenti mengikuti akun ini.');
 }
 
@@ -1143,6 +1182,8 @@ function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){
   const isOwn=!!(session&&handle.toLowerCase()==='@'+session.username.toLowerCase());
   if(isOwn){avatarUrl=session.avatarUrl||avatarUrl;bannerUrl=session.bannerUrl||bannerUrl;verified=session.verified||verified}
   $('fullProfileAvatar').innerHTML=avatarMarkup(avatarUrl,name,name||'R');
+  $('fullProfileAvatar').dataset.image=normalizeImageUrl(avatarUrl);
+  $('fullProfileAvatar').dataset.name=name||'Foto profil';
   $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
   $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
   $('fullProfileVerified')?.classList.toggle('hidden',!(verified===true||verified==='true'||handle.toLowerCase()==='@roby'));
@@ -1172,6 +1213,8 @@ async function loadProfileDetails(handle){
     const resolvedAvatar=person.avatarUrl||'';
     const resolvedBanner=person.bannerUrl||'';
     $('fullProfileAvatar').innerHTML=avatarMarkup(resolvedAvatar,person.name,person.name||'R');
+    $('fullProfileAvatar').dataset.image=normalizeImageUrl(resolvedAvatar);
+    $('fullProfileAvatar').dataset.name=person.name||'Foto profil';
     $('fullProfileCover').style.backgroundImage=resolvedBanner?'url("'+String(resolvedBanner).replace(/"/g,'&quot;')+'")':'';
     $('fullProfileName').innerHTML=esc(person.name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
     $('fullProfileVerified')?.classList.toggle('hidden',!person.verified);
@@ -1179,6 +1222,8 @@ async function loadProfileDetails(handle){
     $('fullProfileHandle').textContent=profileUser.handle;
     $('fullProfileBio').textContent=person.bio||'Anggota RUMA yang senang berbagi cerita dan berdiskusi.';
     $('fullProfilePosts').textContent=String(data.posts||0);
+    $('fullProfileFollowers').textContent=String(person.followers||0);
+    $('fullProfileFollowing').textContent=String(person.following||0);
     $('fullProfileFollow').style.display=profileUser.handle.toLowerCase()==='@'+String(JSON.parse(localStorage.getItem('ruma_user')||'{}').username||'').toLowerCase()?'none':'inline-block';
     $('fullProfileEdit').classList.toggle('hidden',profileUser.handle.toLowerCase()!=='@'+String(JSON.parse(localStorage.getItem('ruma_user')||'{}').username||'').toLowerCase());
     if(data.isFollowing)followed.add(profileUser.handle);
@@ -1749,6 +1794,7 @@ document.addEventListener('keydown',event=>{
   }
 });
 
+$('fullProfileAvatar')?.addEventListener('click',()=>openImagePreview($('fullProfileAvatar').dataset.image,$('fullProfileAvatar').dataset.name));
 syncSessionUI();
 refreshCurrentSession().finally(()=>{
   refreshNotifications();
