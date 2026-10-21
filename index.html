@@ -262,7 +262,7 @@ a{color:inherit;text-decoration:none}
       <a class="auth-link primary-link" href="./auth.html?mode=register">Daftar</a>
     </div>
     <button class="icon-btn notification-button" id="notificationButton" onclick="openNotifications()" aria-label="Notifikasi">♧<span class="notification-badge hidden" id="notificationBadge">0</span></button>
-    <button class="avatar" onclick="openProfile('@roby','Roby','@roby')" aria-label="Profil saya">R</button>
+    <button class="avatar" onclick="openMyProfile()" aria-label="Profil saya">R</button>
   </div>
 </header>
 
@@ -276,7 +276,7 @@ a{color:inherit;text-decoration:none}
   <button class="navitem professional-item" data-view="tersimpan" onclick="setView('tersimpan')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-3.5L6 21z"/></svg></span><span>Tersimpan</span></button>
   <div class="nav-divider"></div>
   <div class="nav-caption">Akun</div>
-  <button class="navitem professional-item" data-view="profile" onclick="openProfile('@roby','Roby','@roby')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><span>Profil saya</span></button>
+  <button class="navitem professional-item" data-view="profile" onclick="openMyProfile()"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><span>Profil saya</span></button>
   <button class="nav-compose professional-action" onclick="focusComposer()">＋ Buat topik</button>
   <button class="secondary professional-action" style="margin-top:8px" onclick="openCreateRoom()">＋ Buat Ruang</button>
   <button class="navitem active" data-view="beranda" onclick="setView('beranda')">⌂ &nbsp; Beranda</button>
@@ -284,7 +284,7 @@ a{color:inherit;text-decoration:none}
   <button class="navitem" data-view="ruang" onclick="setView('ruang')">▤ &nbsp; Ruang</button>
   <button class="navitem" data-view="profit" onclick="setView('profit')">✦ &nbsp; Creator Studio</button>
   <button class="navitem" data-view="tersimpan" onclick="setView('tersimpan')">▣ &nbsp; Tersimpan</button>
-  <button class="navitem" onclick="openProfile('@roby','Roby','@roby')">♙ &nbsp; Profil saya</button>
+  <button class="navitem" data-view="profile" onclick="openMyProfile()">♙ &nbsp; Profil saya</button>
   <button class="nav-compose" onclick="focusComposer()">＋ Buat topik</button>
   <button class="secondary" style="margin-top:8px" onclick="openCreateRoom()">＋ Buat Ruang</button>
   <div class="side-note">RUMA adalah ruang untuk bertukar pikiran, menemukan sudut pandang baru, dan membangun percakapan yang berarti.<br><br>© 2026 RUMA · Ruang untuk semua</div>
@@ -419,7 +419,7 @@ a{color:inherit;text-decoration:none}
   <button data-view="jelajahi" onclick="setView('jelajahi')">⌕<span>Jelajahi</span></button>
   <button class="mobile-add" onclick="openCreateRoom()">＋<span>Ruang</span></button>
   <button data-view="tersimpan" onclick="setView('tersimpan')">▣<span>Simpan</span></button>
-  <button data-view="profile" onclick="openProfile('@roby','Roby','@roby')">♙<span>Profil</span></button>
+  <button data-view="profile" onclick="openMyProfile()">♙<span>Profil</span></button>
 </nav>
 </div>
 
@@ -667,7 +667,15 @@ function persistDemoState(){
 
 function syncSessionUI(){
   let session=null;
-  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  const token=localStorage.getItem('ruma_token')||'';
+  const storedUser=localStorage.getItem('ruma_user')||'';
+  if(token&&storedUser){
+    try{session=JSON.parse(storedUser)}catch(_){session=null}
+  }else{
+    localStorage.removeItem('ruma_demo_session');
+    localStorage.removeItem('ruma_user');
+    localStorage.removeItem('ruma_token');
+  }
   if(session&&session.name==='Demo Ruma'){session={...session,name:'Roby',username:'roby',initial:'R',role:session.role||'admin',verified:true};localStorage.setItem('ruma_demo_session',JSON.stringify(session))}
   document.querySelectorAll('.auth-actions').forEach(el=>{
     el.style.display='flex';
@@ -988,6 +996,16 @@ function postMenuDelete(){
   closeModal('postMenuModal');
   renderFeed();
   toast('Postingan dihapus.');
+}
+
+function openMyProfile(){
+  const token=localStorage.getItem('ruma_token');
+  const raw=localStorage.getItem('ruma_user');
+  if(!token||!raw){location.href='./auth.html?mode=login';return}
+  let user=null;
+  try{user=JSON.parse(raw)}catch(_){}
+  if(!user){location.href='./auth.html?mode=login';return}
+  openProfile(user.id,user.name,'@'+user.username,user.avatarUrl||'',user.bannerUrl||'',user.verified||false);
 }
 
 function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){

@@ -144,6 +144,8 @@ form.addEventListener('submit', async event => {
     users.push(user);
     writeUsers(users);
     localStorage.setItem('ruma_demo_session', JSON.stringify(user));
+    localStorage.setItem('ruma_user', JSON.stringify(user));
+    localStorage.setItem('ruma_token', 'LOCAL_' + Date.now());
     setMessage('Akun berhasil dibuat. Mengarahkan ke RUMA...', true);
   } else {
     if (!existing || existing.password !== password) {
@@ -152,6 +154,8 @@ form.addEventListener('submit', async event => {
       return;
     }
     localStorage.setItem('ruma_demo_session', JSON.stringify(existing));
+    localStorage.setItem('ruma_user', JSON.stringify(existing));
+    localStorage.setItem('ruma_token', 'LOCAL_' + Date.now());
     setMessage('Berhasil masuk. Mengarahkan ke RUMA...', true);
   }
 
