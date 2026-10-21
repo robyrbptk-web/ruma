@@ -524,7 +524,14 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
 
 function avatarMarkup(url,alt,fallback){
   const initial=String(fallback||'R').charAt(0).toUpperCase();
-  return url?'<img src="'+esc(url)+'" alt="'+esc(alt||'Profil')+'" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'"> <span class="avatar-fallback">'+esc(initial)+'</span>':esc(initial);
+  const imageUrl=normalizeImageUrl(url);
+  return imageUrl?'<img src="'+esc(imageUrl)+'" alt="'+esc(alt||'Profil')+'" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'"> <span class="avatar-fallback">'+esc(initial)+'</span>':esc(initial);
+}
+
+function normalizeImageUrl(url){
+  const value=String(url||'').trim();
+  const match=value.match(/^https?:\/\/drive\.google\.com\/uc\?[^#]*\bid=([^&]+)/i);
+  return match?'https://drive.google.com/thumbnail?id='+encodeURIComponent(match[1])+'&sz=w1000':value;
 }
 
 const posts = [];
@@ -571,8 +578,12 @@ restoreLocalNotifications();
 async function apiRequest(action,payload={}){
   if(!configuredApiUrl)return null;
   const token=localStorage.getItem('ruma_token')||'';
-  if(!token||token.indexOf('LOCAL_')===0)return null;
-  const response=await fetch(configuredApiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,token,...payload})});
+  const publicActions=new Set(['feed','trends','people','profile','comments','rooms','room','reels']);
+  const isPublic=publicActions.has(action);
+  if(!token&&!isPublic)return null;
+  const requestToken=token.indexOf('LOCAL_')===0?(isPublic?'':null):token;
+  if(requestToken===null)return null;
+  const response=await fetch(configuredApiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,token:requestToken,...payload})});
   const result=await response.json();
   if(!result.ok)throw new Error(result.message||'Permintaan API gagal.');
   return result.data;
@@ -681,7 +692,7 @@ function remotePost(item){
 
 async function loadRemoteFeed(){
   const token=localStorage.getItem('ruma_token')||'';
-  if(!token||token.indexOf('LOCAL_')===0)return;
+  if(!token)return;
   try{
     const data=await apiRequest('feed',{sort:sort==='terbaru'?'terbaru':'rekomendasi'});
     if(data&&Array.isArray(data.items)){
@@ -878,10 +889,11 @@ function getCurrentSession(){
 
 async function loadPeopleDirectory(query=''){
   const token=localStorage.getItem('ruma_token')||'';
-  if(!token||token.startsWith('LOCAL_')){renderPeople();return}
+  if(!token){renderPeople();return}
   try{
     const data=await apiRequest('people',{q:query});
-    if(data&&Array.isArray(data.items))peopleDirectory=data.items;
+    const items=Array.isArray(data)?data:data?.items;
+    if(Array.isArray(items))peopleDirectory=items;
     renderPeople();
     if(searchTerm)renderFeed();
   }catch(_){renderPeople()}
@@ -1115,14 +1127,17 @@ function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){
 }
 
 async function loadProfileDetails(handle){
-  if(!handle||String(localStorage.getItem('ruma_token')||'').indexOf('LOCAL_')===0)return;
+  if(!handle)return;
   try{
     const data=await apiRequest('profile',{handle});
     const person=data?.user;
     if(!person||!profileUser||profileUser.handle!==handle)return;
     profileUser={id:person.id,name:person.name,handle:'@'+person.username};
-    $('fullProfileAvatar').innerHTML=avatarMarkup(person.avatarUrl,person.name,person.name||'R');
-    $('fullProfileCover').style.backgroundImage=person.bannerUrl?'url("'+String(person.bannerUrl).replace(/"/g,'&quot;')+'")':'';
+    const currentSession=getCurrentSession();
+    const resolvedAvatar=person.avatarUrl||currentSession?.avatarUrl||'';
+    const resolvedBanner=person.bannerUrl||currentSession?.bannerUrl||'';
+    $('fullProfileAvatar').innerHTML=avatarMarkup(resolvedAvatar,person.name,person.name||'R');
+    $('fullProfileCover').style.backgroundImage=resolvedBanner?'url("'+String(resolvedBanner).replace(/"/g,'&quot;')+'")':'';
     $('fullProfileName').innerHTML=esc(person.name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
     $('fullProfileVerified')?.classList.toggle('hidden',!person.verified);
     $('verificationNote')?.classList.toggle('hidden',profileUser.handle.toLowerCase()==='@roby'||!!person.verified);
@@ -1132,6 +1147,13 @@ async function loadProfileDetails(handle){
     $('fullProfileFollow').style.display=profileUser.handle.toLowerCase()==='@'+String(JSON.parse(localStorage.getItem('ruma_user')||'{}').username||'').toLowerCase()?'none':'inline-block';
     $('fullProfileEdit').classList.toggle('hidden',profileUser.handle.toLowerCase()!=='@'+String(JSON.parse(localStorage.getItem('ruma_user')||'{}').username||'').toLowerCase());
     if(data.isFollowing)followed.add(profileUser.handle);
+    const session=currentSession;
+    if(session&&String(session.username).toLowerCase()===String(person.username).toLowerCase()){
+      const merged={...session,...person,avatarUrl:person.avatarUrl||session.avatarUrl||'',bannerUrl:person.bannerUrl||session.bannerUrl||''};
+      localStorage.setItem('ruma_user',JSON.stringify(merged));
+      localStorage.setItem('ruma_demo_session',JSON.stringify(merged));
+      syncSessionUI();
+    }
     updateProfileFollow();
   }catch(_){ }
 }
