@@ -45,7 +45,7 @@ a{color:inherit;text-decoration:none}
 .auth-link.primary-link{background:var(--ink);color:#fff}
 .icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#fff}
 .notification-button{position:relative}.notification-badge{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#e34e6b;color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center}
-.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e8efff;color:#2859a8;font-size:13px;font-weight:800;flex-shrink:0;border:0;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e8efff;color:#2859a8;font-size:13px;font-weight:800;flex-shrink:0;border:0;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.avatar-fallback{display:none}.avatar img[style*="display: none"]+.avatar-fallback{display:grid}
 .verified-mark{display:inline-grid;place-items:center;width:15px;height:15px;margin-left:4px;border-radius:50%;background:var(--blue);color:#fff;font-size:9px;font-weight:900;vertical-align:middle}
 .verification-note{display:inline-block;margin-top:8px;padding:6px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:10px;font-weight:750}
 .layout{display:grid;grid-template-columns:200px minmax(0,650px) 270px;gap:24px;padding:24px}
@@ -522,6 +522,11 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[ch]));
 
+function avatarMarkup(url,alt,fallback){
+  const initial=String(fallback||'R').charAt(0).toUpperCase();
+  return url?'<img src="'+esc(url)+'" alt="'+esc(alt||'Profil')+'" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'"> <span class="avatar-fallback">'+esc(initial)+'</span>':esc(initial);
+}
+
 const posts = [];
 
 const reelData = [
@@ -719,7 +724,7 @@ function syncSessionUI(){
   });
   const avatar=document.querySelector('.top-actions .avatar');
   if(avatar&&session){
-    avatar.innerHTML=session.avatarUrl?'<img src="'+esc(session.avatarUrl)+'" alt="'+esc(session.name||'Profil')+'">':esc(session.initial||session.name?.charAt(0).toUpperCase()||'R');
+    avatar.innerHTML=avatarMarkup(session.avatarUrl,session.name,session.initial||session.name?.charAt(0)||'R');
     avatar.setAttribute('aria-label','Profil '+session.name);
     avatar.setAttribute('onclick','openMyProfile()');
     const profileNav=document.querySelector('.leftnav > .professional-item:nth-of-type(6)');
@@ -759,8 +764,8 @@ function openProfileEncoded(id,name,avatarUrl='',bannerUrl='',verified=''){
 function avatarHTML(person){
   const color=person.color||'#e8efff';
   const ink=person.ink||'#2859a8';
-  const image=person.avatarUrl?'<img src="'+esc(person.avatarUrl)+'" alt="">':'';
-  return `<button class="avatar" style="background:${esc(color)};color:${esc(ink)}" onclick="openProfileEncoded('${profileArg(person.handle)}','${profileArg(person.name)}','${profileArg(person.avatarUrl||'')}','${profileArg(person.bannerUrl||'')}','${profileArg(person.verified?'true':'')}')">${image||esc(person.initial||person.name[0])}</button>`;
+  const image=avatarMarkup(person.avatarUrl,person.name,person.initial||person.name?.charAt(0)||'R');
+  return `<button class="avatar" style="background:${esc(color)};color:${esc(ink)}" onclick="openProfileEncoded('${profileArg(person.handle)}','${profileArg(person.name)}','${profileArg(person.avatarUrl||'')}','${profileArg(person.bannerUrl||'')}','${profileArg(person.verified?'true':'')}')">${image}</button>`;
 }
 
 function formatText(text){
@@ -1090,7 +1095,7 @@ function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){
   try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   const isOwn=!!(session&&handle.toLowerCase()==='@'+session.username.toLowerCase());
   if(isOwn){avatarUrl=session.avatarUrl||avatarUrl;bannerUrl=session.bannerUrl||bannerUrl;verified=session.verified||verified}
-  $('fullProfileAvatar').innerHTML=avatarUrl?'<img src="'+esc(avatarUrl)+'" alt="'+esc(name)+'">':esc((name||'R').charAt(0).toUpperCase());
+  $('fullProfileAvatar').innerHTML=avatarMarkup(avatarUrl,name,name||'R');
   $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
   $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
   $('fullProfileVerified')?.classList.toggle('hidden',!(verified===true||verified==='true'||handle.toLowerCase()==='@roby'));
@@ -1116,7 +1121,7 @@ async function loadProfileDetails(handle){
     const person=data?.user;
     if(!person||!profileUser||profileUser.handle!==handle)return;
     profileUser={id:person.id,name:person.name,handle:'@'+person.username};
-    $('fullProfileAvatar').innerHTML=person.avatarUrl?'<img src="'+esc(person.avatarUrl)+'" alt="'+esc(person.name)+'">':esc((person.name||'R').charAt(0).toUpperCase());
+    $('fullProfileAvatar').innerHTML=avatarMarkup(person.avatarUrl,person.name,person.name||'R');
     $('fullProfileCover').style.backgroundImage=person.bannerUrl?'url("'+String(person.bannerUrl).replace(/"/g,'&quot;')+'")':'';
     $('fullProfileName').innerHTML=esc(person.name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
     $('fullProfileVerified')?.classList.toggle('hidden',!person.verified);
@@ -1210,7 +1215,7 @@ async function saveLocalProfile(event){
   $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
   $('fullProfileHandle').textContent='@'+username;
   $('fullProfileBio').textContent=bio||'Senang bertukar ide dan belajar hal baru bersama komunitas.';
-  $('fullProfileAvatar').innerHTML=avatarUrl?'<img src="'+esc(avatarUrl)+'" alt="'+esc(name)+'">':esc(updated.initial);
+  $('fullProfileAvatar').innerHTML=avatarMarkup(avatarUrl,name,updated.initial);
   $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
   $('fullProfileVerified')?.classList.toggle('hidden',!(updated.verified||username==='roby'));
   $('profilePageContent').innerHTML='<p class="muted small">Profil berhasil diperbarui.</p>';
