@@ -90,7 +90,7 @@ function getSheet(name) {
 
 function ensureColumns(sheet, name) {
   const expected = {
-    Users: ["role", "status"],
+    Users: ["role", "status", "avatarUrl", "bannerUrl", "verified"],
     Posts: ["mediaUrl", "mediaType", "mediaName"],
     Reels: ["mediaUrl", "mediaType"],
     Reports: ["id", "postId", "reporterUserId", "reporterHandle", "reason", "status", "createdAt", "resolvedAt"],
@@ -109,7 +109,7 @@ function ensureColumns(sheet, name) {
 
 function initSheetHeader(sheet, name) {
   const headers = {
-    Users: ["id", "username", "password", "name", "token", "bio", "color", "ink", "coins", "createdAt", "role", "status"],
+    Users: ["id", "username", "password", "name", "token", "bio", "color", "ink", "coins", "createdAt", "role", "status", "avatarUrl", "bannerUrl", "verified"],
     Posts: ["id", "userId", "name", "handle", "initial", "color", "ink", "topic", "text", "createdAt", "mediaUrl", "mediaType", "mediaName"],
     Comments: ["id", "postId", "userId", "name", "text", "createdAt"],
     Likes: ["postId", "userId"],
@@ -165,11 +165,12 @@ function setupAdminAccount() {
         sheet.getRange(i + 1, 4).setValue("Roby");
         sheet.getRange(i + 1, 11).setValue("admin");
         sheet.getRange(i + 1, 12).setValue("active");
+        sheet.getRange(i + 1, 15).setValue(true);
         return "Admin roby diperbarui.";
       }
     }
   }
-  sheet.appendRow(["U_" + Utilities.getUuid(), "roby", "tauhid12", "Roby", "", "Administrator RUMA", "#e8efff", "#2859a8", 1250, Date.now(), "admin", "active"]);
+  sheet.appendRow(["U_" + Utilities.getUuid(), "roby", "tauhid12", "Roby", "", "Administrator RUMA", "#e8efff", "#2859a8", 1250, Date.now(), "admin", "active", "", "", true]);
   return "Admin roby berhasil dibuat.";
 }
 
@@ -192,7 +193,10 @@ function sanitizeUser(u) {
     followers: getRows("Followers").filter(f => f.targetHandle === "@" + u.username).length,
     following: getRows("Followers").filter(f => f.followerHandle === "@" + u.username).length,
     role: u.role || "user",
-    status: u.status || "active"
+    status: u.status || "active",
+    avatarUrl: u.avatarUrl || "",
+    bannerUrl: u.bannerUrl || "",
+    verified: String(u.username).toLowerCase() === "roby" || String(u.verified).toLowerCase() === "true"
   };
 }
 
@@ -296,6 +300,7 @@ function getFeed(req, token) {
   const saves = getRows("Saves");
   const reposts = getRows("Reposts");
   const comments = getRows("Comments");
+  const users = getRows("Users");
 
   if (req.filter === "saved" && user) {
     const mySaves = new Set(saves.filter(s => String(s.userId) === String(user.id)).map(s => String(s.postId)));
@@ -321,6 +326,7 @@ function getFeed(req, token) {
   posts.sort((a, b) => (req.sort === "terbaru" ? b.createdAt - a.createdAt : b.id - a.id));
 
   const items = posts.map(p => {
+    const owner = users.find(u => String(u.id) === String(p.userId));
     const pLikes = likes.filter(l => String(l.postId) === String(p.id));
     const pSaves = saves.filter(s => String(s.postId) === String(p.id));
     const pReposts = reposts.filter(r => String(r.postId) === String(p.id));
@@ -333,6 +339,9 @@ function getFeed(req, token) {
       initial: p.initial,
       color: p.color,
       ink: p.ink,
+      avatarUrl: owner ? owner.avatarUrl || "" : "",
+      bannerUrl: owner ? owner.bannerUrl || "" : "",
+      verified: owner ? String(owner.username).toLowerCase() === "roby" || String(owner.verified).toLowerCase() === "true" : false,
       topic: p.topic || "Diskusi",
       text: p.text,
       createdAt: Number(p.createdAt),
@@ -496,6 +505,8 @@ function getProfile(req, token) {
 function updateProfile(req, user) {
   const name = (req.name || user.name).trim();
   const bio = (req.bio || "").trim();
+  const avatarUrl = String(req.avatarUrl || user.avatarUrl || "");
+  const bannerUrl = String(req.bannerUrl || user.bannerUrl || "");
   const username = String(req.username || user.username).toLowerCase().trim().replace(/^@/, "");
   if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error("Username hanya boleh 3-20 karakter: huruf kecil, angka, atau _.");
   if (getRows("Users").some(u => String(u.id) !== String(user.id) && String(u.username).toLowerCase() === username)) {
@@ -509,9 +520,16 @@ function updateProfile(req, user) {
       sheet.getRange(i + 1, 4).setValue(name);
       sheet.getRange(i + 1, 2).setValue(username);
       sheet.getRange(i + 1, 6).setValue(bio);
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+      const avatarColumn = headers.indexOf("avatarUrl") + 1;
+      const bannerColumn = headers.indexOf("bannerUrl") + 1;
+      if (avatarColumn > 0) sheet.getRange(i + 1, avatarColumn).setValue(avatarUrl);
+      if (bannerColumn > 0) sheet.getRange(i + 1, bannerColumn).setValue(bannerUrl);
       user.name = name;
       user.username = username;
       user.bio = bio;
+      user.avatarUrl = avatarUrl;
+      user.bannerUrl = bannerUrl;
       break;
     }
   }
@@ -543,6 +561,9 @@ function getPeople(token) {
     initial: (u.name || u.username)[0].toUpperCase(),
     color: u.color,
     ink: u.ink,
+    avatarUrl: u.avatarUrl || "",
+    bannerUrl: u.bannerUrl || "",
+    verified: String(u.username).toLowerCase() === "roby" || String(u.verified).toLowerCase() === "true",
     following: user ? followers.some(f => f.followerHandle === "@" + user.username && f.targetHandle === "@" + u.username) : false
   }));
 }
@@ -834,6 +855,9 @@ function adminAction(action, req, user) {
     for (let i = 1; i < data.length; i++) if (String(data[i][0]) === String(req.id)) {
       if (["active", "blocked"].indexOf(req.status) >= 0) sheet.getRange(i + 1, 12).setValue(req.status);
       if (["admin", "moderator", "user"].indexOf(req.role) >= 0) sheet.getRange(i + 1, 11).setValue(req.role);
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+      const verifiedColumn = headers.indexOf("verified") + 1;
+      if (verifiedColumn > 0 && typeof req.verified === "boolean") sheet.getRange(i + 1, verifiedColumn).setValue(String(target.username).toLowerCase() === "roby" ? true : req.verified);
       return true;
     }
   }

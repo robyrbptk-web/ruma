@@ -45,7 +45,9 @@ a{color:inherit;text-decoration:none}
 .auth-link.primary-link{background:var(--ink);color:#fff}
 .icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#fff}
 .notification-button{position:relative}.notification-badge{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#e34e6b;color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center}
-.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e8efff;color:#2859a8;font-size:13px;font-weight:800;flex-shrink:0;border:0}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e8efff;color:#2859a8;font-size:13px;font-weight:800;flex-shrink:0;border:0;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}
+.verified-mark{display:inline-grid;place-items:center;width:15px;height:15px;margin-left:4px;border-radius:50%;background:var(--blue);color:#fff;font-size:9px;font-weight:900;vertical-align:middle}
+.verification-note{display:inline-block;margin-top:8px;padding:6px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:10px;font-weight:750}
 .layout{display:grid;grid-template-columns:200px minmax(0,650px) 270px;gap:24px;padding:24px}
 .leftnav{position:sticky;top:92px;align-self:start;display:flex;flex-direction:column;gap:5px}
 .navitem{display:flex;align-items:center;gap:12px;padding:11px 13px;border:0;border-radius:13px;background:transparent;color:#555b63;font-weight:650;text-align:left;width:100%}
@@ -285,7 +287,7 @@ a{color:inherit;text-decoration:none}
   <button class="navitem" onclick="openProfile('@roby','Roby','@roby')">♙ &nbsp; Profil saya</button>
   <button class="nav-compose" onclick="focusComposer()">＋ Buat topik</button>
   <button class="secondary" style="margin-top:8px" onclick="openCreateRoom()">＋ Buat Ruang</button>
-  <div class="side-note">RUMA adalah ruang untuk bertukar pikiran, menemukan sudut pandang baru, dan membangun percakapan yang berarti.<br><br>© 2026 RUMA · Demo frontend</div>
+  <div class="side-note">RUMA adalah ruang untuk bertukar pikiran, menemukan sudut pandang baru, dan membangun percakapan yang berarti.<br><br>© 2026 RUMA · Ruang untuk semua</div>
 </aside>
 
 <main class="main">
@@ -359,14 +361,14 @@ a{color:inherit;text-decoration:none}
     <div class="creator-grid">
       <div class="creator-tile">◉ <strong id="creatorViews">24,8 rb</strong><span>Total tayangan</span></div>
       <div class="creator-tile">♡ <strong id="creatorLikes">1.284</strong><span>Total suka</span></div>
-      <div class="creator-tile">✦ <strong id="creatorEarnings">Rp 86.500</strong><span>Estimasi profit demo</span></div>
+      <div class="creator-tile">✦ <strong id="creatorEarnings">Rp 86.500</strong><span>Estimasi pendapatan</span></div>
     </div>
     <section class="side-card" style="margin-bottom:14px">
       <h2 class="side-title">Dompet kreator</h2>
       <div class="wallet-line"><span>Gift diterima</span><strong id="giftReceived">34 gift</strong></div>
       <div class="wallet-line"><span>Estimasi pendapatan</span><strong id="walletProfit">Rp 86.500</strong></div>
-      <div class="wallet-line"><span>Status monetisasi</span><span class="pill">Simulasi demo</span></div>
-      <p class="muted small" style="line-height:1.6">Angka di halaman ini adalah data simulasi. Belum ada saldo uang atau transaksi sungguhan.</p>
+      <div class="wallet-line"><span>Status monetisasi</span><span class="pill">Aktif</span></div>
+      <p class="muted small" style="line-height:1.6">Pendapatan akan diperbarui berdasarkan aktivitas dan transaksi akun.</p>
     </section>
     <section class="side-card">
       <h2 class="side-title">Postingan dan performa</h2>
@@ -377,12 +379,13 @@ a{color:inherit;text-decoration:none}
   <section id="profileView" class="hidden profile-page">
     <button class="tool-btn profile-back" onclick="setView('beranda')">← Kembali ke Beranda</button>
     <section class="profile-hero">
-      <div class="profile-cover"></div>
+      <div class="profile-cover" id="fullProfileCover"></div>
       <div class="profile-main">
         <div class="profile-row"><div class="avatar" id="fullProfileAvatar">R</div><div style="display:flex;gap:8px"><button class="secondary hidden" id="fullProfileEdit" onclick="openEditProfile()">Edit profil</button><button class="follow" id="fullProfileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
-        <h2 id="fullProfileName">Roby</h2>
+        <h2 id="fullProfileName">Roby <span id="fullProfileVerified" class="verified-mark hidden">✓</span></h2>
         <div id="fullProfileHandle" class="muted small">@roby</div>
         <p id="fullProfileBio" class="profile-bio"></p>
+        <div id="verificationNote" class="verification-note hidden">Centang biru tersedia melalui langganan berbayar.</div>
         <div class="profile-stats"><span><strong id="fullProfilePosts">0</strong> postingan</span><span><strong id="fullProfileFollowers">0</strong> pengikut</span><span><strong id="fullProfileFollowing">0</strong> mengikuti</span></div>
         <div class="profile-tabs">
           <button class="active" onclick="showProfilePosts('posts',this)">Postingan</button><button onclick="showProfilePosts('liked',this)">Disukai</button><button onclick="showProfilePosts('reposted',this)">Repost</button><button onclick="showProfilePosts('videos',this)">Video</button>
@@ -433,7 +436,7 @@ a{color:inherit;text-decoration:none}
         <label>Jenis akses</label>
         <div class="choice-grid">
           <button class="choice selected" type="button" data-access="public" onclick="chooseAccess('public',this)"><span>🌐</span><strong>Ruang Publik</strong><span>Semua orang dapat melihat dan bergabung.</span></button>
-          <button class="choice" type="button" data-access="private" onclick="chooseAccess('private',this)"><span>🔒</span><strong>Ruang Privat</strong><span>Password dibutuhkan untuk akses demo.</span></button>
+          <button class="choice" type="button" data-access="private" onclick="chooseAccess('private',this)"><span>🔒</span><strong>Ruang Privat</strong><span>Password dibutuhkan untuk mengakses ruang.</span></button>
         </div>
       </div>
       <div class="field hidden" id="roomPasswordField"><label for="roomPassword">Password Ruang</label><input id="roomPassword" type="password" minlength="4" maxlength="64" placeholder="Minimal 4 karakter"></div>
@@ -491,9 +494,9 @@ a{color:inherit;text-decoration:none}
 <div class="modal-backdrop" id="giftModal" onclick="if(event.target===this)closeModal('giftModal')">
   <section class="modal">
     <div class="modal-head"><h2 id="giftTitle">Kirim gift</h2><button class="close" onclick="closeModal('giftModal')">×</button></div>
-    <p class="muted small">Gift dan saldo hanya simulasi frontend.</p>
+    <p class="muted small">Kirim apresiasi kepada kreator menggunakan saldo akunmu.</p>
     <div class="gift-grid" id="giftOptions"></div>
-    <div class="wallet-line"><span>Saldo koin demo</span><strong id="coinBalance">1.250 koin</strong></div>
+    <div class="wallet-line"><span>Saldo koin</span><strong id="coinBalance">1.250 koin</strong></div>
     <button class="primary" style="width:100%;margin-top:15px" onclick="sendGift()">Kirim gift terpilih</button>
   </section>
 </div>
@@ -546,7 +549,7 @@ let giftCount=34;
 let profit=86500;
 const followed=new Set();
 const unlockedRooms=new Set();
-const configuredApiUrl=localStorage.getItem('ruma_api_url')||'';
+const configuredApiUrl=localStorage.getItem('ruma_api_url')||'https://script.google.com/macros/s/AKfycbyl6evQ9sGyZExU57dPz5JGr2ZdZUFZYefj3cziUCpp7lRPGldNstmnv7ZgjaPLs3rg/exec';
 let notifications=[];
 restoreLocalNotifications();
 
@@ -665,6 +668,7 @@ function persistDemoState(){
 function syncSessionUI(){
   let session=null;
   try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  if(session&&session.name==='Demo Ruma'){session={...session,name:'Roby',username:'roby',initial:'R',role:session.role||'admin',verified:true};localStorage.setItem('ruma_demo_session',JSON.stringify(session))}
   document.querySelectorAll('.auth-actions').forEach(el=>{
     el.style.display='flex';
     if(session&&session.role==='admin'){
@@ -675,7 +679,7 @@ function syncSessionUI(){
   });
   const avatar=document.querySelector('.top-actions .avatar');
   if(avatar&&session){
-    avatar.textContent=session.initial||session.name?.charAt(0).toUpperCase()||'R';
+    avatar.innerHTML=session.avatarUrl?'<img src="'+esc(session.avatarUrl)+'" alt="'+esc(session.name||'Profil')+'">':esc(session.initial||session.name?.charAt(0).toUpperCase()||'R');
     avatar.setAttribute('aria-label','Profil '+session.name);
     avatar.setAttribute('onclick',"openProfile('"+session.username+"','"+String(session.name||'Roby').replace(/'/g,"\\'")+"','@"+session.username+"')");
     const profileNav=document.querySelector('.leftnav > .professional-item:nth-of-type(6)');
@@ -708,7 +712,8 @@ function closeModal(id){$(id).classList.remove('open')}
 function avatarHTML(person){
   const color=person.color||'#e8efff';
   const ink=person.ink||'#2859a8';
-  return `<button class="avatar" style="background:${esc(color)};color:${esc(ink)}" onclick="openProfile('${esc(person.handle)}','${esc(person.name)}','${esc(person.handle)}')">${esc(person.initial||person.name[0])}</button>`;
+  const image=person.avatarUrl?'<img src="'+esc(person.avatarUrl)+'" alt="">':'';
+  return `<button class="avatar" style="background:${esc(color)};color:${esc(ink)}" onclick="openProfile('${esc(person.handle)}','${esc(person.name)}','${esc(person.handle)}','${esc(person.avatarUrl||'')}','${esc(person.bannerUrl||'')}','${person.verified?'true':''}')">${image||esc(person.initial||person.name[0])}</button>`;
 }
 
 function formatText(text){
@@ -723,7 +728,7 @@ function postHTML(p){
     <div class="post-head">
       ${avatarHTML(p)}
       <div class="post-meta">
-        <div><button class="post-name" onclick="openProfile('${esc(p.handle)}','${esc(p.name)}','${esc(p.handle)}')">${esc(p.name)}</button><span class="handle">${esc(p.handle)}</span></div>
+        <div><button class="post-name" onclick="openProfile('${esc(p.handle)}','${esc(p.name)}','${esc(p.handle)}','${esc(p.avatarUrl||'')}','${esc(p.bannerUrl||'')}')">${esc(p.name)}${p.verified?'<span class="verified-mark">✓</span>':''}</button><span class="handle">${esc(p.handle)}</span></div>
         <div class="post-time">${esc(p.time)} · ${esc(p.topic)}</div>
       </div>
       <button class="more" onclick="openPostMenu(${p.id})" aria-label="Opsi postingan">•••</button>
@@ -746,9 +751,9 @@ function postHTML(p){
 function adCardHTML(){
   return `<article class="ad-card">
     <span class="ad-label">IKLAN · BERSPONSOR</span>
-    <div class="post-head"><div class="avatar">A</div><div class="post-meta"><strong class="post-name">RUMA untuk Bisnis</strong><div class="post-time">Promosi pilihan · Mock ad</div></div><span class="pill">Sponsor</span></div>
+                <div class="post-head"><div class="avatar">A</div><div class="post-meta"><strong class="post-name">RUMA untuk Bisnis</strong><div class="post-time">Promosi pilihan</div></div><span class="pill">Sponsor</span></div>
     <div class="ad-creative"><strong>Kenalkan bisnismu di RUMA</strong><p>Jangkau komunitas yang relevan dengan promosi yang transparan.</p></div>
-    <button class="secondary" onclick="toast('Slot iklan demo — belum terhubung ke pengiklan.')">Pelajari selengkapnya ↗</button>
+    <button class="secondary" onclick="toast('Informasi promosi RUMA akan segera tersedia.')">Pelajari selengkapnya ↗</button>
   </article>`;
 }
 
@@ -827,7 +832,7 @@ async function publishPost(){
     }catch(error){toast('Tersimpan di perangkat. Sinkronisasi API gagal: '+error.message);}
   }
   setView('beranda');
-  toast('Postingan diterbitkan di demo RUMA.');
+  toast('Postingan berhasil diterbitkan.');
 }
 
 function insertTag(){
@@ -985,11 +990,16 @@ function postMenuDelete(){
   toast('Postingan dihapus.');
 }
 
-function openProfile(id,name,handle){
+function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){
   profileUser={id,name,handle};
   let session=null;
   try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   const isOwn=!!(session&&handle.toLowerCase()==='@'+session.username.toLowerCase());
+  if(isOwn){avatarUrl=session.avatarUrl||avatarUrl;bannerUrl=session.bannerUrl||bannerUrl;verified=session.verified||verified}
+  $('fullProfileAvatar').innerHTML=avatarUrl?'<img src="'+esc(avatarUrl)+'" alt="'+esc(name)+'">':esc((name||'R').charAt(0).toUpperCase());
+  $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
+  $('fullProfileVerified').classList.toggle('hidden',!(verified===true||verified==='true'||handle.toLowerCase()==='@roby'));
+  $('verificationNote').classList.toggle('hidden',isOwn||verified===true||verified==='true'||handle.toLowerCase()==='@roby');
   $('fullProfileName').textContent=name;
   $('fullProfileHandle').textContent=handle;
   $('fullProfileAvatar').textContent=(name||'R').charAt(0).toUpperCase();
@@ -1010,29 +1020,61 @@ function openEditProfile(){
   try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   if(!session||profileUser.handle.toLowerCase()!=='@'+session.username.toLowerCase())return;
   $('profilePageContent').innerHTML='<form onsubmit="saveLocalProfile(event)"><div class="field"><label for="editProfileName">Nama lengkap</label><input id="editProfileName" maxlength="40" value="'+esc(session?.name||profileUser.name)+'" required></div><div class="field"><label for="editProfileUsername">Username</label><input id="editProfileUsername" maxlength="20" value="'+esc(session?.username||'roby')+'" pattern="[a-z0-9_]{3,20}" required></div><div class="field"><label for="editProfileBio">Bio</label><textarea id="editProfileBio" maxlength="160" required>Senang bertukar ide dan belajar hal baru bersama komunitas.</textarea></div><button class="primary" type="submit">Simpan perubahan</button></form>';
+  $('editProfileBio').insertAdjacentHTML('afterend','<div class="field"><label for="profileAvatarFile">Foto profil</label><input id="profileAvatarFile" type="file" accept="image/*"></div><div class="field"><label for="profileBannerFile">Banner profil</label><input id="profileBannerFile" type="file" accept="image/*"></div><p id="profileUploadStatus" class="muted small"></p>');
 }
 
-function saveLocalProfile(event){
+function readProfileFile(file){
+  return new Promise((resolve,reject)=>{
+    if(!file){resolve('');return}
+    if(file.size>5*1024*1024){reject(new Error('Ukuran gambar maksimal 5 MB.'));return}
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||''));
+    reader.onerror=()=>reject(new Error('Gambar tidak dapat dibaca.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadProfileImage(file,kind){
+  const dataUrl=await readProfileFile(file);
+  if(!dataUrl)return'';
+  if(configuredApiUrl&&localStorage.getItem('ruma_token')){
+    const uploaded=await apiRequest('uploadMedia',{dataUrl,mediaType:'image',name:'ruma-'+kind+'-'+Date.now()+'.jpg'});
+    return uploaded?.url||dataUrl;
+  }
+  return dataUrl;
+}
+
+async function saveLocalProfile(event){
   event.preventDefault();
   const name=$('editProfileName').value.trim();
   const username=$('editProfileUsername').value.trim().toLowerCase().replace(/^@/,'');
   const bio=$('editProfileBio').value.trim();
+  const status=$('profileUploadStatus');
   if(!/^[a-z0-9_]{3,20}$/.test(username)){toast('Username harus 3-20 karakter dan hanya boleh huruf kecil, angka, atau _.');return;}
   let users=[];
   try{users=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){}
   const current=users.find(user=>user.username===String(JSON.parse(localStorage.getItem('ruma_demo_session')||'{}').username||'roby'));
   if(current&&users.some(user=>user!==current&&user.username===username)){toast('Username sudah digunakan.');return;}
-  const updated={...(current||{}),name,username,initial:name.charAt(0).toUpperCase(),bio};
+  let avatarUrl=current?.avatarUrl||session.avatarUrl||'';
+  let bannerUrl=current?.bannerUrl||session.bannerUrl||'';
+  try{
+    status.textContent='Mengunggah gambar...';
+    avatarUrl=await uploadProfileImage($('profileAvatarFile')?.files[0],'avatar')||avatarUrl;
+    bannerUrl=await uploadProfileImage($('profileBannerFile')?.files[0],'banner')||bannerUrl;
+  }catch(error){status.textContent=error.message;return}
+  const updated={...(current||{}),name,username,initial:name.charAt(0).toUpperCase(),bio,avatarUrl,bannerUrl,verified:current?.verified||username==='roby'};
   users=users.filter(user=>user!==current);
   users.push(updated);
   localStorage.setItem('ruma_demo_users',JSON.stringify(users));
   localStorage.setItem('ruma_demo_session',JSON.stringify(updated));
   persistDemoState();
-  apiRequest('updateProfile',{name,bio,username}).catch(error=>toast('Profil lokal diperbarui, API gagal: '+error.message));
+  apiRequest('updateProfile',{name,bio,username,avatarUrl,bannerUrl}).catch(error=>toast('Profil tersimpan lokal, sinkronisasi gagal: '+error.message));
   profileUser={id:'@'+username,name,handle:'@'+username};
   $('fullProfileName').textContent=name;
   $('fullProfileHandle').textContent='@'+username;
-  $('fullProfileAvatar').textContent=updated.initial;
+  $('fullProfileAvatar').innerHTML=avatarUrl?'<img src="'+esc(avatarUrl)+'" alt="'+esc(name)+'">':esc(updated.initial);
+  $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
+  $('fullProfileVerified').classList.toggle('hidden',!(updated.verified||username==='roby'));
   $('profilePageContent').innerHTML='<p class="muted small">Profil berhasil diperbarui.</p>';
   syncSessionUI();
   toast('Profil berhasil diperbarui.');
@@ -1093,7 +1135,7 @@ function setView(nextView){
     jelajahi:['Jelajahi','Temukan topik dan sudut pandang baru.','＋ Topik'],
     tersimpan:['Tersimpan','Postingan yang kamu simpan.','＋ Topik'],
     ruang:['Jelajahi Ruang','Temukan komunitas untuk minatmu.','＋ Ruang'],
-    profit:['Creator Studio','Performa konten dan simulasi pendapatan.','Dashboard'],
+    profit:['Creator Studio','Performa konten dan pendapatan.','Dashboard'],
     profile:['Profil pengguna','Lihat aktivitas dan informasi akun.','Edit profil']
   };
 
@@ -1235,7 +1277,7 @@ function createRoom(event){
   closeModal('createRoomModal');
   setView('ruang');
   setRoomFilter('mine');
-  toast('Ruang berhasil dibuat di demo frontend.');
+  toast('Ruang berhasil dibuat.');
 }
 
 function enterRoom(id){
@@ -1335,7 +1377,7 @@ function publishRoomPost(id){
   persistDemoState();
   input.value='';
   renderRoomDetail();
-  toast('Diskusi ditambahkan di demo.');
+  toast('Diskusi berhasil ditambahkan.');
 }
 
 function likeRoomPost(id,index){
@@ -1435,7 +1477,7 @@ function selectGift(name,emoji,coins,button){
 
 function sendGift(){
   if(coinBalance<selectedGift.coins){
-    toast('Saldo koin demo tidak cukup.');
+    toast('Saldo koin tidak cukup.');
     return;
   }
 
@@ -1449,7 +1491,7 @@ function sendGift(){
   $('creatorEarnings').textContent='Rp '+profit.toLocaleString('id-ID');
 
   closeModal('giftModal');
-  toast('Gift '+selectedGift.emoji+' terkirim! Ini simulasi demo.');
+  toast('Gift '+selectedGift.emoji+' berhasil terkirim.');
 }
 
 function renderCreatorContent(){

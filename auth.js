@@ -20,8 +20,8 @@ function readUsers() {
   try { users=JSON.parse(localStorage.getItem('ruma_demo_users') || '[]'); }
   catch (_) {}
   const admin=users.find(user=>user.username==='roby');
-  if(!admin)users.unshift({name:'Roby',username:'roby',password:'tauhid12',initial:'R',role:'admin',createdAt:Date.now()});
-  else{admin.password='tauhid12';admin.role='admin';admin.name=admin.name||'Roby';admin.initial='R';}
+  if(!admin)users.unshift({name:'Roby',username:'roby',password:'tauhid12',initial:'R',role:'admin',verified:true,createdAt:Date.now()});
+  else{admin.password='tauhid12';admin.role='admin';admin.verified=true;admin.name=admin.name||'Roby';admin.initial='R';}
   writeUsers(users);
   return users;
 }
@@ -46,7 +46,7 @@ function updateMode(nextMode) {
   submitButton.textContent = register ? 'Buat akun' : 'Masuk';
   hint.textContent = register
     ? 'Sudah punya akun? Pilih tab Masuk untuk melanjutkan.'
-    : 'Belum punya akun? Pilih tab Daftar untuk membuat akun demo.';
+    : 'Belum punya akun? Pilih tab Daftar untuk membuat akun baru.';
   setMessage('');
 }
 
