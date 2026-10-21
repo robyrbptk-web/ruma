@@ -509,12 +509,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[ch]));
 
-const posts = [
-  {id:1,name:'Nadia Putri',handle:'@nadiaputri',initial:'N',color:'#fbe7e5',ink:'#9e4540',time:'12 menit lalu',topic:'Pendidikan',text:'Menurut kalian, apa keterampilan paling penting yang perlu dipelajari anak muda sekarang? #Pendidikan #PengembanganDiri',likes:24,comments:[{name:'Dimas',text:'Literasi digital juga penting!'}],reposts:3,liked:false,saved:false,reposted:false},
-  {id:2,name:'Dimas Pratama',handle:'@dimaspr',initial:'D',color:'#e2f4e9',ink:'#237449',time:'35 menit lalu',topic:'Teknologi',text:'Kalau mulai belajar pemrograman, lebih baik fokus satu skill atau langsung bikin proyek? #Teknologi #Startup',likes:18,comments:[],reposts:5,liked:false,saved:false,reposted:false},
-  {id:3,name:'Alya Rahma',handle:'@alyarahma',initial:'A',color:'#eee7ff',ink:'#6844aa',time:'1 jam lalu',topic:'Diskusi Publik',text:'Diskusi sehat bukan berarti semua orang harus setuju. #Diskusi #Opini',likes:41,comments:[],reposts:8,liked:false,saved:false,reposted:false},
-  {id:4,name:'Fajar Mahendra',handle:'@fajarmahendra',initial:'F',color:'#fff0d8',ink:'#9a651c',time:'2 jam lalu',topic:'Karier',text:'Portofolio proyek kecil bisa menjadi bahan obrolan yang bagus saat wawancara kerja. #Karier #Kerja',likes:12,comments:[],reposts:2,liked:false,saved:false,reposted:false}
-];
+const posts = [];
 
 const reelData = [
   {user:'Alya Rahma',handle:'@alyarahma',initial:'A',emoji:'🌅',caption:'Mulai hari dengan satu langkah kecil menuju tujuanmu. Apa targetmu hari ini? #Motivasi #Rutinitas',audio:'♫ Original audio · Alya',likes:12800,liked:false,saved:false},
@@ -652,10 +647,28 @@ function restoreDemoState(){
     const savedPosts=JSON.parse(localStorage.getItem('ruma_demo_posts')||'null');
     const savedRooms=JSON.parse(localStorage.getItem('ruma_demo_rooms')||'null');
     const savedReels=JSON.parse(localStorage.getItem('ruma_demo_reels')||'null');
-    if(Array.isArray(savedPosts)){posts.splice(0,posts.length,...savedPosts)}
+    const demoHandles=new Set(['@nadiaputri','@dimaspr','@alyarahma','@fajarmahendra']);
+    if(Array.isArray(savedPosts)){posts.splice(0,posts.length,...savedPosts.filter(post=>!demoHandles.has(String(post.handle||'').toLowerCase())))}
     if(Array.isArray(savedRooms)){rooms.splice(0,rooms.length,...savedRooms)}
     if(Array.isArray(savedReels)){reelData.splice(0,reelData.length,...savedReels)}
   }catch(_){ }
+}
+
+function remotePost(item){
+  const createdAt=Number(item.createdAt||Date.now());
+  return {...item,id:item.id||createdAt,time:item.time||new Date(createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'short'}),comments:Array.isArray(item.comments)?item.comments:[],likes:Number(item.likes||0),reposts:Number(item.reposts||0),liked:!!item.liked,saved:!!item.saved,reposted:!!item.reposted}
+}
+
+async function loadRemoteFeed(){
+  const token=localStorage.getItem('ruma_token')||'';
+  if(!token||token.indexOf('LOCAL_')===0)return;
+  try{
+    const data=await apiRequest('feed',{sort:sort==='terbaru'?'terbaru':'rekomendasi'});
+    if(data&&Array.isArray(data.items)){
+      posts.splice(0,posts.length,...data.items.map(remotePost));
+      renderFeed();
+    }
+  }catch(error){toast('Postingan belum dapat dimuat: '+error.message)}
 }
 
 function persistDemoState(){
@@ -1120,7 +1133,10 @@ async function saveLocalProfile(event){
   localStorage.setItem('ruma_demo_session',JSON.stringify(updated));
   localStorage.setItem('ruma_user',JSON.stringify(updated));
   persistDemoState();
-  apiRequest('updateProfile',{name,bio,username,avatarUrl,bannerUrl}).catch(error=>toast('Profil tersimpan lokal, sinkronisasi gagal: '+error.message));
+  try{
+    const remote=await apiRequest('updateProfile',{name,bio,username,avatarUrl,bannerUrl});
+    if(remote?.username){updated.username=remote.username;updated.name=remote.name||updated.name;updated.bio=remote.bio||updated.bio;updated.avatarUrl=remote.avatarUrl||updated.avatarUrl;updated.bannerUrl=remote.bannerUrl||updated.bannerUrl;localStorage.setItem('ruma_demo_session',JSON.stringify(updated));localStorage.setItem('ruma_user',JSON.stringify(updated));}
+  }catch(error){status.textContent='Tersimpan di perangkat, tetapi sinkronisasi server gagal: '+error.message;toast('Profil belum tersinkron ke server.');return}
   profileUser={id:'@'+username,name,handle:'@'+username};
   $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
   $('fullProfileHandle').textContent='@'+username;
@@ -1600,6 +1616,7 @@ document.addEventListener('keydown',event=>{
 syncSessionUI();
 refreshNotifications();
 renderFeed();
+loadRemoteFeed();
 renderRooms();
 renderReels();
 </script>
