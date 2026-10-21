@@ -38,12 +38,21 @@ a{color:inherit;text-decoration:none}
 .search input:focus{border-color:#cbdcff;background:#fff}
 .search-icon{position:absolute;left:14px;top:11px;color:#8b9098}
 .top-actions{display:flex;align-items:center;gap:10px}
+.auth-actions{display:flex;align-items:center;gap:8px}
+.auth-link{border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:750;padding:9px 10px;border-radius:10px}
+.auth-link:hover{background:var(--soft);color:var(--ink)}
+.auth-link.primary-link{background:var(--ink);color:#fff}
 .icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#fff}
 .avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e8efff;color:#2859a8;font-size:13px;font-weight:800;flex-shrink:0;border:0}
 .layout{display:grid;grid-template-columns:200px minmax(0,650px) 270px;gap:24px;padding:24px}
 .leftnav{position:sticky;top:92px;align-self:start;display:flex;flex-direction:column;gap:5px}
-.navitem{display:flex;align-items:center;gap:12px;padding:12px 14px;border:0;border-radius:13px;background:transparent;color:#555b63;font-weight:650;text-align:left}
+.navitem{display:flex;align-items:center;gap:12px;padding:11px 13px;border:0;border-radius:13px;background:transparent;color:#555b63;font-weight:650;text-align:left;width:100%}
 .navitem:hover,.navitem.active{background:#f3f4f6;color:var(--ink)}
+.nav-icon{width:20px;height:20px;display:grid;place-items:center;flex:none;color:currentColor}
+.nav-icon svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav-divider{height:1px;background:var(--line);margin:12px 4px 7px}
+.nav-caption{padding:0 13px;color:#a0a4aa;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.leftnav > .navitem:not(.professional-item),.leftnav > .nav-compose:not(.professional-action),.leftnav > .secondary:not(.professional-action),.leftnav > .side-note{display:none}
 .nav-compose,.primary{border:0;border-radius:999px;background:var(--ink);color:white;padding:12px 17px;font-size:13px;font-weight:750}
 .nav-compose{margin-top:8px}
 .secondary{border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);padding:9px 14px;font-size:12px;font-weight:700}
@@ -194,6 +203,9 @@ a{color:inherit;text-decoration:none}
 .search input{font-size:12px;padding:10px 10px 10px 34px}
 .search-icon{left:11px;top:9px}
 .top-actions .icon-btn{display:none}
+.auth-actions{display:flex;gap:0}
+.auth-link{font-size:10px;padding:7px 5px}
+.auth-link.primary-link{display:none}
 .top-actions .avatar{width:33px;height:33px}
 .layout{display:block;padding:16px 12px 88px}
 .leftnav{display:none}
@@ -232,6 +244,10 @@ a{color:inherit;text-decoration:none}
     <input id="searchInput" type="search" placeholder="Cari Ruang, topik, atau #hashtag..." aria-label="Cari">
   </label>
   <div class="top-actions">
+    <div class="auth-actions" aria-label="Akun">
+      <a class="auth-link" href="./auth.html?mode=login">Masuk</a>
+      <a class="auth-link primary-link" href="./auth.html?mode=register">Daftar</a>
+    </div>
     <button class="icon-btn" onclick="toast('Notifikasi akan tersedia setelah backend terhubung.')" aria-label="Notifikasi">♧</button>
     <button class="avatar" onclick="openProfile('@roby','Roby','@roby')" aria-label="Profil saya">R</button>
   </div>
@@ -239,6 +255,17 @@ a{color:inherit;text-decoration:none}
 
 <div class="layout">
 <aside class="leftnav">
+  <div class="nav-caption">Menu utama</div>
+  <button class="navitem professional-item active" data-view="beranda" onclick="setView('beranda')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><span>Beranda</span></button>
+  <button class="navitem professional-item" data-view="jelajahi" onclick="setView('jelajahi')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></span><span>Jelajahi</span></button>
+  <button class="navitem professional-item" data-view="ruang" onclick="setView('ruang')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11h5"/></svg></span><span>Ruang</span></button>
+  <button class="navitem professional-item" data-view="profit" onclick="setView('profit')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-8M22 19V3"/></svg></span><span>Creator Studio</span></button>
+  <button class="navitem professional-item" data-view="tersimpan" onclick="setView('tersimpan')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-3.5L6 21z"/></svg></span><span>Tersimpan</span></button>
+  <div class="nav-divider"></div>
+  <div class="nav-caption">Akun</div>
+  <button class="navitem professional-item" onclick="openProfile('@roby','Roby','@roby')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><span>Profil saya</span></button>
+  <button class="nav-compose professional-action" onclick="focusComposer()">＋ Buat topik</button>
+  <button class="secondary professional-action" style="margin-top:8px" onclick="openCreateRoom()">＋ Buat Ruang</button>
   <button class="navitem active" data-view="beranda" onclick="setView('beranda')">⌂ &nbsp; Beranda</button>
   <button class="navitem" data-view="jelajahi" onclick="setView('jelajahi')">⌕ &nbsp; Jelajahi</button>
   <button class="navitem" data-view="ruang" onclick="setView('ruang')">▤ &nbsp; Ruang</button>
@@ -269,15 +296,18 @@ a{color:inherit;text-decoration:none}
     <section class="composer" id="composer">
       <div class="composer-top">
         <div class="avatar">R</div>
-        <textarea id="postInput" maxlength="700" placeholder="Apa yang ingin kamu diskusikan? Tambahkan #hashtag agar mudah ditemukan..." aria-label="Tulis postingan"></textarea>
-      </div>
+         <textarea id="postInput" maxlength="700" placeholder="Apa yang ingin kamu diskusikan? Tambahkan #hashtag agar mudah ditemukan..." aria-label="Tulis postingan"></textarea>
+       </div>
+       <input id="mediaInput" type="file" accept="image/*,video/*" hidden onchange="handleMedia(event)">
+       <div id="mediaPreview" class="hidden" style="margin:10px 0 0 50px"></div>
       <div class="muted small" style="margin:7px 0 0 50px">Gunakan #hashtag untuk menghubungkan percakapan serupa.</div>
       <div class="composer-bottom">
         <div>
           <button class="tool-btn" onclick="insertTag()">＃ Hashtag</button>
           <button class="tool-btn" onclick="toast('Unggah media akan dihubungkan ke backend nanti.')">▧ Media</button>
         </div>
-        <button class="primary" id="publishBtn" onclick="publishPost()" disabled>Terbitkan</button>
+         <button class="tool-btn" onclick="selectMedia()">Foto / video</button>
+         <button class="primary" id="publishBtn" onclick="publishPost()" disabled>Terbitkan</button>
       </div>
     </section>
 
@@ -400,7 +430,7 @@ a{color:inherit;text-decoration:none}
   <section class="modal">
     <div class="modal-head"><h2>Profil pengguna</h2><button class="close" onclick="closeModal('profileModal')">×</button></div>
     <div class="profile-cover"></div>
-    <div class="profile-row"><div class="avatar" id="profileAvatar">R</div><button class="follow" id="profileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div>
+    <div class="profile-row"><div class="avatar" id="profileAvatar">R</div><div style="display:flex;gap:8px"><button class="secondary hidden" id="profileEdit" onclick="openEditProfile()">Edit profil</button><button class="follow" id="profileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
     <h3 id="profileName">Roby</h3>
     <div id="profileHandle" class="muted small">@roby</div>
     <p id="profileBio" class="profile-bio"></p>
@@ -453,6 +483,8 @@ let rooms = [
   {id:'r4',name:'Kawan Startup',description:'Membangun produk, usaha dan mencari rekan kolaborasi.',category:'Bisnis',emoji:'🚀',access:'private',password:'ruma1234',verified:false,owner:'@roby',members:42,joined:false,posts:[]}
 ];
 
+restoreDemoState();
+
 let view='beranda';
 let sort='rekomendasi';
 let searchTerm='';
@@ -465,10 +497,62 @@ let accessChoice='public';
 let reelIndex=0;
 let selectedGift={name:'Mawar',emoji:'🌹',coins:10};
 let coinBalance=1250;
+let selectedMedia=null;
 let giftCount=34;
 let profit=86500;
 const followed=new Set();
 const unlockedRooms=new Set();
+const configuredApiUrl=localStorage.getItem('ruma_api_url')||'';
+
+async function apiRequest(action,payload={}){
+  if(!configuredApiUrl)return null;
+  const token=localStorage.getItem('ruma_token')||'';
+  const response=await fetch(configuredApiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,token,...payload})});
+  const result=await response.json();
+  if(!result.ok)throw new Error(result.message||'Permintaan API gagal.');
+  return result.data;
+}
+
+function restoreDemoState(){
+  try{
+    const savedPosts=JSON.parse(localStorage.getItem('ruma_demo_posts')||'null');
+    const savedRooms=JSON.parse(localStorage.getItem('ruma_demo_rooms')||'null');
+    const savedReels=JSON.parse(localStorage.getItem('ruma_demo_reels')||'null');
+    if(Array.isArray(savedPosts)){posts.splice(0,posts.length,...savedPosts)}
+    if(Array.isArray(savedRooms)){rooms.splice(0,rooms.length,...savedRooms)}
+    if(Array.isArray(savedReels)){reelData.splice(0,reelData.length,...savedReels)}
+  }catch(_){ }
+}
+
+function persistDemoState(){
+  try{
+    localStorage.setItem('ruma_demo_posts',JSON.stringify(posts));
+    localStorage.setItem('ruma_demo_rooms',JSON.stringify(rooms));
+    localStorage.setItem('ruma_demo_reels',JSON.stringify(reelData));
+  }catch(_){toast('Penyimpanan lokal penuh. Media besar sebaiknya diunggah ke Apps Script.');}
+}
+
+function syncSessionUI(){
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  document.querySelectorAll('.auth-actions').forEach(el=>{
+    el.style.display='flex';
+    if(session&&session.role==='admin'){
+      el.innerHTML='<a class="auth-link" href="./admin.html">Admin</a><a class="auth-link" href="./auth.html?mode=login">Akun</a>';
+    }
+  });
+  const avatar=document.querySelector('.top-actions .avatar');
+  if(avatar&&session){
+    avatar.textContent=session.initial||session.name?.charAt(0).toUpperCase()||'R';
+    avatar.setAttribute('aria-label','Profil '+session.name);
+    avatar.setAttribute('onclick',"openProfile('"+session.username+"','"+String(session.name||'Roby').replace(/'/g,"\\'")+"','@"+session.username+"')");
+    const profileNav=document.querySelector('.leftnav > .professional-item:nth-of-type(6)');
+    const mobileProfile=document.querySelector('.mobile-nav button:last-child');
+    const profileClick="openProfile('"+session.username+"','"+String(session.name||'Roby').replace(/'/g,"\\'")+"','@"+session.username+"')";
+    if(profileNav)profileNav.setAttribute('onclick',profileClick);
+    if(mobileProfile)mobileProfile.setAttribute('onclick',profileClick);
+  }
+}
 
 function toast(message){
   const t=$('toast');
@@ -494,6 +578,7 @@ function formatText(text){
 }
 
 function postHTML(p){
+  const media=p.mediaUrl?((String(p.mediaType||'').indexOf('video')===0?'<video controls preload="metadata" style="width:100%;max-height:420px;border-radius:12px;margin-top:12px" src="'+esc(p.mediaUrl)+'"></video>':'<img loading="lazy" style="width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-top:12px" src="'+esc(p.mediaUrl)+'" alt="Media postingan">')):'';
   return `<article class="post" id="post-${p.id}">
     <div class="post-head">
       ${avatarHTML(p)}
@@ -503,7 +588,7 @@ function postHTML(p){
       </div>
       <button class="more" onclick="toast('Opsi lanjutan akan tersedia setelah backend terhubung.')">•••</button>
     </div>
-    <div class="post-text">${formatText(p.text)}</div>
+    <div class="post-text">${formatText(p.text)}</div>${media}
     <div class="post-actions">
       <button class="action ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">♡ ${p.likes}</button>
       <button class="action" onclick="toggleComments(${p.id})">▢ ${p.comments.length||'Komentar'}</button>
@@ -572,20 +657,35 @@ function renderPeople(){
   ).join('');
 }
 
-function publishPost(){
+async function publishPost(){
   const input=$('postInput');
   const text=input.value.trim();
   if(!text)return;
+  const mediaToUpload=selectedMedia;
 
   const tags=text.match(/#([\p{L}\d_]+)/gu)||[];
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  const authorName=session?.name||'Roby';
+  const authorUsername=session?.username||'roby';
   posts.unshift({
-    id:Date.now(),name:'Roby',handle:'@roby',initial:'R',
+    id:Date.now(),name:authorName,handle:'@'+authorUsername,initial:session?.initial||authorName.charAt(0).toUpperCase(),
     color:'#e8efff',ink:'#2859a8',time:'Baru saja',
     topic:tags.length?tags[0].slice(1):'Diskusi umum',
-    text,likes:0,comments:[],reposts:0,liked:false,saved:false,reposted:false
+    text,likes:0,comments:[],reposts:0,liked:false,saved:false,reposted:false,
+    mediaUrl:selectedMedia?.url||'',mediaType:selectedMedia?.type||'',mediaName:selectedMedia?.name||''
   });
 
   input.value='';
+  clearMedia();
+  persistDemoState();
+  if(configuredApiUrl){
+    try{
+      let mediaUrl='';
+      if(mediaToUpload){const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});mediaUrl=uploaded.url;}
+      await apiRequest('createPost',{text,mediaUrl,mediaType:mediaToUpload?.type||'',mediaName:mediaToUpload?.name||''});
+    }catch(error){toast('Tersimpan di perangkat. Sinkronisasi API gagal: '+error.message);}
+  }
   setView('beranda');
   toast('Postingan diterbitkan di demo RUMA.');
 }
@@ -599,11 +699,34 @@ function insertTag(){
   $('publishBtn').disabled=!input.value.trim();
 }
 
+function selectMedia(){ $('mediaInput').click(); }
+
+function handleMedia(event){
+  const file=event.target.files&&event.target.files[0];
+  if(!file)return;
+  if(file.size>8*1024*1024){toast('Ukuran media maksimal 8 MB.');event.target.value='';return;}
+  if(!/^image\//.test(file.type)&&!/^video\//.test(file.type)){toast('Pilih foto atau video yang valid.');event.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    selectedMedia={url:reader.result,type:file.type,name:file.name};
+    const preview=$('mediaPreview');
+    preview.classList.remove('hidden');
+    preview.innerHTML=(file.type.indexOf('video')===0?'<video controls style="max-width:100%;max-height:180px;border-radius:10px"></video>':'<img style="max-width:100%;max-height:180px;border-radius:10px" alt="Pratinjau media">')+'<button type="button" class="tool-btn" onclick="clearMedia()">Hapus media</button>';
+    preview.querySelector('img,video').src=reader.result;
+    toast('Media siap dilampirkan.');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearMedia(){selectedMedia=null;$('mediaInput').value='';$('mediaPreview').innerHTML='';$('mediaPreview').classList.add('hidden');}
+
 function toggleLike(id){
   const p=posts.find(x=>x.id===id);
   if(!p)return;
   p.liked=!p.liked;
   p.likes+=p.liked?1:-1;
+  persistDemoState();
+  apiRequest('toggleLike',{id}).catch(()=>{});
   renderFeed();
 }
 
@@ -611,6 +734,8 @@ function toggleSave(id){
   const p=posts.find(x=>x.id===id);
   if(!p)return;
   p.saved=!p.saved;
+  persistDemoState();
+  apiRequest('toggleSave',{id}).catch(()=>{});
   renderFeed();
   toast(p.saved?'Postingan disimpan.':'Postingan dihapus dari simpanan.');
 }
@@ -620,6 +745,8 @@ function toggleRepost(id){
   if(!p)return;
   p.reposted=!p.reposted;
   p.reposts+=p.reposted?1:-1;
+  persistDemoState();
+  apiRequest('toggleRepost',{id}).catch(()=>{});
   renderFeed();
   toast(p.reposted?'Postingan direpost.':'Repost dibatalkan.');
 }
@@ -638,6 +765,8 @@ function addComment(event,id){
   const text=input.value.trim();
   if(!p||!text)return;
   p.comments.push({name:'Roby',text});
+  persistDemoState();
+  apiRequest('addComment',{postId:id,text}).catch(()=>{});
   p.commentsOpen=true;
   renderFeed();
   toast('Komentar ditambahkan.');
@@ -657,13 +786,23 @@ function sharePost(id){
 function filterTag(tag){
   $('searchInput').value='#'+tag;
   searchTerm='#'+tag;
-  if(!['beranda','jelajahi'].includes(view))setView('jelajahi');
+  if(view!=='jelajahi'){
+    setView('jelajahi');
+    $('searchInput').value='#'+tag;
+    searchTerm='#'+tag;
+  }
+  $('pageTitle').textContent='Hasil pencarian';
+  $('pageSubtitle').textContent='Hasil untuk “#'+tag+'”';
+  document.querySelectorAll('[data-view]').forEach(button=>
+    button.classList.toggle('active',button.dataset.view==='jelajahi')
+  );
   renderFeed();
 }
 
 function toggleFollow(handle){
   if(followed.has(handle))followed.delete(handle);
   else followed.add(handle);
+  apiRequest('toggleFollow',{handle}).catch(()=>{});
   renderPeople();
   if(profileUser&&profileUser.handle===handle)updateProfileFollow();
   toast(followed.has(handle)?'Kamu mulai mengikuti akun ini.':'Kamu berhenti mengikuti akun ini.');
@@ -671,17 +810,54 @@ function toggleFollow(handle){
 
 function openProfile(id,name,handle){
   profileUser={id,name,handle};
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  const isOwn=!!(session&&handle.toLowerCase()==='@'+session.username.toLowerCase());
   $('profileName').textContent=name;
   $('profileHandle').textContent=handle;
   $('profileAvatar').textContent=(name||'R').charAt(0).toUpperCase();
   $('profilePosts').textContent=posts.filter(p=>p.handle===handle).length;
-  $('profileBio').textContent=handle==='@roby'
+  $('profileBio').textContent=isOwn
     ?'Senang bertukar ide dan belajar hal baru bersama komunitas.'
     :'Anggota RUMA yang senang berbagi cerita dan berdiskusi.';
-  $('profileFollow').style.display=handle==='@roby'?'none':'inline-block';
+  $('profileFollow').style.display=isOwn?'none':'inline-block';
+  $('profileEdit').classList.toggle('hidden',!isOwn);
   updateProfileFollow();
   showProfilePosts('posts',document.querySelector('.profile-tabs button'));
   openModal('profileModal');
+}
+
+function openEditProfile(){
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
+  if(!session||profileUser.handle.toLowerCase()!=='@'+session.username.toLowerCase())return;
+  $('profileContent').innerHTML='<form onsubmit="saveLocalProfile(event)"><div class="field"><label for="editProfileName">Nama lengkap</label><input id="editProfileName" maxlength="40" value="'+esc(session?.name||profileUser.name)+'" required></div><div class="field"><label for="editProfileUsername">Username</label><input id="editProfileUsername" maxlength="20" value="'+esc(session?.username||'roby')+'" pattern="[a-z0-9_]{3,20}" required></div><div class="field"><label for="editProfileBio">Bio</label><textarea id="editProfileBio" maxlength="160" required>Senang bertukar ide dan belajar hal baru bersama komunitas.</textarea></div><button class="primary" type="submit">Simpan perubahan</button></form>';
+}
+
+function saveLocalProfile(event){
+  event.preventDefault();
+  const name=$('editProfileName').value.trim();
+  const username=$('editProfileUsername').value.trim().toLowerCase().replace(/^@/,'');
+  const bio=$('editProfileBio').value.trim();
+  if(!/^[a-z0-9_]{3,20}$/.test(username)){toast('Username harus 3-20 karakter dan hanya boleh huruf kecil, angka, atau _.');return;}
+  let users=[];
+  try{users=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){}
+  const current=users.find(user=>user.username===String(JSON.parse(localStorage.getItem('ruma_demo_session')||'{}').username||'roby'));
+  if(current&&users.some(user=>user!==current&&user.username===username)){toast('Username sudah digunakan.');return;}
+  const updated={...(current||{}),name,username,initial:name.charAt(0).toUpperCase(),bio};
+  users=users.filter(user=>user!==current);
+  users.push(updated);
+  localStorage.setItem('ruma_demo_users',JSON.stringify(users));
+  localStorage.setItem('ruma_demo_session',JSON.stringify(updated));
+  persistDemoState();
+  apiRequest('updateProfile',{name,bio,username}).catch(error=>toast('Profil lokal diperbarui, API gagal: '+error.message));
+  profileUser={id:'@'+username,name,handle:'@'+username};
+  $('profileName').textContent=name;
+  $('profileHandle').textContent='@'+username;
+  $('profileAvatar').textContent=updated.initial;
+  $('profileContent').innerHTML='<p class="muted small">Profil berhasil diperbarui.</p>';
+  syncSessionUI();
+  toast('Profil berhasil diperbarui.');
 }
 
 function updateProfileFollow(){
@@ -790,7 +966,7 @@ function setSort(nextSort){
 }
 
 function focusComposer(){
-  if(view==='ruang')setView('beranda');
+  if(!['beranda','jelajahi'].includes(view))setView('beranda');
   if(sort==='video')setSort('rekomendasi');
   $('composer').scrollIntoView({behavior:'smooth',block:'center'});
   setTimeout(()=>$('postInput').focus(),200);
@@ -870,6 +1046,8 @@ function createRoom(event){
     password:accessChoice==='private'?password:'',
     verified:false,owner:'@roby',members:1,joined:true,posts:[]
   });
+  apiRequest('createRoom',{name,description,category:$('roomCategory').value,emoji:$('roomEmoji').value,access:accessChoice,password:accessChoice==='private'?password:''}).catch(()=>{});
+  persistDemoState();
 
   closeModal('createRoomModal');
   setView('ruang');
@@ -955,6 +1133,8 @@ function toggleJoinRoom(id){
 
   r.joined=!r.joined;
   r.members=Math.max(0,r.members+(r.joined?1:-1));
+  apiRequest(r.joined?'joinRoom':'leaveRoom',{id}).catch(()=>{});
+  persistDemoState();
   renderRoomDetail();
   toast(r.joined?'Kamu bergabung ke Ruang.':'Kamu keluar dari Ruang.');
 }
@@ -968,6 +1148,8 @@ function publishRoomPost(id){
   if(!text){toast('Tulis pesan terlebih dahulu.');return;}
 
   r.posts.unshift({name:'Roby',handle:'@roby',text,time:'Baru saja',likes:0});
+  apiRequest('createRoomPost',{roomId:id,text}).catch(()=>{});
+  persistDemoState();
   input.value='';
   renderRoomDetail();
   toast('Diskusi ditambahkan di demo.');
@@ -977,6 +1159,8 @@ function likeRoomPost(id,index){
   const r=rooms.find(x=>x.id===id);
   if(!r||!r.posts[index])return;
   r.posts[index].likes=(r.posts[index].likes||0)+1;
+  apiRequest('likeRoomPost',{id:r.posts[index].id}).catch(()=>{});
+  persistDemoState();
   renderRoomDetail();
 }
 
@@ -1025,12 +1209,16 @@ function toggleReelLike(){
   const r=reelData[reelIndex];
   r.liked=!r.liked;
   r.likes+=r.liked?1:-1;
+  apiRequest('toggleReelLike',{id:r.id}).catch(()=>{});
+  persistDemoState();
   renderReels();
 }
 
 function toggleReelSave(){
   const r=reelData[reelIndex];
   r.saved=!r.saved;
+  apiRequest('toggleReelSave',{id:r.id}).catch(()=>{});
+  persistDemoState();
   toast(r.saved?'Video disimpan.':'Video dihapus dari simpanan.');
   renderReels();
 }
@@ -1108,6 +1296,9 @@ $('searchInput').addEventListener('input',event=>{
       $('pageTitle').textContent=view==='jelajahi'?'Jelajahi':'Beranda';
       $('pageSubtitle').textContent='Temukan percakapan yang menarik hari ini.';
     }
+    document.querySelectorAll('[data-view]').forEach(button=>
+      button.classList.toggle('active',button.dataset.view===view)
+    );
     renderFeed();
   }
 });
@@ -1128,6 +1319,7 @@ document.addEventListener('keydown',event=>{
   }
 });
 
+syncSessionUI();
 renderFeed();
 renderRooms();
 renderReels();
