@@ -201,33 +201,39 @@ a{color:inherit;text-decoration:none}
 .rightbar{display:none}
 }
 @media(max-width:680px){
-.topbar{height:60px;padding:0 12px;gap:9px}
+.app{width:100%;overflow:hidden;background:#f7f8fa}.topbar{height:62px;padding:0 10px;gap:7px;background:#fffffff7;box-shadow:0 3px 15px #1d2a3d0d}
 .brand{min-width:0}
-.brand img{width:76px;height:39px}
+.brand img{width:70px;height:37px}
 .search{flex:1;max-width:none}
-.search input{font-size:12px;padding:10px 10px 10px 34px}
+.search input{font-size:12px;padding:10px 10px 10px 34px;height:40px}
 .search-icon{left:11px;top:9px}
 .top-actions .icon-btn{display:none}.top-actions .notification-button{display:grid;place-items:center;width:34px;height:34px}
 .auth-actions{display:flex;gap:0}
 .auth-link{font-size:10px;padding:7px 5px}
 .auth-link.primary-link{display:none}
 .top-actions .avatar{width:33px;height:33px}
-.layout{display:block;padding:16px 12px 88px}
+.layout{display:block;padding:16px 10px calc(94px + env(safe-area-inset-bottom));min-height:calc(100dvh - 62px)}
 .leftnav{display:none}
-.page-head{margin-bottom:15px}
+.page-head{margin:2px 2px 15px;align-items:center}
 .page-head h1{font-size:23px}
 .subline{font-size:11px}
-.feed-tabs{gap:20px;margin-bottom:14px}
-.composer,.post,.room-card{padding:13px;border-radius:16px;margin-bottom:12px}
+.feed-tabs{gap:4px;margin:0 -2px 12px;padding:4px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 4px 13px #1d2a3d08}
+.feed-tab{flex:1;padding:10px 5px!important;text-align:center;font-size:11px!important}
+.composer,.post,.room-card{padding:15px;border-radius:17px;margin-bottom:12px;border-color:#e4e7ec;box-shadow:0 5px 16px #1d2a3d08}
+.composer-top textarea{min-height:72px;font-size:13px}
+.composer-bottom{align-items:center;gap:6px}
+.composer-bottom>div{display:flex;gap:3px;min-width:0}
+.tool-btn{padding:9px 8px;font-size:11px}
+.primary{min-height:40px;padding:10px 13px}
+.post-head{gap:9px}.post-meta{min-width:0}.post-meta>div:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.post-name{font-size:12px}.handle{font-size:10px}.post-time{font-size:10px}.more{width:38px;height:38px;font-size:15px;flex:none}
 .post-text{font-size:13px;line-height:1.7}
-.post-actions{margin:0 -5px}
-.action{gap:3px;padding:8px 4px;font-size:10px}
-.mobile-nav{display:flex;position:fixed;z-index:30;bottom:0;left:0;right:0;background:#fffffff2;backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:7px 4px calc(7px + env(safe-area-inset-bottom));justify-content:space-around}
-.mobile-nav button{border:0;background:transparent;color:#777d86;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 9px;font-size:10px;font-weight:650}
-.mobile-nav button.active{color:var(--ink)}
-.mobile-nav .mobile-add{background:var(--ink);color:#fff;border-radius:12px;padding:8px 11px}
-.toast{bottom:80px}
-.modal{padding:17px;border-radius:20px}
+.post-actions{margin:0 -5px;justify-content:space-between;border-top:1px solid #f0f1f3;padding-top:5px}.action{gap:3px;padding:9px 5px;font-size:10px;min-height:38px}
+.mobile-nav{display:flex;position:fixed;z-index:30;bottom:0;left:0;right:0;background:#fffffff5;backdrop-filter:blur(18px);border-top:1px solid #dfe3e9;padding:7px 5px calc(8px + env(safe-area-inset-bottom));justify-content:space-around;box-shadow:0 -6px 20px #1d2a3d12}
+.mobile-nav button{border:0;background:transparent;color:#777d86;display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:44px;padding:5px 3px;font-size:10px;font-weight:700}
+.mobile-nav button:first-letter{font-size:18px}.mobile-nav button.active{color:var(--ink)}.mobile-nav button.active span{font-weight:850}.mobile-nav .mobile-add{flex:0 0 48px;background:var(--ink);color:#fff;border-radius:15px;padding:7px 9px;margin:0 4px;min-height:44px}
+.toast{bottom:calc(82px + env(safe-area-inset-bottom));max-width:calc(100vw - 30px);text-align:center}
+.modal-backdrop{align-items:flex-end;padding:0}.modal{width:100%;max-height:88dvh;padding:18px 15px calc(18px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;box-shadow:0 -12px 35px #10111425}.notification-modal{width:100%}
+.profile-page .profile-main{padding:0 15px 18px}.profile-page .profile-cover{height:122px}.profile-page .profile-row .avatar{width:68px;height:68px}.profile-page h2{font-size:23px}.profile-page .profile-tabs{margin-left:-15px;margin-right:-15px;padding:0 10px}.profile-page .profile-content{padding:14px}
 .creator-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .reels-view{margin:0 -12px;border-radius:0}
 .reels-stage{padding:0}
@@ -268,7 +274,7 @@ a{color:inherit;text-decoration:none}
   <button class="navitem professional-item" data-view="tersimpan" onclick="setView('tersimpan')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-3.5L6 21z"/></svg></span><span>Tersimpan</span></button>
   <div class="nav-divider"></div>
   <div class="nav-caption">Akun</div>
-  <button class="navitem professional-item" onclick="openProfile('@roby','Roby','@roby')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><span>Profil saya</span></button>
+  <button class="navitem professional-item" data-view="profile" onclick="openProfile('@roby','Roby','@roby')"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><span>Profil saya</span></button>
   <button class="nav-compose professional-action" onclick="focusComposer()">＋ Buat topik</button>
   <button class="secondary professional-action" style="margin-top:8px" onclick="openCreateRoom()">＋ Buat Ruang</button>
   <button class="navitem active" data-view="beranda" onclick="setView('beranda')">⌂ &nbsp; Beranda</button>
@@ -410,7 +416,7 @@ a{color:inherit;text-decoration:none}
   <button data-view="jelajahi" onclick="setView('jelajahi')">⌕<span>Jelajahi</span></button>
   <button class="mobile-add" onclick="openCreateRoom()">＋<span>Ruang</span></button>
   <button data-view="tersimpan" onclick="setView('tersimpan')">▣<span>Simpan</span></button>
-  <button onclick="openProfile('@roby','Roby','@roby')">♙<span>Profil</span></button>
+  <button data-view="profile" onclick="openProfile('@roby','Roby','@roby')">♙<span>Profil</span></button>
 </nav>
 </div>
 
