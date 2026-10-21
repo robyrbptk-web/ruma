@@ -1169,8 +1169,8 @@ async function loadProfileDetails(handle){
     if(!person||!profileUser||profileUser.handle!==handle)return;
     profileUser={id:person.id,name:person.name,handle:'@'+person.username};
     const currentSession=getCurrentSession();
-    const resolvedAvatar=person.avatarUrl||currentSession?.avatarUrl||'';
-    const resolvedBanner=person.bannerUrl||currentSession?.bannerUrl||'';
+    const resolvedAvatar=person.avatarUrl||'';
+    const resolvedBanner=person.bannerUrl||'';
     $('fullProfileAvatar').innerHTML=avatarMarkup(resolvedAvatar,person.name,person.name||'R');
     $('fullProfileCover').style.backgroundImage=resolvedBanner?'url("'+String(resolvedBanner).replace(/"/g,'&quot;')+'")':'';
     $('fullProfileName').innerHTML=esc(person.name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
