@@ -39,6 +39,10 @@ function localApi(action,payload){
 function loginView(message=''){
   app.className='login panel';
   app.innerHTML='<h1>Masuk sebagai admin</h1><p>Gunakan akun admin RUMA untuk membuka panel pengelolaan.</p><form id="loginForm"><div class="field"><label>Username</label><input id="adminUsername" value="roby" autocomplete="username" required></div><div class="field"><label>Password</label><input id="adminPassword" type="password" autocomplete="current-password" required></div><div class="error">'+esc(message)+'</div><button class="primary" style="width:100%">Masuk</button></form>';
+  const links=document.createElement('p');
+  links.className='login-links';
+  links.innerHTML='<a href="./auth.html?mode=login">Login pengguna</a><span>·</span><a href="./auth.html?mode=register">Daftar akun</a>';
+  app.appendChild(links);
   document.getElementById('loginForm').addEventListener('submit',async event=>{
     event.preventDefault();
     try{const username=document.getElementById('adminUsername').value.trim().toLowerCase().replace(/^@/,'');const password=document.getElementById('adminPassword').value;const data=await api('login',{username,password});token=data.token;localStorage.setItem('ruma_token',token);localStorage.setItem('ruma_user',JSON.stringify(data.user));localStorage.setItem('ruma_admin_session','1');await loadDashboard()}catch(error){

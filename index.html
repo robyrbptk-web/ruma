@@ -40,6 +40,7 @@ a{color:inherit;text-decoration:none}
 .top-actions{display:flex;align-items:center;gap:10px}
 .auth-actions{display:flex;align-items:center;gap:8px}
 .auth-link{border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:750;padding:9px 10px;border-radius:10px}
+.auth-button{cursor:pointer;font-family:inherit}
 .auth-link:hover{background:var(--soft);color:var(--ink)}
 .auth-link.primary-link{background:var(--ink);color:#fff}
 .icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#fff}
@@ -537,7 +538,9 @@ function syncSessionUI(){
   document.querySelectorAll('.auth-actions').forEach(el=>{
     el.style.display='flex';
     if(session&&session.role==='admin'){
-      el.innerHTML='<a class="auth-link" href="./admin.html">Admin</a><a class="auth-link" href="./auth.html?mode=login">Akun</a>';
+      el.innerHTML='<a class="auth-link" href="./admin.html">Dashboard</a><a class="auth-link" href="./auth.html?mode=login">Akun</a><button class="auth-link auth-button" onclick="logoutDemo()">Keluar</button>';
+    }else if(session){
+      el.innerHTML='<a class="auth-link" href="./auth.html?mode=login">Akun</a><button class="auth-link auth-button" onclick="logoutDemo()">Keluar</button>';
     }
   });
   const avatar=document.querySelector('.top-actions .avatar');
@@ -551,6 +554,14 @@ function syncSessionUI(){
     if(profileNav)profileNav.setAttribute('onclick',profileClick);
     if(mobileProfile)mobileProfile.setAttribute('onclick',profileClick);
   }
+}
+
+function logoutDemo(){
+  localStorage.removeItem('ruma_demo_session');
+  localStorage.removeItem('ruma_token');
+  localStorage.removeItem('ruma_user');
+  toast('Kamu sudah keluar dari RUMA.');
+  setTimeout(()=>location.reload(),350);
 }
 
 function toast(message){
