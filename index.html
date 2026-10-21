@@ -381,7 +381,7 @@ a{color:inherit;text-decoration:none}
     <section class="profile-hero">
       <div class="profile-cover" id="fullProfileCover"></div>
       <div class="profile-main">
-        <div class="profile-row"><div class="avatar" id="fullProfileAvatar">R</div><div style="display:flex;gap:8px"><button class="secondary hidden" id="fullProfileEdit" onclick="openEditProfile()">Edit profil</button><button class="follow" id="fullProfileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
+        <div class="profile-row"><div class="avatar" id="fullProfileAvatar">R</div><div style="display:flex;gap:8px"><button type="button" class="secondary hidden" id="fullProfileEdit" onclick="editCurrentProfile()">Edit profil</button><button class="follow" id="fullProfileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
         <h2 id="fullProfileName">Roby <span id="fullProfileVerified" class="verified-mark hidden">✓</span></h2>
         <div id="fullProfileHandle" class="muted small">@roby</div>
         <p id="fullProfileBio" class="profile-bio"></p>
@@ -461,7 +461,7 @@ a{color:inherit;text-decoration:none}
   <section class="modal">
     <div class="modal-head"><h2>Profil pengguna</h2><button class="close" onclick="closeModal('profileModal')">×</button></div>
     <div class="profile-cover"></div>
-    <div class="profile-row"><div class="avatar" id="profileAvatar">R</div><div style="display:flex;gap:8px"><button class="secondary hidden" id="profileEdit" onclick="openEditProfile()">Edit profil</button><button class="follow" id="profileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
+    <div class="profile-row"><div class="avatar" id="profileAvatar">R</div><div style="display:flex;gap:8px"><button type="button" class="secondary hidden" id="profileEdit" onclick="editCurrentProfile()">Edit profil</button><button class="follow" id="profileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
     <h3 id="profileName">Roby</h3>
     <div id="profileHandle" class="muted small">@roby</div>
     <p id="profileBio" class="profile-bio"></p>
@@ -665,7 +665,10 @@ async function loadRemoteFeed(){
   try{
     const data=await apiRequest('feed',{sort:sort==='terbaru'?'terbaru':'rekomendasi'});
     if(data&&Array.isArray(data.items)){
-      posts.splice(0,posts.length,...data.items.map(remotePost));
+      const remoteItems=data.items.map(remotePost);
+      const remoteKeys=new Set(remoteItems.map(item=>String(item.handle||'').toLowerCase()+'|'+String(item.text||'')));
+      const localOnly=posts.filter(item=>!remoteKeys.has(String(item.handle||'').toLowerCase()+'|'+String(item.text||'')));
+      posts.splice(0,posts.length,...remoteItems,...localOnly);
       renderFeed();
     }
   }catch(error){toast('Postingan belum dapat dimuat: '+error.message)}
@@ -853,15 +856,18 @@ async function publishPost(){
   input.value='';
   clearMedia();
   persistDemoState();
-  if(configuredApiUrl){
-    try{
-      let mediaUrl='';
-      if(mediaToUpload){const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});mediaUrl=uploaded.url;}
-      await apiRequest('createPost',{text,mediaUrl,mediaType:mediaToUpload?.type||'',mediaName:mediaToUpload?.name||''});
-    }catch(error){toast('Tersimpan di perangkat. Sinkronisasi API gagal: '+error.message);}
-  }
+  const token=localStorage.getItem('ruma_token')||'';
   setView('beranda');
   toast('Postingan berhasil diterbitkan.');
+  if(configuredApiUrl&&token&&!token.startsWith('LOCAL_')){
+    (async()=>{
+      try{
+        let mediaUrl='';
+        if(mediaToUpload){const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});mediaUrl=uploaded?.url||'';}
+        await apiRequest('createPost',{text,mediaUrl,mediaType:mediaToUpload?.type||'',mediaName:mediaToUpload?.name||''});
+      }catch(error){toast('Postingan tersimpan di perangkat, sinkronisasi server gagal: '+error.message);}
+    })();
+  }
 }
 
 function insertTag(){
@@ -1084,6 +1090,19 @@ function openEditProfile(){
   $('editProfileBio').insertAdjacentHTML('afterend','<div class="field"><label for="profileAvatarFile">Foto profil</label><input id="profileAvatarFile" type="file" accept="image/*"></div><div class="field"><label for="profileBannerFile">Banner profil</label><input id="profileBannerFile" type="file" accept="image/*"></div><p id="profileUploadStatus" class="muted small"></p>');
 }
 
+function editCurrentProfile(){
+  const raw=localStorage.getItem('ruma_user');
+  if(!raw){location.href='./auth.html?mode=login';return}
+  let session=null;
+  try{session=JSON.parse(raw)}catch(_){session=null}
+  if(!session?.username){location.href='./auth.html?mode=login';return}
+  if(!profileUser||profileUser.handle.toLowerCase()!=='@'+session.username.toLowerCase()){
+    toast('Edit profil hanya tersedia untuk profil sendiri.');
+    return;
+  }
+  openEditProfile();
+}
+
 function readProfileFile(file){
   return new Promise((resolve,reject)=>{
     if(!file){resolve('');return}
@@ -1098,7 +1117,8 @@ function readProfileFile(file){
 async function uploadProfileImage(file,kind){
   const dataUrl=await readProfileFile(file);
   if(!dataUrl)return'';
-  if(configuredApiUrl&&localStorage.getItem('ruma_token')){
+  const token=localStorage.getItem('ruma_token')||'';
+  if(configuredApiUrl&&token&&!token.startsWith('LOCAL_')){
     const uploaded=await apiRequest('uploadMedia',{dataUrl,mediaType:'image',name:'ruma-'+kind+'-'+Date.now()+'.jpg'});
     return uploaded?.url||dataUrl;
   }
@@ -1216,7 +1236,7 @@ function setView(nextView){
   head.textContent=c[2];
   head.onclick=nextView==='ruang'?openCreateRoom:
     nextView==='profit'?renderCreatorContent:
-    nextView==='profile'?openEditProfile:focusComposer;
+    nextView==='profile'?editCurrentProfile:focusComposer;
   if(nextView!=='profile')head.classList.remove('hidden');
 
   $('feedTabs').classList.toggle('hidden',!['beranda','jelajahi'].includes(nextView));
