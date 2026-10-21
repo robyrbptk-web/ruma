@@ -304,9 +304,8 @@ a{color:inherit;text-decoration:none}
       <div class="composer-bottom">
         <div>
           <button class="tool-btn" onclick="insertTag()">＃ Hashtag</button>
-          <button class="tool-btn" onclick="toast('Unggah media akan dihubungkan ke backend nanti.')">▧ Media</button>
+          <button class="tool-btn" onclick="selectMedia()">▧ Media foto/video</button>
         </div>
-         <button class="tool-btn" onclick="selectMedia()">Foto / video</button>
          <button class="primary" id="publishBtn" onclick="publishPost()" disabled>Terbitkan</button>
       </div>
     </section>
@@ -323,7 +322,7 @@ a{color:inherit;text-decoration:none}
         <div class="reel-bottom">
           <button onclick="nextReel(-1)">↑ Video sebelumnya</button>
           <button onclick="nextReel(1)">↓ Video berikutnya</button>
-          <button onclick="toast('Unggah video akan tersedia setelah backend terhubung.')">＋ Buat video</button>
+          <button onclick="selectMedia();focusComposer()">＋ Unggah foto/video</button>
         </div>
       </div>
     </section>
