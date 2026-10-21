@@ -110,6 +110,7 @@ a{color:inherit;text-decoration:none}
 .people .avatar{width:34px;height:34px}
 .people-info{flex:1;min-width:0}
 .people-info strong{display:block;font-size:12px}
+.people-name-button{border:0;background:transparent;padding:0;text-align:left;font-size:12px;font-weight:800;color:var(--ink)}
 .people-info small{font-size:11px;color:var(--muted)}
 .follow{border:1px solid #dfe2e6;border-radius:999px;background:white;padding:7px 10px;font-size:11px;font-weight:750}
 .follow.following{background:var(--ink);color:white;border-color:var(--ink)}
@@ -241,6 +242,17 @@ a{color:inherit;text-decoration:none}
 .reels-stage{padding:0}
 .reel-card{width:100%;height:calc(100dvh - 185px);min-height:470px;border-radius:0}
 .reels-head{position:sticky;top:0}
+}
+@media(max-width:680px){
+  .topbar{height:72px;padding:0 10px;gap:8px}
+  .brand img{width:76px;height:42px}
+  .search input{height:48px;padding:12px 12px 12px 40px;font-size:14px}
+  .search-icon{left:13px;top:13px}
+  .top-actions{gap:5px}.top-actions .notification-button{width:42px;height:42px}.top-actions .avatar{width:40px;height:40px}
+  .mobile-nav{min-height:76px;padding:8px 6px calc(10px + env(safe-area-inset-bottom))}
+  .mobile-nav button{min-height:58px;gap:4px;padding:7px 3px;font-size:11px}
+  .mobile-nav button:first-letter{font-size:23px}
+  .mobile-nav .mobile-add{flex-basis:58px;min-height:54px;border-radius:17px;font-size:11px}
 }
 </style>
 </head>
@@ -533,6 +545,8 @@ let roomFilter='semua';
 let currentRoomId=null;
 let pendingRoomId=null;
 let profileUser=null;
+let peopleDirectory=[];
+let peopleSearchTimer=null;
 let profileTab='posts';
 let selectedPostId=null;
 let accessChoice='public';
@@ -823,15 +837,35 @@ function renderTrends(){
 }
 
 function renderPeople(){
-  const people=[
-    {name:'Nadia Putri',handle:'@nadiaputri',initial:'N',color:'#fbe7e5',ink:'#9e4540'},
-    {name:'Dimas Pratama',handle:'@dimaspr',initial:'D',color:'#e2f4e9',ink:'#237449'},
-    {name:'Alya Rahma',handle:'@alyarahma',initial:'A',color:'#eee7ff',ink:'#6844aa'}
-  ];
+  let people=peopleDirectory.slice();
+  if(!people.length){
+    try{people=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){people=[]}
+  }
+  const session=getCurrentSession();
+  people=people.filter(person=>String(person.username||person.handle||'').toLowerCase()!==String(session?.username||'').toLowerCase());
+  if(searchTerm){
+    const query=searchTerm.toLocaleLowerCase('id').replace(/^@/,'');
+    people=people.filter(person=>(String(person.name||'')+' '+String(person.username||person.handle||'')).toLocaleLowerCase('id').includes(query));
+  }
 
-  $('people').innerHTML=people.map(p=>
-    `<div class="people">${avatarHTML(p)}<div class="people-info"><strong>${esc(p.name)}</strong><small>${esc(p.handle)}</small></div><button class="follow ${followed.has(p.handle)?'following':''}" onclick="toggleFollow('${p.handle}')">${followed.has(p.handle)?'Mengikuti':'Ikuti'}</button></div>`
-  ).join('');
+  $('people').innerHTML=people.length?people.map(p=>{
+    const handle=p.handle||'@'+p.username;
+    return `<div class="people">${avatarHTML({...p,handle})}<div class="people-info"><button class="people-name-button" onclick="openProfileEncoded('${profileArg(handle)}','${profileArg(p.name||p.username||'Pengguna')}','${profileArg(p.avatarUrl||'')}','${profileArg(p.bannerUrl||'')}','${profileArg(p.verified?'true':'')}')">${esc(p.name||p.username||'Pengguna')}</button><small>${esc(handle)}</small></div><button class="follow ${followed.has(handle)?'following':''}" onclick="toggleFollow('${handle}')">${followed.has(handle)?'Mengikuti':'Ikuti'}</button></div>`;
+  }).join(''):'<div class="empty" style="padding:20px 5px">Akun tidak ditemukan.</div>';
+}
+
+function getCurrentSession(){
+  try{return JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){return null}
+}
+
+async function loadPeopleDirectory(query=''){
+  const token=localStorage.getItem('ruma_token')||'';
+  if(!token||token.startsWith('LOCAL_')){renderPeople();return}
+  try{
+    const data=await apiRequest('people',{q:query});
+    if(data&&Array.isArray(data.items))peopleDirectory=data.items;
+    renderPeople();
+  }catch(_){renderPeople()}
 }
 
 async function publishPost(){
@@ -946,7 +980,8 @@ function addComment(event,id){
   const input=event.target.querySelector('input');
   const text=input.value.trim();
   if(!p||!text)return;
-  p.comments.push({name:'Roby',text});
+  const session=getCurrentSession();
+  p.comments.push({name:session?.name||'Pengguna RUMA',handle:session?.username?'@'+session.username:'',text});
   persistDemoState();
   apiRequest('addComment',{postId:id,text}).catch(()=>{});
   addLocalNotification('Komentar kamu berhasil ditambahkan.','comment');
@@ -1461,7 +1496,8 @@ function publishRoomPost(id){
   const text=input.value.trim();
   if(!text){toast('Tulis pesan terlebih dahulu.');return;}
 
-  r.posts.unshift({name:'Roby',handle:'@roby',text,time:'Baru saja',likes:0});
+  const session=getCurrentSession();
+  r.posts.unshift({name:session?.name||'Pengguna RUMA',handle:session?.username?'@'+session.username:'',text,time:'Baru saja',likes:0});
   apiRequest('createRoomPost',{roomId:id,text}).catch(()=>{});
   persistDemoState();
   input.value='';
@@ -1584,7 +1620,9 @@ function sendGift(){
 }
 
 function renderCreatorContent(){
-  $('creatorContent').innerHTML=posts.filter(p=>p.handle==='@roby').map(p=>
+  const session=getCurrentSession();
+  const handle=session?.username?'@'+session.username:'';
+  $('creatorContent').innerHTML=posts.filter(p=>p.handle===handle).map(p=>
     `<div class="wallet-line"><span>${esc(p.text.slice(0,90))}${p.text.length>90?'…':''}</span><strong>♡ ${p.likes}</strong></div>`
   ).join('')||'<p class="muted small">Terbitkan postingan untuk melihat performanya.</p>';
 }
@@ -1595,6 +1633,8 @@ $('postInput').addEventListener('input',()=>{
 
 $('searchInput').addEventListener('input',event=>{
   searchTerm=event.target.value.trim();
+  clearTimeout(peopleSearchTimer);
+  peopleSearchTimer=setTimeout(()=>loadPeopleDirectory(searchTerm),250);
 
   if(view==='ruang'){
     renderRooms();
@@ -1637,6 +1677,7 @@ syncSessionUI();
 refreshNotifications();
 renderFeed();
 loadRemoteFeed();
+loadPeopleDirectory();
 renderRooms();
 renderReels();
 </script>

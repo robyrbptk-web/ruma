@@ -25,7 +25,7 @@ function doPost(e) {
     if (action === "register") return reply(true, "", null, doRegister(req));
     if (action === "feed") return reply(true, "", null, getFeed(req, token));
     if (action === "trends") return reply(true, "", null, getTrends());
-    if (action === "people") return reply(true, "", null, getPeople(token));
+    if (action === "people") return reply(true, "", null, getPeople(req, token));
     if (action === "profile") return reply(true, "", null, getProfile(req, token));
     if (action === "comments") return reply(true, "", null, getComments(req));
     if (action === "rooms") return reply(true, "", null, getRooms(req, token));
@@ -550,12 +550,17 @@ function getTrends() {
   })).sort((a, b) => b.count - a.count).slice(0, 5);
 }
 
-function getPeople(token) {
+function getPeople(req, token) {
   const user = getUserByToken(token);
   const users = getRows("Users");
   const followers = getRows("Followers");
+  const query = String((req && req.q) || "").trim().toLowerCase().replace(/^@/, "");
 
-  return users.filter(u => !user || u.id !== user.id).slice(0, 5).map(u => ({
+  return users.filter(u => {
+    if (user && String(u.id) === String(user.id)) return false;
+    if (!query) return true;
+    return (String(u.name || "") + " " + String(u.username || "")).toLowerCase().includes(query);
+  }).slice(0, query ? 30 : 10).map(u => ({
     name: u.name,
     handle: "@" + u.username,
     initial: (u.name || u.username)[0].toUpperCase(),
