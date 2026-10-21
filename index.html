@@ -111,6 +111,7 @@ a{color:inherit;text-decoration:none}
 .people-info{flex:1;min-width:0}
 .people-info strong{display:block;font-size:12px}
 .people-name-button{border:0;background:transparent;padding:0;text-align:left;font-size:12px;font-weight:800;color:var(--ink)}
+.search-people{border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin-bottom:14px;background:#fff}.search-people .side-title{margin-bottom:7px}.search-person-card{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #f0f1f2}.search-person-card:first-of-type{border-top:0}.search-person-card>div{flex:1;min-width:0}
 .people-info small{font-size:11px;color:var(--muted)}
 .follow{border:1px solid #dfe2e6;border-radius:999px;background:white;padding:7px 10px;font-size:11px;font-weight:750}
 .follow.following{background:var(--ink);color:white;border-color:var(--ink)}
@@ -805,6 +806,7 @@ function adCardHTML(){
 
 function renderFeed(){
   let list=[...posts];
+  const matchingPeople=searchTerm?getVisiblePeople():[];
 
   if(view==='tersimpan')list=list.filter(p=>p.saved);
   if(view==='disukai')list=list.filter(p=>p.liked);
@@ -818,9 +820,10 @@ function renderFeed(){
 
   if(sort==='terbaru')list.reverse();
 
-  $('feed').innerHTML=list.length
+  const peopleMarkup=matchingPeople.length?'<section class="search-people"><h2 class="side-title">Pengguna</h2>'+matchingPeople.map(personSearchCard).join('')+'</section>':'';
+  $('feed').innerHTML=peopleMarkup+(list.length
     ? list.map((p,i)=>postHTML(p)+(i===1?adCardHTML():'')).join('')
-    : '<div class="empty"><strong>Belum ada postingan yang cocok</strong>Coba kata kunci lain atau mulai diskusi baru.</div>';
+    : (peopleMarkup?'':'<div class="empty"><strong>Belum ada hasil yang cocok</strong>Coba kata kunci lain atau mulai diskusi baru.</div>'));
 
   renderTrends();
   renderPeople();
@@ -837,21 +840,31 @@ function renderTrends(){
 }
 
 function renderPeople(){
-  let people=peopleDirectory.slice();
-  if(!people.length){
-    try{people=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){people=[]}
-  }
-  const session=getCurrentSession();
-  people=people.filter(person=>String(person.username||person.handle||'').toLowerCase()!==String(session?.username||'').toLowerCase());
-  if(searchTerm){
-    const query=searchTerm.toLocaleLowerCase('id').replace(/^@/,'');
-    people=people.filter(person=>(String(person.name||'')+' '+String(person.username||person.handle||'')).toLocaleLowerCase('id').includes(query));
-  }
+  const people=getVisiblePeople();
 
   $('people').innerHTML=people.length?people.map(p=>{
     const handle=p.handle||'@'+p.username;
     return `<div class="people">${avatarHTML({...p,handle})}<div class="people-info"><button class="people-name-button" onclick="openProfileEncoded('${profileArg(handle)}','${profileArg(p.name||p.username||'Pengguna')}','${profileArg(p.avatarUrl||'')}','${profileArg(p.bannerUrl||'')}','${profileArg(p.verified?'true':'')}')">${esc(p.name||p.username||'Pengguna')}</button><small>${esc(handle)}</small></div><button class="follow ${followed.has(handle)?'following':''}" onclick="toggleFollow('${handle}')">${followed.has(handle)?'Mengikuti':'Ikuti'}</button></div>`;
   }).join(''):'<div class="empty" style="padding:20px 5px">Akun tidak ditemukan.</div>';
+}
+
+function getVisiblePeople(){
+  let people=peopleDirectory.slice();
+  if(!people.length){
+    try{people=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){people=[]}
+  }
+  const session=getCurrentSession();
+  people=people.filter(person=>String(person.username||person.handle||'').toLowerCase().replace(/^@/,'')!==String(session?.username||'').toLowerCase());
+  if(searchTerm){
+    const query=searchTerm.toLocaleLowerCase('id').replace(/^@/,'');
+    people=people.filter(person=>(String(person.name||'')+' '+String(person.username||person.handle||'')).toLocaleLowerCase('id').includes(query));
+  }
+  return people;
+}
+
+function personSearchCard(person){
+  const handle=person.handle||'@'+person.username;
+  return `<article class="search-person-card">${avatarHTML({...person,handle})}<div><button class="people-name-button" onclick="openProfileEncoded('${profileArg(handle)}','${profileArg(person.name||person.username||'Pengguna')}','${profileArg(person.avatarUrl||'')}','${profileArg(person.bannerUrl||'')}','${profileArg(person.verified?'true':'')}')">${esc(person.name||person.username||'Pengguna')}</button><div class="muted small">${esc(handle)}</div></div><button class="follow ${followed.has(handle)?'following':''}" onclick="toggleFollow('${handle}')">${followed.has(handle)?'Mengikuti':'Ikuti'}</button></article>`;
 }
 
 function getCurrentSession(){
@@ -865,6 +878,7 @@ async function loadPeopleDirectory(query=''){
     const data=await apiRequest('people',{q:query});
     if(data&&Array.isArray(data.items))peopleDirectory=data.items;
     renderPeople();
+    if(searchTerm)renderFeed();
   }catch(_){renderPeople()}
 }
 
