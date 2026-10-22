@@ -352,6 +352,7 @@ function getFeed(req, token) {
       reposted: user ? pReposts.some(r => String(r.userId) === String(user.id)) : false,
       saved: user ? pSaves.some(s => String(s.userId) === String(user.id)) : false,
       commentsCount: pCm.length,
+      comments: pCm.map(c => ({ id: String(c.id), userId: String(c.userId || ''), name: String(c.name || 'Pengguna RUMA'), handle: String(c.handle || ''), text: String(c.text || ''), createdAt: Number(c.createdAt) || 0 })),
       mine: user ? String(p.userId) === String(user.id) : false,
       mediaUrl: p.mediaUrl || "",
       mediaType: p.mediaType || "",
