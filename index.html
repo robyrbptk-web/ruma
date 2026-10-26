@@ -239,12 +239,34 @@ a{color:inherit;text-decoration:none}
 .reels-stage{display:flex;justify-content:center;padding:0 12px 14px}
 .reel-card{position:relative;width:min(100%,390px);height:min(72vh,690px);min-height:480px;border-radius:19px;overflow:hidden;background:linear-gradient(155deg,#ffb36b,#d94675 48%,#362c72);isolation:isolate}
 .reel-card:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 70% 20%,#ffffff40,transparent 28%),linear-gradient(0deg,#000c,transparent 58%)}
-.reel-art{position:absolute;inset:0;display:grid;place-items:center;font-size:110px;filter:drop-shadow(0 15px 25px #0005)}
-.reel-content{position:absolute;left:17px;right:64px;bottom:20px;text-shadow:0 1px 5px #0008}
+.reel-art{position:absolute;inset:0;display:grid;place-items:center;font-size:110px;filter:drop-shadow(0 15px 25px #0005);z-index:0}
+.reel-media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:0}
+.reel-frame{border:0;background:#000}
+.post-frame{display:block;width:100%;height:420px;max-height:420px;border:0;border-radius:12px;margin-top:12px;background:#000}
+.reel-card.has-media:before{background:transparent}
+.reel-card.has-media:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,#000b,transparent 42%)}
+.reel-card.has-media .reel-content{bottom:62px}
+.reel-card.has-media .reel-side{bottom:120px}
+.reel-fallback{display:none;position:absolute;left:14px;right:14px;top:44%;z-index:2;padding:12px;border-radius:12px;background:#000000b3;font-size:12px;line-height:1.55;text-align:center}
+.reel-card.media-failed .reel-fallback{display:block}
+.reel-card.media-failed .reel-media{display:none}
+.reel-counter{position:absolute;top:12px;left:14px;z-index:2;padding:5px 10px;border-radius:999px;background:#00000059;font-size:11px;font-weight:700;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.reel-open-original{position:absolute;top:12px;right:14px;z-index:3;padding:6px 11px;border:0;border-radius:999px;background:#00000059;color:#fff;font-size:11px;font-weight:700;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.reels-empty{padding:46px 20px;text-align:center;color:#c5c7cc}
+.reels-empty strong{display:block;color:#fff;font-size:17px;margin-bottom:9px}
+.reels-empty p{font-size:12px;line-height:1.6;margin-bottom:4px}
+.reel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+.reel-thumb{position:relative;aspect-ratio:9/16;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#101114;padding:0}
+.reel-thumb video,.reel-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.reel-thumb-emoji{position:absolute;inset:0;display:grid;place-items:center;font-size:34px}
+.reel-thumb-caption{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 7px;font-size:10px;line-height:1.35;color:#fff;text-align:left;background:linear-gradient(0deg,#000c,transparent);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.reel-content{position:absolute;left:17px;right:64px;bottom:20px;text-shadow:0 1px 5px #0008;z-index:2}
 .reel-user{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;margin-bottom:10px}
+.reel-user .avatar{width:30px;height:30px;font-size:11px}
+.reel-user>span:nth-of-type(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .reel-caption{font-size:13px;line-height:1.55}
 .reel-audio{font-size:11px}
-.reel-side{position:absolute;right:10px;bottom:75px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.reel-side{position:absolute;right:10px;bottom:75px;display:flex;flex-direction:column;align-items:center;gap:14px;z-index:2}
 .reel-action{width:44px;height:44px;border:0;border-radius:50%;background:#ffffff24;color:#fff;font-size:18px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .reel-action span{display:block;font-size:9px;margin-top:2px}
 .reel-bottom{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 12px 15px}
@@ -435,7 +457,7 @@ a{color:inherit;text-decoration:none}
         <div class="reel-bottom">
           <button onclick="nextReel(-1)">↑ Video sebelumnya</button>
           <button onclick="nextReel(1)">↓ Video berikutnya</button>
-          <button onclick="selectMedia();focusComposer()">＋ Unggah foto/video</button>
+          <button onclick="openReelUpload()">＋ Unggah video</button>
         </div>
       </div>
     </section>
@@ -459,14 +481,14 @@ a{color:inherit;text-decoration:none}
 
   <section id="profitView" class="hidden">
     <div class="creator-grid">
-      <div class="creator-tile">◉ <strong id="creatorViews">24,8 rb</strong><span>Total tayangan</span></div>
-      <div class="creator-tile">♡ <strong id="creatorLikes">1.284</strong><span>Total suka</span></div>
-      <div class="creator-tile">✦ <strong id="creatorEarnings">Rp 86.500</strong><span>Estimasi pendapatan</span></div>
+      <div class="creator-tile">◉ <strong id="creatorViews">0</strong><span>Video diterbitkan</span></div>
+      <div class="creator-tile">♡ <strong id="creatorLikes">0</strong><span>Total suka</span></div>
+      <div class="creator-tile">✦ <strong id="creatorEarnings">Rp 0</strong><span>Estimasi pendapatan</span></div>
     </div>
     <section class="side-card" style="margin-bottom:14px">
       <h2 class="side-title">Dompet kreator</h2>
-      <div class="wallet-line"><span>Gift diterima</span><strong id="giftReceived">34 gift</strong></div>
-      <div class="wallet-line"><span>Estimasi pendapatan</span><strong id="walletProfit">Rp 86.500</strong></div>
+      <div class="wallet-line"><span>Gift diterima</span><strong id="giftReceived">0 gift</strong></div>
+      <div class="wallet-line"><span>Estimasi pendapatan</span><strong id="walletProfit">Rp 0</strong></div>
       <div class="wallet-line"><span>Status monetisasi</span><span class="pill">Aktif</span></div>
       <p class="muted small" style="line-height:1.6">Pendapatan akan diperbarui berdasarkan aktivitas dan transaksi akun.</p>
     </section>
@@ -608,6 +630,24 @@ a{color:inherit;text-decoration:none}
   </section>
 </div>
 
+<div class="modal-backdrop" id="reelUploadModal" onclick="if(event.target===this)closeModal('reelUploadModal')">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="reelUploadTitle">
+    <div class="modal-head"><h2 id="reelUploadTitle">Unggah video</h2><button class="close" onclick="closeModal('reelUploadModal')" aria-label="Tutup">×</button></div>
+    <form id="reelUploadForm" onsubmit="publishReel(event)">
+      <div class="field">
+        <label for="reelFileInput">Berkas video</label>
+        <input id="reelFileInput" type="file" accept="video/*" onchange="handleReelFile(event)">
+        <p class="muted small" style="margin-top:6px">Format MP4/WebM, maksimal 8 MB. Video diunggah ke Drive lalu diputar langsung di tab Video.</p>
+      </div>
+      <div id="reelMediaPreview" class="hidden" style="margin-bottom:12px"></div>
+      <div class="field"><label for="reelCaption">Caption</label><textarea id="reelCaption" maxlength="700" placeholder="Tulis caption dan tambahkan #hashtag..."></textarea></div>
+      <div class="field"><label for="reelEmoji">Sampul emoji (dipakai bila video gagal dimuat)</label><select id="reelEmoji"><option>🎬</option><option>🌅</option><option>💻</option><option>📚</option><option>🎨</option><option>🌱</option><option>🚀</option><option>🎉</option></select></div>
+      <p id="reelUploadStatus" class="muted small"></p>
+      <button class="primary" id="reelPublishBtn" type="submit" style="width:100%;margin-top:12px" disabled>Terbitkan video</button>
+    </form>
+  </section>
+</div>
+
 <script>
 'use strict';
 
@@ -636,19 +676,81 @@ function postArg(id){
   return "'" + String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + "'";
 }
 
+function driveFileId(url){
+  const value=String(url||'');
+  if(!/drive\.(google|usercontent)\./i.test(value))return'';
+  const patterns=[/[?&]id=([^&#]+)/i,/\/file\/d\/([^/?#]+)/i,/\/d\/([^/?#]+)/i];
+  for(const pattern of patterns){
+    const match=value.match(pattern);
+    if(match&&match[1])return match[1];
+  }
+  return'';
+}
+
 function normalizeImageUrl(url){
   const value=String(url||'').trim();
   const match=value.match(/^https?:\/\/drive\.google\.com\/uc\?[^#]*\bid=([^&]+)/i);
   return match?'https://drive.google.com/thumbnail?id='+encodeURIComponent(match[1])+'&sz=w1000':value;
 }
 
+function isVideoMedia(mediaType){return/^video\//i.test(String(mediaType||''))}
+
+function normalizeMediaUrl(url,mediaType){
+  const value=String(url||'').trim();
+  if(!value)return'';
+  if(!isVideoMedia(mediaType))return normalizeImageUrl(value);
+  // Endpoint thumbnail Drive hanya merender bingkai gambar, jadi video harus
+  // diarahkan ke endpoint streaming agar <video> benar-benar bisa memutar.
+  const fileId=driveFileId(value);
+  return fileId?'https://drive.google.com/uc?export=download&id='+encodeURIComponent(fileId):value;
+}
+
+function mediaPosterUrl(url){
+  const fileId=driveFileId(url);
+  return fileId?'https://drive.google.com/thumbnail?id='+encodeURIComponent(fileId)+'&sz=w1000':'';
+}
+
+function driveEmbedUrl(url){
+  const fileId=driveFileId(url);
+  return fileId?'https://drive.google.com/file/d/'+encodeURIComponent(fileId)+'/preview':'';
+}
+
+function mediaFallback(video){
+  const embed=video.getAttribute('data-embed');
+  if(!embed){
+    if(video.classList.contains('reel-media'))reelMediaFailed(video);
+    return;
+  }
+  const frame=document.createElement('iframe');
+  frame.className=video.classList.contains('reel-media')?'reel-media reel-frame':'post-frame';
+  frame.src=embed;
+  frame.allow='autoplay; encrypted-media; fullscreen';
+  video.replaceWith(frame);
+}
+
+// Endpoint unduh Drive (uc?export=download) diblokir atau dibiarkan menggantung
+// oleh sebagian jaringan tanpa memicu event error, jadi kegagalan juga harus
+// dideteksi lewat batas waktu agar video tetap bisa diputar lewat pemutar Drive.
+function armMediaWatchdogs(root){
+  const scope=root&&root.querySelectorAll?root:document;
+  scope.querySelectorAll('video[data-embed]').forEach(video=>{
+    if(video.dataset.armed)return;
+    video.dataset.armed='1';
+    let resolved=false;
+    video.addEventListener('loadeddata',()=>{resolved=true},{once:true});
+    video.addEventListener('error',()=>{if(!resolved)mediaFallback(video)},{once:true});
+    setTimeout(()=>{
+      if(!resolved&&video.readyState<2&&video.isConnected)mediaFallback(video);
+    },4000);
+  });
+}
+
 const posts = [];
 
-const reelData = [
-  {user:'Alya Rahma',handle:'@alyarahma',initial:'A',emoji:'🌅',caption:'Mulai hari dengan satu langkah kecil menuju tujuanmu. Apa targetmu hari ini? #Motivasi #Rutinitas',audio:'♫ Original audio · Alya',likes:12800,liked:false,saved:false},
-  {user:'Dimas Pratama',handle:'@dimaspr',initial:'D',emoji:'💻',caption:'3 tools gratis yang membantu produktivitas dan belajar teknologi! Simpan biar tidak lupa. #Teknologi #TipsDigital',audio:'♫ Lo-fi study beat',likes:8420,liked:false,saved:false},
-  {user:'Nadia Putri',handle:'@nadiaputri',initial:'N',emoji:'📚',caption:'Belajar 20 menit setiap hari lebih baik daripada menunggu waktu luang yang sempurna. #Pendidikan #Belajar',audio:'♫ Original audio · Nadia',likes:6230,liked:false,saved:false}
-];
+const reelData=[];
+let reelsLoaded=false;
+let reelsLoading=false;
+let selectedReelMedia=null;
 
 let rooms = [
   {id:'r1',name:'Teknologi Indonesia',description:'Diskusi AI, pemrograman dan produk digital.',category:'Teknologi',emoji:'💻',access:'public',verified:true,owner:'@adminruma',members:2400,joined:false,posts:[{name:'Dimas Pratama',handle:'@dimaspr',text:'Apa teknologi AI yang paling menarik bagimu?',time:'20 menit lalu',likes:18}]},
@@ -672,11 +774,11 @@ let profileTab='posts';
 let selectedPostId=null;
 let accessChoice='public';
 let reelIndex=0;
+let pendingReelId='';
 let selectedGift={name:'Mawar',emoji:'🌹',coins:10};
+let giftTargetReelId='';
 let coinBalance=1250;
 let selectedMedia=null;
-let giftCount=34;
-let profit=86500;
 const followed=new Set();
 const unlockedRooms=new Set();
 const configuredApiUrl=localStorage.getItem('ruma_api_url')||'https://script.google.com/macros/s/AKfycbyl6evQ9sGyZExU57dPz5JGr2ZdZUFZYefj3cziUCpp7lRPGldNstmnv7ZgjaPLs3rg/exec';
@@ -785,11 +887,10 @@ function restoreDemoState(){
   try{
     const savedPosts=JSON.parse(localStorage.getItem('ruma_demo_posts')||'null');
     const savedRooms=JSON.parse(localStorage.getItem('ruma_demo_rooms')||'null');
-    const savedReels=JSON.parse(localStorage.getItem('ruma_demo_reels')||'null');
     const demoHandles=new Set(['@nadiaputri','@dimaspr','@alyarahma','@fajarmahendra']);
     if(Array.isArray(savedPosts)){posts.splice(0,posts.length,...savedPosts.filter(post=>!demoHandles.has(String(post.handle||'').toLowerCase())))}
     if(Array.isArray(savedRooms)){rooms.splice(0,rooms.length,...savedRooms)}
-    if(Array.isArray(savedReels)){reelData.splice(0,reelData.length,...savedReels)}
+    localStorage.removeItem('ruma_demo_reels');
   }catch(_){ }
 }
 
@@ -815,9 +916,11 @@ async function loadRemoteFeed(){
 
 function persistDemoState(){
   try{
-    localStorage.setItem('ruma_demo_posts',JSON.stringify(posts));
+    // Data URL base64 berukuran beberapa MB dan langsung menghabiskan kuota
+    // localStorage, jadi hanya URL server yang disimpan.
+    const storablePosts=posts.map(post=>({...post,mediaUrl:String(post.mediaUrl||'').indexOf('data:')===0?'':post.mediaUrl}));
+    localStorage.setItem('ruma_demo_posts',JSON.stringify(storablePosts));
     localStorage.setItem('ruma_demo_rooms',JSON.stringify(rooms));
-    localStorage.setItem('ruma_demo_reels',JSON.stringify(reelData));
   }catch(_){toast('Penyimpanan lokal penuh. Media besar sebaiknya diunggah ke Apps Script.');}
 }
 
@@ -893,8 +996,20 @@ function formatText(text){
   ).replace(/\n/g,'<br>');
 }
 
+function postMediaHTML(p){
+  const raw=String(p.mediaUrl||'');
+  if(!raw)return'';
+  const box='width:100%;max-height:420px;border-radius:12px;margin-top:12px';
+  if(isVideoMedia(p.mediaType)){
+    const poster=mediaPosterUrl(raw);
+    const embed=driveEmbedUrl(raw);
+    return`<video controls playsinline webkit-playsinline preload="metadata" style="${box};background:#000;object-fit:contain" src="${esc(normalizeMediaUrl(raw,p.mediaType))}"${poster?` poster="${esc(poster)}"`:''}${embed?` data-embed="${esc(embed)}"`:''}></video>`;
+  }
+  return`<img loading="lazy" style="${box};object-fit:cover" src="${esc(normalizeImageUrl(raw))}" alt="Media postingan">`;
+}
+
 function postHTML(p){
-  const media=p.mediaUrl?((String(p.mediaType||'').indexOf('video')===0?'<video controls preload="metadata" style="width:100%;max-height:420px;border-radius:12px;margin-top:12px" src="'+esc(p.mediaUrl)+'"></video>':'<img loading="lazy" style="width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-top:12px" src="'+esc(p.mediaUrl)+'" alt="Media postingan">')):'';
+  const media=postMediaHTML(p);
   const id=postArg(p.id);
   return `<article class="post" id="post-${esc(p.id)}">
     <div class="post-head">${avatarHTML(p)}<div class="post-meta"><div><button class="post-name" onclick="openProfileEncoded('${profileArg(p.handle)}','${profileArg(p.name)}','${profileArg(p.avatarUrl||'')}','${profileArg(p.bannerUrl||'')}','${profileArg(p.verified?'true':'')}')">${esc(p.name)}${p.verified?'<span class="verified-mark">✓</span>':''}</button><span class="handle">${esc(p.handle)}</span></div><div class="post-time">${esc(p.time)} · ${esc(p.topic)}</div></div><button class="more" onclick="openPostMenu(${id})" aria-label="Opsi postingan">•••</button></div>
@@ -936,6 +1051,7 @@ function renderFeed(){
 
   renderTrends();
   renderPeople();
+  armMediaWatchdogs($('feed'));
 }
 
 function renderTrends(){
@@ -1019,8 +1135,9 @@ async function publishPost(){
   if(!session?.username){toast('Silakan masuk sebelum membuat postingan.');return}
   const authorName=session.name||session.username;
   const authorUsername=session.username;
+  const localId=Date.now();
   posts.unshift({
-    id:Date.now(),name:authorName,handle:'@'+authorUsername,initial:session?.initial||authorName.charAt(0).toUpperCase(),
+    id:localId,name:authorName,handle:'@'+authorUsername,initial:session?.initial||authorName.charAt(0).toUpperCase(),
     color:'#e8efff',ink:'#2859a8',time:'Baru saja',
     topic:tags.length?tags[0].slice(1):'Diskusi umum',
     text,likes:0,comments:[],reposts:0,liked:false,saved:false,reposted:false,
@@ -1037,8 +1154,18 @@ async function publishPost(){
     (async()=>{
       try{
         let mediaUrl='';
-        if(mediaToUpload){const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});mediaUrl=uploaded?.url||'';}
-        await apiRequest('createPost',{text,mediaUrl,mediaType:mediaToUpload?.type||'',mediaName:mediaToUpload?.name||''});
+        if(mediaToUpload){
+          const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});
+          if(!uploaded||!uploaded.url)throw new Error('Media gagal diunggah ke server.');
+          mediaUrl=uploaded.url;
+          const pending=posts.find(item=>item.id===localId);
+          if(pending){pending.mediaUrl=mediaUrl;pending.mediaType=uploaded.type||mediaToUpload.type}
+        }
+        const created=await apiRequest('createPost',{text,mediaUrl,mediaType:mediaToUpload?.type||'',mediaName:mediaToUpload?.name||''});
+        const pending=posts.find(item=>item.id===localId);
+        if(created&&created.id&&pending)pending.id=created.id;
+        persistDemoState();
+        renderFeed();
       }catch(error){toast('Postingan tersimpan di perangkat, sinkronisasi server gagal: '+error.message);}
     })();
   }
@@ -1413,10 +1540,7 @@ function showProfilePosts(tab,button){
   if(tab==='reposted')list=posts.filter(p=>p.reposted);
 
   if(tab==='videos'){
-    list=reelData.filter(r=>r.handle===profileUser.handle);
-    $('profilePageContent').innerHTML=list.length
-      ?list.map(r=>`<div class="wallet-line"><span>${esc(r.caption)}</span><strong>▶</strong></div>`).join('')
-      :'Belum ada video.';
+    renderProfileVideos();
     return;
   }
 
@@ -1478,7 +1602,7 @@ function setView(nextView){
   else if(nextView==='profit')renderCreatorContent();
   else if(nextView==='profile'){}
   else if(feedPages.includes(nextView)){
-    if(isVideo)renderReels();
+    if(isVideo)loadRemoteReels();
     else renderFeed();
   }
 
@@ -1496,7 +1620,7 @@ function setSort(nextSort){
   $('feed').classList.toggle('hidden',isVideo);
   $('reelsView').classList.toggle('hidden',!isVideo);
 
-  if(isVideo)renderReels();
+  if(isVideo)loadRemoteReels();
   else renderFeed();
 }
 
@@ -1711,62 +1835,319 @@ function backToRooms(){
   setView('ruang');
 }
 
-function renderReels(){
-  const r=reelData[reelIndex];
+function currentReel(){return reelData[reelIndex]||null}
 
-  $('reelsStage').innerHTML=`
-    <article class="reel-card">
-      <div class="reel-art">${r.emoji}</div>
+function normalizeReel(item){
+  const name=item.user||item.name||'Pengguna RUMA';
+  return{
+    id:String(item.id||''),
+    user:name,
+    handle:item.handle||'',
+    initial:item.initial||String(name).charAt(0).toUpperCase(),
+    emoji:item.emoji||'🎬',
+    caption:item.caption||'',
+    audio:item.audio||'',
+    avatarUrl:item.avatarUrl||'',
+    mediaUrl:item.mediaUrl||'',
+    mediaType:item.mediaType||'',
+    likes:Number(item.likes||0),
+    liked:!!item.liked,
+    saved:!!item.saved,
+    mine:!!item.mine
+  };
+}
+
+async function loadRemoteReels(force){
+  const stage=$('reelsStage');
+  if(!stage)return;
+  if((reelsLoaded&&!force)||reelsLoading){renderReels();pendingReelId='';return}
+  reelsLoading=true;
+  renderReels();
+  try{
+    const data=await apiRequest('reels');
+    const items=Array.isArray(data)?data:(data&&data.items);
+    if(Array.isArray(items)){
+      const remoteIds=new Set(items.map(item=>String(item.id)));
+      const localOnly=reelData.filter(item=>item.local&&!remoteIds.has(String(item.id)));
+      reelData.splice(0,reelData.length,...items.map(normalizeReel),...localOnly);
+      reelsLoaded=true;
+    }
+  }catch(error){
+    if(!reelData.length)stage.innerHTML='<div class="reels-empty"><strong>Video belum dapat dimuat</strong><p>'+esc(error.message||'Periksa koneksi atau muat ulang halaman.')+'</p><button class="secondary" style="margin-top:14px" onclick="loadRemoteReels(true)">Coba lagi</button></div>';
+  }
+  reelsLoading=false;
+  if(reelIndex>=reelData.length)reelIndex=0;
+  renderReels();
+  pendingReelId='';
+}
+
+function reelMediaHTML(r){
+  const raw=String(r.mediaUrl||'');
+  if(!raw)return`<div class="reel-art">${esc(r.emoji||'🎬')}</div>`;
+  if(isVideoMedia(r.mediaType)){
+    const poster=mediaPosterUrl(raw);
+    const embed=driveEmbedUrl(raw);
+    return`<video class="reel-media" src="${esc(normalizeMediaUrl(raw,r.mediaType))}"${poster?` poster="${esc(poster)}"`:''}${embed?` data-embed="${esc(embed)}"`:''} controls muted autoplay loop playsinline webkit-playsinline preload="auto"></video>`;
+  }
+  return`<img class="reel-media" src="${esc(normalizeImageUrl(raw))}" alt="${esc(r.caption||'Sampul video')}" onerror="reelMediaFailed(this)">`;
+}
+
+function reelMediaFailed(el){
+  const card=el.closest?el.closest('.reel-card'):null;
+  if(card)card.classList.add('media-failed');
+}
+
+function renderReels(){
+  const stage=$('reelsStage');
+  if(!stage)return;
+
+  if(pendingReelId){
+    const index=reelData.findIndex(item=>String(item.id)===pendingReelId);
+    if(index>=0){reelIndex=index;pendingReelId=''}
+  }
+
+  if(!reelData.length){
+    stage.innerHTML=`<div class="reels-empty"><strong>Belum ada video</strong><p>${reelsLoaded?'Jadilah yang pertama mengunggah video ke RUMA.':'Memuat video dari server…'}</p>${reelsLoaded?'<button class="primary" style="margin-top:14px" onclick="openReelUpload()">＋ Unggah video</button>':''}</div>`;
+    return;
+  }
+
+  if(reelIndex<0||reelIndex>=reelData.length)reelIndex=0;
+  const r=reelData[reelIndex];
+  const hasMedia=!!r.mediaUrl;
+  const streamUrl=hasMedia?normalizeMediaUrl(r.mediaUrl,r.mediaType):'';
+
+  stage.innerHTML=`
+    <article class="reel-card${hasMedia?' has-media':''}">
+      ${reelMediaHTML(r)}
+      ${hasMedia?`<div class="reel-fallback">Video tidak dapat diputar di sini.<br><a href="${esc(streamUrl)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline">Buka berkas asli ↗</a></div>`:''}
+      <div class="reel-counter">${reelIndex+1} / ${reelData.length}</div>
       <div class="reel-content">
         <div class="reel-user">
-          <span class="avatar">${esc(r.initial)}</span>
+          <span class="avatar">${avatarMarkup(r.avatarUrl,r.user,r.initial)}</span>
           <span>${esc(r.user)} <span style="opacity:.7;font-weight:500">${esc(r.handle)}</span></span>
-          <button class="follow" onclick="toggleFollow('${r.handle}')">Ikuti</button>
+          ${r.mine?'':`<button class="follow${followed.has(r.handle)?' following':''}" onclick="followCurrentReel(this)">${followed.has(r.handle)?'Mengikuti':'Ikuti'}</button>`}
         </div>
-        <p class="reel-caption">${formatText(r.caption)}</p>
-        <div class="reel-audio">${esc(r.audio)}</div>
+        <p class="reel-caption">${formatText(r.caption)||'<span style="opacity:.7">Tanpa caption</span>'}</p>
+        <div class="reel-audio">${esc(r.audio||'')}</div>
       </div>
       <div class="reel-side">
-        <button class="reel-action" onclick="toggleReelLike()">${r.liked?'❤️':'♡'}<span>${r.likes.toLocaleString('id-ID')}</span></button>
-        <button class="reel-action" onclick="toast('Komentar video akan tersedia setelah backend terhubung.')">▢<span>Komentar</span></button>
-        <button class="reel-action" onclick="openGift('${esc(r.user)}')">🎁<span>Gift</span></button>
+        <button class="reel-action" onclick="toggleReelLike()">${r.liked?'❤️':'♡'}<span>${Number(r.likes||0).toLocaleString('id-ID')}</span></button>
+        <button class="reel-action" onclick="openCurrentGift()">🎁<span>Gift</span></button>
         <button class="reel-action" onclick="toggleReelSave()">${r.saved?'▣':'▢'}<span>Simpan</span></button>
         <button class="reel-action" onclick="shareReel()">↗<span>Bagikan</span></button>
+        ${r.mine?'<button class="reel-action" onclick="deleteCurrentReel()">🗑<span>Hapus</span></button>':''}
       </div>
     </article>`;
+
+  const video=stage.querySelector('video.reel-media');
+  if(video){
+    const playing=video.play();
+    if(playing&&playing.catch)playing.catch(()=>{});
+  }
+  armMediaWatchdogs(stage);
+}
+
+async function followCurrentReel(button){
+  const r=currentReel();
+  if(!r)return;
+  const paint=()=>{
+    if(!button)return;
+    const on=followed.has(r.handle);
+    button.classList.toggle('following',on);
+    button.textContent=on?'Mengikuti':'Ikuti';
+  };
+  if(button){
+    const optimistic=!followed.has(r.handle);
+    button.classList.toggle('following',optimistic);
+    button.textContent=optimistic?'Mengikuti':'Ikuti';
+  }
+  await toggleFollow(r.handle);
+  paint();
 }
 
 function nextReel(step){
+  if(!reelData.length)return;
   reelIndex=(reelIndex+step+reelData.length)%reelData.length;
   renderReels();
 }
 
-function toggleReelLike(){
-  const r=reelData[reelIndex];
+async function toggleReelLike(){
+  const r=currentReel();
+  if(!r)return;
+  if(!r.id){toast('Video ini belum tersimpan di server.');return}
   r.liked=!r.liked;
-  r.likes+=r.liked?1:-1;
-  apiRequest('toggleReelLike',{id:r.id}).catch(()=>{});
-  persistDemoState();
+  r.likes=Math.max(0,Number(r.likes||0)+(r.liked?1:-1));
   renderReels();
+  try{
+    const result=await apiRequest('toggleReelLike',{id:r.id});
+    if(result&&typeof result.on==='boolean'){
+      r.liked=result.on;
+      if(result.count!=null)r.likes=Number(result.count);
+      renderReels();
+    }
+  }catch(error){toast(error.message||'Gagal memperbarui suka.')}
 }
 
-function toggleReelSave(){
-  const r=reelData[reelIndex];
+async function toggleReelSave(){
+  const r=currentReel();
+  if(!r)return;
+  if(!r.id){toast('Video ini belum tersimpan di server.');return}
   r.saved=!r.saved;
-  apiRequest('toggleReelSave',{id:r.id}).catch(()=>{});
-  persistDemoState();
-  toast(r.saved?'Video disimpan.':'Video dihapus dari simpanan.');
   renderReels();
+  toast(r.saved?'Video disimpan.':'Video dihapus dari simpanan.');
+  try{
+    const result=await apiRequest('toggleReelSave',{id:r.id});
+    if(result&&typeof result.on==='boolean'&&result.on!==r.saved){r.saved=result.on;renderReels()}
+  }catch(error){toast(error.message||'Gagal memperbarui simpanan.')}
+}
+
+async function deleteCurrentReel(){
+  const r=currentReel();
+  if(!r||!r.id)return;
+  if(!confirm('Hapus video ini?'))return;
+  try{
+    await apiRequest('deleteReel',{id:r.id});
+    reelData.splice(reelIndex,1);
+    if(reelIndex>=reelData.length)reelIndex=0;
+    renderReels();
+    toast('Video dihapus.');
+  }catch(error){toast(error.message||'Video gagal dihapus.')}
 }
 
 function shareReel(){
-  const url=location.href.split('#')[0]+'#video-'+reelData[reelIndex].handle;
-  if(navigator.clipboard){
+  const r=currentReel();
+  if(!r)return;
+  const url=location.href.split('#')[0]+'#video-'+(r.id||encodeURIComponent(r.handle));
+  if(navigator.share){
+    navigator.share({title:'Video RUMA',url}).catch(()=>{});
+  }else if(navigator.clipboard){
     navigator.clipboard.writeText(url).then(()=>toast('Tautan video disalin.')).catch(()=>toast(url));
   }else toast(url);
 }
 
-function openGift(user){
+function openCurrentGift(){
+  const r=currentReel();
+  if(!r)return;
+  openGift(r.user,r.id);
+}
+
+function openReelUpload(){
+  const token=localStorage.getItem('ruma_token')||'';
+  const session=getCurrentSession();
+  if(!session||!session.username||!token||token.indexOf('LOCAL_')===0){
+    toast('Masuk dengan akun server untuk mengunggah video.');
+    setTimeout(()=>{location.href='./auth.html?mode=login'},1200);
+    return;
+  }
+  clearReelMedia();
+  $('reelCaption').value='';
+  $('reelUploadStatus').textContent='';
+  openModal('reelUploadModal');
+}
+
+function handleReelFile(event){
+  const file=event.target.files&&event.target.files[0];
+  if(!file){clearReelMedia();return}
+  if(!/^video\//.test(file.type)){toast('Pilih berkas video yang valid.');event.target.value='';return}
+  if(file.size>8*1024*1024){toast('Ukuran video maksimal 8 MB.');event.target.value='';return}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    selectedReelMedia={url:String(reader.result||''),type:file.type,name:file.name};
+    const preview=$('reelMediaPreview');
+    preview.classList.remove('hidden');
+    preview.innerHTML='<video controls playsinline webkit-playsinline style="width:100%;max-height:250px;border-radius:12px;background:#000;object-fit:contain"></video><button type="button" class="tool-btn" style="margin-top:8px" onclick="clearReelMedia()">Hapus video</button>';
+    preview.querySelector('video').src=selectedReelMedia.url;
+    $('reelPublishBtn').disabled=false;
+    $('reelUploadStatus').textContent=file.name+' siap diunggah.';
+  };
+  reader.onerror=()=>{$('reelUploadStatus').textContent='Berkas video tidak dapat dibaca.'};
+  reader.readAsDataURL(file);
+}
+
+function clearReelMedia(){
+  selectedReelMedia=null;
+  const input=$('reelFileInput');
+  if(input)input.value='';
+  const preview=$('reelMediaPreview');
+  if(preview){preview.innerHTML='';preview.classList.add('hidden')}
+  const status=$('reelUploadStatus');
+  if(status)status.textContent='';
+  const button=$('reelPublishBtn');
+  if(button)button.disabled=true;
+}
+
+async function publishReel(event){
+  event.preventDefault();
+  if(!selectedReelMedia){toast('Pilih berkas video terlebih dahulu.');return}
+  const status=$('reelUploadStatus');
+  const button=$('reelPublishBtn');
+  const caption=$('reelCaption').value.trim();
+  button.disabled=true;
+  try{
+    status.textContent='Mengunggah video ke Drive…';
+    const uploaded=await apiRequest('uploadMedia',{dataUrl:selectedReelMedia.url,mediaType:'video',name:selectedReelMedia.name});
+    if(!uploaded||!(uploaded.url||uploaded.streamUrl))throw new Error('Sesi berakhir. Masuk kembali untuk mengunggah.');
+    status.textContent='Menyimpan video ke feed…';
+    const created=await apiRequest('createReel',{caption,mediaUrl:uploaded.url||uploaded.streamUrl,mediaType:uploaded.type||selectedReelMedia.type,emoji:$('reelEmoji').value});
+    if(!created)throw new Error('Video gagal disimpan ke server.');
+    reelData.unshift(normalizeReel(created));
+    reelIndex=0;
+    reelsLoaded=true;
+    closeModal('reelUploadModal');
+    clearReelMedia();
+    renderReels();
+    toast('Video berhasil diterbitkan.');
+  }catch(error){
+    status.textContent='Gagal mengunggah: '+error.message;
+    toast('Gagal mengunggah: '+error.message);
+    button.disabled=false;
+  }
+}
+
+function reelThumbHTML(r){
+  const raw=String(r.mediaUrl||'');
+  if(!raw)return`<span class="reel-thumb-emoji">${esc(r.emoji||'🎬')}</span>`;
+  if(isVideoMedia(r.mediaType)){
+    const poster=mediaPosterUrl(raw);
+    // Poster diambil dari endpoint thumbnail Drive yang dialihkan ke CDN gambar,
+    // sedangkan endpoint unduh video sering menggantung dan membanjiri antrean.
+    if(poster)return`<img loading="lazy" src="${esc(poster)}" alt="${esc(r.caption||'Video')}">`;
+    if(!driveFileId(raw))return`<video muted loop playsinline webkit-playsinline preload="metadata" src="${esc(raw)}"></video>`;
+    return`<span class="reel-thumb-emoji">${esc(r.emoji||'🎬')}</span>`;
+  }
+  return`<img loading="lazy" src="${esc(normalizeImageUrl(raw))}" alt="${esc(r.caption||'Video')}">`;
+}
+
+async function renderProfileVideos(){
+  const container=$('profilePageContent');
+  if(!container||!profileUser)return;
+  const handle=profileUser.handle;
+  const wanted=String(handle).toLowerCase();
+  container.innerHTML='<p class="muted small">Memuat video…</p>';
+  let list=[];
+  try{
+    const data=await apiRequest('reels',{handle});
+    const items=Array.isArray(data)?data:(data&&data.items);
+    if(Array.isArray(items))list=items.map(normalizeReel).filter(r=>String(r.handle||'').toLowerCase()===wanted);
+  }catch(_){ }
+  if(!list.length)list=reelData.filter(r=>String(r.handle).toLowerCase()===wanted);
+  if(!profileUser||profileUser.handle!==handle||profileTab!=='videos')return;
+  container.innerHTML=list.length
+    ?'<div class="reel-grid">'+list.map(r=>`<button class="reel-thumb" type="button" onclick="openReelById('${encodeURIComponent(r.id)}')">${reelThumbHTML(r)}<span class="reel-thumb-caption">${esc(r.caption||'Video')}</span></button>`).join('')+'</div>'
+    :'<p class="muted small">Belum ada video.</p>';
+}
+
+function openReelById(encodedId){
+  pendingReelId=decodeURIComponent(String(encodedId||''));
+  if(!pendingReelId){toast('Video tidak memiliki ID yang valid.');return}
+  setView('beranda');
+  setSort('video');
+}
+
+function openGift(user,reelId=''){
+  giftTargetReelId=String(reelId||'');
+  const session=getCurrentSession();
+  if(session&&session.coins!=null)coinBalance=Number(session.coins)||0;
   $('giftTitle').textContent='Kirim gift ke '+user;
   const gifts=[
     ['🌹','Mawar',10],['❤️','Hati',25],['☕','Kopi',50],['⭐','Bintang',100],
@@ -1777,6 +2158,7 @@ function openGift(user){
     `<button class="gift-option ${selectedGift.name===g[1]?'selected':''}" onclick="selectGift('${g[1]}','${g[0]}',${g[2]},this)"><b>${g[0]}</b><span>${g[1]}</span><br><small>${g[2]} koin</small></button>`
   ).join('');
 
+  $('coinBalance').textContent=coinBalance.toLocaleString('id-ID')+' koin';
   openModal('giftModal');
 }
 
@@ -1786,20 +2168,30 @@ function selectGift(name,emoji,coins,button){
   button.classList.add('selected');
 }
 
-function sendGift(){
+async function sendGift(){
   if(coinBalance<selectedGift.coins){
     toast('Saldo koin tidak cukup.');
     return;
   }
 
-  coinBalance-=selectedGift.coins;
-  giftCount++;
-  profit+=Math.round(selectedGift.coins*69);
+  const token=localStorage.getItem('ruma_token')||'';
+  if(token&&token.indexOf('LOCAL_')!==0&&giftTargetReelId){
+    try{
+      const result=await apiRequest('sendGift',{reelId:giftTargetReelId,gift:selectedGift.name});
+      if(!result){toast('Sesi berakhir. Masuk kembali untuk mengirim gift.');return}
+      coinBalance=Number(result.coins!=null?result.coins:coinBalance-selectedGift.coins);
+      const session=getCurrentSession();
+      if(session){
+        session.coins=coinBalance;
+        localStorage.setItem('ruma_user',JSON.stringify(session));
+        localStorage.setItem('ruma_demo_session',JSON.stringify(session));
+      }
+    }catch(error){toast(error.message||'Gift gagal dikirim.');return}
+  }else{
+    coinBalance-=selectedGift.coins;
+  }
 
   $('coinBalance').textContent=coinBalance.toLocaleString('id-ID')+' koin';
-  $('giftReceived').textContent=giftCount+' gift';
-  $('walletProfit').textContent='Rp '+profit.toLocaleString('id-ID');
-  $('creatorEarnings').textContent='Rp '+profit.toLocaleString('id-ID');
 
   closeModal('giftModal');
   toast('Gift '+selectedGift.emoji+' berhasil terkirim.');
@@ -1811,6 +2203,24 @@ function renderCreatorContent(){
   $('creatorContent').innerHTML=posts.filter(p=>p.handle===handle).map(p=>
     `<div class="wallet-line"><span>${esc(p.text.slice(0,90))}${p.text.length>90?'…':''}</span><strong>♡ ${p.likes}</strong></div>`
   ).join('')||'<p class="muted small">Terbitkan postingan untuk melihat performanya.</p>';
+  loadCreatorStats();
+}
+
+async function loadCreatorStats(){
+  try{
+    const data=await apiRequest('creator');
+    if(!data)return;
+    const n=value=>Number(value||0).toLocaleString('id-ID');
+    $('creatorViews').textContent=n(data.reels);
+    $('creatorLikes').textContent=n(data.likes);
+    $('creatorEarnings').textContent='Rp '+n(data.profit);
+    $('walletProfit').textContent='Rp '+n(data.profit);
+    $('giftReceived').textContent=n(data.giftsReceived)+' gift';
+    if(data.coins!=null){
+      coinBalance=Number(data.coins)||0;
+      $('coinBalance').textContent=coinBalance.toLocaleString('id-ID')+' koin';
+    }
+  }catch(_){ }
 }
 
 $('postInput').addEventListener('input',()=>{
@@ -1828,6 +2238,7 @@ $('searchInput').addEventListener('input',event=>{
   }
 
   if(view==='beranda'||view==='jelajahi'){
+    if(searchTerm&&sort==='video')setSort('rekomendasi');
     if(searchTerm){
       view='jelajahi';
       $('pageTitle').textContent='Hasil pencarian';
@@ -1843,20 +2254,45 @@ $('searchInput').addEventListener('input',event=>{
   }
 });
 
-let touchY=0;
+// Kontrol native <video> menempati strip bawah, jadi sentuhan di area itu
+// dibiarkan agar tombol play/volume tidak ikut memicu pindah video.
+function isVideoControlTouch(target,touch){
+  if(!target||!target.closest)return false;
+  if(target.closest('button,a,input,select,textarea'))return true;
+  const video=target.closest('video');
+  if(!video)return false;
+  const rect=video.getBoundingClientRect();
+  return touch.clientY>rect.bottom-64;
+}
+
+let touchY=0,swipeBlocked=false;
 $('reelsStage').addEventListener('touchstart',event=>{
-  touchY=event.changedTouches[0].screenY;
+  const touch=event.changedTouches[0];
+  touchY=touch.screenY;
+  swipeBlocked=isVideoControlTouch(event.target,touch);
 },{passive:true});
 
 $('reelsStage').addEventListener('touchend',event=>{
+  if(swipeBlocked)return;
   const delta=touchY-event.changedTouches[0].screenY;
-  if(Math.abs(delta)>45)nextReel(delta>0?1:-1);
+  if(Math.abs(delta)>60)nextReel(delta>0?1:-1);
 },{passive:true});
+
+function reelsVisible(){
+  const stage=$('reelsView');
+  return!!stage&&!stage.classList.contains('hidden');
+}
 
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){
     document.querySelectorAll('.modal-backdrop.open').forEach(m=>m.classList.remove('open'));
+    return;
   }
+  if(!reelsVisible())return;
+  const target=event.target;
+  if(target&&(target.matches('input,textarea,select')||target.isContentEditable))return;
+  if(event.key==='ArrowDown'){event.preventDefault();nextReel(1)}
+  if(event.key==='ArrowUp'){event.preventDefault();nextReel(-1)}
 });
 
 $('fullProfileAvatar')?.addEventListener('click',()=>openImagePreview($('fullProfileAvatar').dataset.image,$('fullProfileAvatar').dataset.name));
@@ -1868,7 +2304,7 @@ refreshCurrentSession().finally(()=>{
   loadPeopleDirectory();
 });
 renderRooms();
-renderReels();
+loadRemoteReels();
 </script>
 </body>
 </html>

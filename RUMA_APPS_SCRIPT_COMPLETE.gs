@@ -57,6 +57,8 @@ function doPost(e) {
     if (action === "leaveRoom") return reply(true, "", null, leaveRoom(req, user));
     if (action === "createRoomPost") return reply(true, "", null, createRoomPost(req, user));
     if (action === "likeRoomPost") return reply(true, "", null, likeRoomPost(req, user));
+    if (action === "createReel") return reply(true, "", null, createReel(req, user));
+    if (action === "deleteReel") return reply(true, "", null, deleteReel(req, user));
     if (action === "toggleReelLike") return reply(true, "", null, toggleReelLike(req, user));
     if (action === "toggleReelSave") return reply(true, "", null, toggleReelSave(req, user));
     if (action === "sendGift") return reply(true, "", null, sendGift(req, user));
@@ -435,12 +437,12 @@ function toggleRelation(sheetName, keyField, keyVal, userId) {
 
   if (foundIndex > 0) {
     sheet.deleteRow(foundIndex);
-    const count = sheet.getDataRange().getValues().filter(r => String(r[0]) === String(keyVal)).length - 1;
+    const count = sheet.getDataRange().getValues().filter(r => String(r[0]) === String(keyVal)).length;
     return { on: false, count: Math.max(0, count) };
   } else {
     sheet.appendRow([keyVal, userId]);
-    const count = sheet.getDataRange().getValues().filter(r => String(r[0]) === String(keyVal)).length - 1;
-    return { on: true, count: Math.max(1, count) };
+    const count = sheet.getDataRange().getValues().filter(r => String(r[0]) === String(keyVal)).length;
+    return { on: true, count: Math.max(0, count) };
   }
 }
 
@@ -718,39 +720,89 @@ function likeRoomPost(req, user) {
 }
 
 /* ================= REELS & GIFTS ================= */
+function reelItem(r, user, likes, saves, users) {
+  const id = String(r.id);
+  const handle = String(r.handle || "");
+  const owner = users.find(u => "@" + String(u.username || "").toLowerCase() === handle.toLowerCase());
+  const name = String(r.user || (owner && owner.name) || "Pengguna RUMA");
+  return {
+    id: id,
+    user: name,
+    handle: handle,
+    initial: String(r.initial || name.charAt(0) || "R").toUpperCase(),
+    emoji: String(r.emoji || "🎬"),
+    caption: String(r.caption || ""),
+    audio: String(r.audio || ""),
+    avatarUrl: owner ? String(owner.avatarUrl || "") : "",
+    color: owner ? String(owner.color || "#e8efff") : "#e8efff",
+    ink: owner ? String(owner.ink || "#2859a8") : "#2859a8",
+    mediaUrl: String(r.mediaUrl || ""),
+    mediaType: String(r.mediaType || ""),
+    createdAt: Number(r.createdAt || 0),
+    likes: likes.filter(l => String(l.reelId) === id).length,
+    liked: user ? likes.some(l => String(l.reelId) === id && String(l.userId) === String(user.id)) : false,
+    saved: user ? saves.some(s => String(s.reelId) === id && String(s.userId) === String(user.id)) : false,
+    mine: user ? handle.toLowerCase() === ("@" + String(user.username || "")).toLowerCase() : false
+  };
+}
+
 function getReels(req, token) {
   const user = getUserByToken(token);
   let reels = getRows("Reels");
 
-  if (reels.length === 0) {
-    reels = [
-      { id: "RL_1", user: "Alya Rahma", handle: "@alyarahma", initial: "A", emoji: "🌅", caption: "Mulai hari dengan satu langkah kecil. #Motivasi", audio: "♫ Original audio · Alya" },
-      { id: "RL_2", user: "Dimas Pratama", handle: "@dimaspr", initial: "D", emoji: "💻", caption: "3 tools gratis yang membantu produktivitas! #Teknologi", audio: "♫ Lo-fi study beat" }
-    ];
+  const handleFilter = String((req && req.handle) || "").trim().toLowerCase().replace(/^@/, "");
+  if (handleFilter) {
+    reels = reels.filter(r => String(r.handle || "").toLowerCase().replace(/^@/, "") === handleFilter);
   }
 
   const likes = getRows("ReelLikes");
   const saves = getRows("ReelSaves");
+  const users = getRows("Users");
 
-  const items = reels.map(r => ({
-    id: String(r.id),
-    user: r.user,
-    handle: r.handle,
-    initial: r.initial,
-    emoji: r.emoji,
-      caption: r.caption,
-      audio: r.audio,
-      mediaUrl: r.mediaUrl || "",
-      mediaType: r.mediaType || "",
-    likes: likes.filter(l => String(l.reelId) === String(r.id)).length + 120,
-    liked: user ? likes.some(l => String(l.reelId) === String(r.id) && String(l.userId) === String(user.id)) : false,
-    saved: user ? saves.some(s => String(s.reelId) === String(r.id) && String(s.userId) === String(user.id)) : false
-  }));
+  const items = reels
+    .slice()
+    .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+    .map(r => reelItem(r, user, likes, saves, users));
 
   return { items: items };
 }
 
+function createReel(req, user) {
+  const caption = String(req.caption || req.text || "").trim().slice(0, 700);
+  const mediaUrl = String(req.mediaUrl || "").trim();
+  const mediaType = String(req.mediaType || "").trim();
+  const emoji = String(req.emoji || "").trim() || "🎬";
+  if (!mediaUrl && !caption) throw new Error("Unggah video atau tulis caption terlebih dahulu.");
+  if (mediaUrl.indexOf("data:") === 0) throw new Error("Media belum terunggah ke server. Coba unggah ulang.");
+
+  const id = "RL_" + Date.now();
+  const createdAt = Date.now();
+  const handle = "@" + user.username;
+  const initial = String(user.name || user.username || "R").charAt(0).toUpperCase();
+  const audio = String(req.audio || "").trim() || ("♫ Original audio · " + user.name);
+
+  getSheet("Reels").appendRow([id, user.name, handle, initial, emoji, caption, audio, createdAt, mediaUrl, mediaType]);
+
+  return reelItem(
+    { id: id, user: user.name, handle: handle, initial: initial, emoji: emoji, caption: caption, audio: audio, createdAt: createdAt, mediaUrl: mediaUrl, mediaType: mediaType },
+    user, [], [], getRows("Users")
+  );
+}
+
+function deleteReel(req, user) {
+  const sheet = getSheet("Reels");
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(req.id) && String(data[i][2]) === "@" + String(user.username).toLowerCase()) {
+      sheet.deleteRow(i + 1);
+      return true;
+    }
+  }
+  throw new Error("Video tidak ditemukan atau kamu tidak memiliki hak akses.");
+}
+
 function toggleReelLike(req, user) {
+  if (!req.id) throw new Error("Video tidak valid.");
   const result = toggleRelation("ReelLikes", "reelId", req.id, user.id);
   if (result.on) {
     const reel = getRows("Reels").find(r => String(r.id) === String(req.id));
@@ -760,12 +812,15 @@ function toggleReelLike(req, user) {
   return result;
 }
 function toggleReelSave(req, user) {
+  if (!req.id) throw new Error("Video tidak valid.");
   return toggleRelation("ReelSaves", "reelId", req.id, user.id);
 }
 
 function sendGift(req, user) {
   const giftsCost = { Mawar: 10, Hati: 25, Kopi: 50, Bintang: 100, Berlian: 250, Roket: 500, Mahkota: 800, Perayaan: 120 };
   const cost = giftsCost[req.gift] || 10;
+  const reel = getRows("Reels").find(r => String(r.id) === String(req.reelId));
+  if (!reel) throw new Error("Video tidak ditemukan.");
 
   if (user.coins < cost) throw new Error("Saldo koin tidak mencukupi.");
 
@@ -781,7 +836,12 @@ function sendGift(req, user) {
   }
 
   getSheet("Gifts").appendRow(["G_" + Date.now(), req.reelId, user.id, req.gift, cost, Date.now()]);
-  return { coins: newCoins };
+
+  const owner = getUserByUsername(String(reel.handle || "").replace(/^@/, ""));
+  if (owner && String(owner.id) !== String(user.id)) {
+    createNotification(owner.id, "reel_gift", user, req.reelId, user.name + " mengirim gift " + req.gift + " untuk videomu.");
+  }
+  return { coins: newCoins, gift: req.gift, reelId: String(req.reelId) };
 }
 
 /* ================= CREATOR STUDIO ================= */
@@ -795,14 +855,21 @@ function getCreatorData(user) {
     totalLikes += likes.filter(l => String(l.postId) === String(p.id)).length;
   });
 
-  const myGifts = gifts.filter(g => String(g.senderUserId) === String(user.id));
-  const totalGifts = myGifts.length;
-  const estimatedProfit = (totalLikes * 500) + (totalGifts * 2000);
+  const myHandle = ("@" + String(user.username || "")).toLowerCase();
+  const myReelIds = getRows("Reels")
+    .filter(r => String(r.handle || "").toLowerCase() === myHandle)
+    .map(r => String(r.id));
+  const receivedGifts = gifts.filter(g => myReelIds.indexOf(String(g.reelId)) >= 0);
+  const giftCoins = receivedGifts.reduce((sum, g) => sum + (Number(g.coins) || 0), 0);
+  const totalGifts = receivedGifts.length;
+  const estimatedProfit = (totalLikes * 500) + giftCoins;
 
   return {
     likes: totalLikes,
     profit: estimatedProfit,
     giftsReceived: totalGifts,
+    giftCoins: giftCoins,
+    reels: myReelIds.length,
     coins: user.coins || 1250,
     posts: myPosts.map(p => ({
       text: p.text.slice(0, 90),
@@ -812,6 +879,14 @@ function getCreatorData(user) {
 }
 
 /* ================= MEDIA UPLOAD ================= */
+function driveStreamUrl(fileId) {
+  return "https://drive.google.com/uc?export=download&id=" + fileId;
+}
+
+function driveThumbnailUrl(fileId) {
+  return "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+}
+
 function uploadMedia(req, user) {
   const dataUrl = String(req.dataUrl || "");
   const mediaType = String(req.mediaType || "").toLowerCase();
@@ -826,7 +901,20 @@ function uploadMedia(req, user) {
   const blob = Utilities.newBlob(bytes, contentType, name);
   const file = folderId ? DriveApp.getFolderById(folderId).createFile(blob) : DriveApp.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return { id: file.getId(), url: "https://drive.google.com/thumbnail?id=" + file.getId() + "&sz=w1000", type: contentType, name: name, ownerId: user.id };
+
+  // Endpoint thumbnail Drive hanya merender bingkai gambar, sehingga video harus
+  // memakai URL streaming agar elemen <video> benar-benar bisa memutar.
+  const isVideo = contentType.indexOf("video/") === 0;
+  const fileId = file.getId();
+  return {
+    id: fileId,
+    url: isVideo ? driveStreamUrl(fileId) : driveThumbnailUrl(fileId),
+    streamUrl: driveStreamUrl(fileId),
+    thumbnail: driveThumbnailUrl(fileId),
+    type: contentType,
+    name: name,
+    ownerId: user.id
+  };
 }
 
 /* ================= REPORTS AND ADMIN ================= */
