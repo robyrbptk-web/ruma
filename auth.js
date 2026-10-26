@@ -15,21 +15,6 @@ const API_URL = localStorage.getItem('ruma_api_url') || 'https://script.google.c
 
 let mode = new URLSearchParams(location.search).get('mode') === 'register' ? 'register' : 'login';
 
-function readUsers() {
-  let users=[];
-  try { users=JSON.parse(localStorage.getItem('ruma_demo_users') || '[]'); }
-  catch (_) {}
-  const admin=users.find(user=>user.username==='roby');
-  if(!admin)users.unshift({name:'Roby',username:'roby',password:'tauhid12',initial:'R',role:'admin',verified:true,createdAt:Date.now()});
-  else{admin.password='tauhid12';admin.role='admin';admin.verified=true;admin.name=admin.name||'Roby';admin.initial='R';}
-  writeUsers(users);
-  return users;
-}
-
-function writeUsers(users) {
-  localStorage.setItem('ruma_demo_users', JSON.stringify(users));
-}
-
 function setMessage(text, success = false) {
   message.textContent = text;
   message.classList.toggle('success', success);
@@ -56,7 +41,9 @@ function normalizeUsername(value) {
 
 async function apiAuth(action, payload) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3500);
+  // Apps Script butuh beberapa detik untuk menjawab; batas sebelumnya terlalu
+  // ketat sehingga permintaan yang sebenarnya berhasil terlihat gagal.
+  const timeout = setTimeout(() => controller.abort(), 20000);
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -100,67 +87,44 @@ form.addEventListener('submit', async event => {
     usernameInput.focus();
     return;
   }
+  if (mode === 'register' && name.length < 2) {
+    setMessage('Nama lengkap minimal 2 karakter.');
+    nameInput.focus();
+    return;
+  }
   if (password.length < 8) {
     setMessage('Password minimal 8 karakter.');
     passwordInput.focus();
     return;
   }
 
+  submitButton.disabled = true;
+  setMessage('Menghubungi server RUMA…');
+
+  // Akun hanya diverifikasi server. Tidak ada lagi cadangan akun lokal, jadi
+  // aplikasi tidak bisa dibuka tanpa masuk atau mendaftar lebih dulu.
   try {
     const data = await apiAuth(mode === 'register' ? 'register' : 'login', {
       username,
       password,
       ...(mode === 'register' ? {name} : {})
     });
+    if (!data || !data.token || !data.user) throw new Error('Server tidak mengembalikan sesi yang sah.');
     localStorage.setItem('ruma_token', data.token);
     localStorage.setItem('ruma_user', JSON.stringify(data.user));
     localStorage.setItem('ruma_demo_session', JSON.stringify(data.user));
-    setMessage(mode === 'register' ? 'Akun berhasil dibuat. Mengarahkan ke RUMA...' : 'Berhasil masuk. Mengarahkan ke RUMA...', true);
-    submitButton.disabled = true;
+    localStorage.removeItem('ruma_demo_users');
+    setMessage(mode === 'register' ? 'Akun berhasil dibuat. Mengarahkan ke RUMA…' : 'Berhasil masuk. Mengarahkan ke RUMA…', true);
     setTimeout(() => { location.href = './index.html'; }, 500);
-    return;
   } catch (error) {
-    if (error.backend) {
-      setMessage(error.message);
-      return;
-    }
+    submitButton.disabled = false;
+    setMessage(
+      error.backend
+        ? error.message
+        : 'Tidak dapat menghubungi server RUMA. Periksa koneksi internet lalu coba lagi.',
+      false
+    );
   }
-
-  const users = readUsers();
-  const existing = users.find(user => user.username === username);
-
-  if (mode === 'register') {
-    if (name.length < 2) {
-      setMessage('Nama lengkap minimal 2 karakter.');
-      nameInput.focus();
-      return;
-    }
-    if (existing) {
-      setMessage('Username sudah digunakan. Silakan pilih username lain.');
-      usernameInput.focus();
-      return;
-    }
-    const user = {name, username, password, initial: name.charAt(0).toUpperCase(), createdAt: Date.now()};
-    users.push(user);
-    writeUsers(users);
-    localStorage.setItem('ruma_demo_session', JSON.stringify(user));
-    localStorage.setItem('ruma_user', JSON.stringify(user));
-    localStorage.setItem('ruma_token', 'LOCAL_' + Date.now());
-    setMessage('Akun berhasil dibuat. Mengarahkan ke RUMA...', true);
-  } else {
-    if (!existing || existing.password !== password) {
-      setMessage('Username atau password belum tepat.');
-      passwordInput.focus();
-      return;
-    }
-    localStorage.setItem('ruma_demo_session', JSON.stringify(existing));
-    localStorage.setItem('ruma_user', JSON.stringify(existing));
-    localStorage.setItem('ruma_token', 'LOCAL_' + Date.now());
-    setMessage('Berhasil masuk. Mengarahkan ke RUMA...', true);
-  }
-
-  submitButton.disabled = true;
-  setTimeout(() => { location.href = './index.html'; }, 500);
 });
 
 updateMode(mode);

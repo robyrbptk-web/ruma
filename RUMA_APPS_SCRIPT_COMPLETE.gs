@@ -37,6 +37,7 @@ function doPost(e) {
     if (!user) return reply(false, "Sesi telah berakhir. Silakan login kembali.", "UNAUTH");
     if (action === "notifications") return reply(true, "", null, getNotifications(user));
     if (action === "markNotificationsRead") return reply(true, "", null, markNotificationsRead(user));
+    if (action === "following") return reply(true, "", null, { handles: getFollowingHandles(user) });
     if (action === "uploadMedia") return reply(true, "", null, uploadMedia(req, user));
     if (action === "reportPost") return reply(true, "", null, reportPost(req, user));
     if (["adminOverview", "adminUsers", "adminPosts", "adminReports", "adminUpdateUser", "adminDeletePost", "adminResolveReport"].indexOf(action) >= 0) {
@@ -161,20 +162,22 @@ function setupAdminAccount() {
   const sheet = getSheet("Users");
   const existing = getUserByUsername("roby");
   if (existing) {
+    // Password admin yang sudah ada tidak pernah ditimpa otomatis, supaya
+    // menjalankan setup ulang tidak membuka kembali akun dengan kata sandi lama.
     const data = sheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
       if (String(data[i][0]) === String(existing.id)) {
-        sheet.getRange(i + 1, 3).setValue("tauhid12");
-        sheet.getRange(i + 1, 4).setValue("Roby");
+        sheet.getRange(i + 1, 4).setValue(data[i][3] || "Roby");
         sheet.getRange(i + 1, 11).setValue("admin");
         sheet.getRange(i + 1, 12).setValue("active");
         sheet.getRange(i + 1, 15).setValue(true);
-        return "Admin roby diperbarui.";
+        return "Akun admin roby sudah ada dan dipastikan aktif. Password tidak diubah.";
       }
     }
   }
-  sheet.appendRow(["U_" + Utilities.getUuid(), "roby", "tauhid12", "Roby", "", "Administrator RUMA", "#e8efff", "#2859a8", 1250, Date.now(), "admin", "active", "", "", true]);
-  return "Admin roby berhasil dibuat.";
+  const temporary = "ruma-" + Utilities.getUuid().slice(0, 8);
+  sheet.appendRow(["U_" + Utilities.getUuid(), "roby", temporary, "Roby", "", "Administrator RUMA", "#e8efff", "#2859a8", 1250, Date.now(), "admin", "active", "", "", true]);
+  return "Admin roby dibuat. Password sementara: " + temporary + " (ganti setelah login pertama).";
 }
 
 function setupRuma() {
@@ -214,12 +217,28 @@ function createNotification(userId, type, actor, entityId, message) {
 
 function getNotifications(user) {
   const items = getRows("Notifications").filter(n => String(n.userId) === String(user.id));
+  const actors = {};
+  getRows("Users").forEach(u => {
+    actors[String(u.id)] = {
+      avatarUrl: String(u.avatarUrl || ""),
+      name: String(u.name || u.username || "Pengguna RUMA"),
+      initial: String(u.name || u.username || "?").charAt(0).toUpperCase()
+    };
+  });
   return {
-    items: items.reverse().slice(0, 100).map(n => ({
-      id: String(n.id), type: String(n.type || "activity"), actorName: String(n.actorName || "Pengguna"),
-      actorHandle: String(n.actorHandle || ""), entityId: String(n.entityId || ""), message: String(n.message || "Aktivitas baru di akunmu."),
-      read: String(n.read).toLowerCase() === "true" || Number(n.read) === 1, createdAt: Number(n.createdAt) || Date.now()
-    })),
+    items: items.reverse().slice(0, 100).map(n => {
+      const actor = actors[String(n.actorUserId)] || null;
+      const actorName = String(n.actorName || (actor && actor.name) || "Pengguna RUMA");
+      return {
+        id: String(n.id), type: String(n.type || "activity"),
+        actorName: actorName,
+        actorHandle: String(n.actorHandle || ""),
+        actorAvatarUrl: actor ? actor.avatarUrl : "",
+        actorInitial: actor ? actor.initial : actorName.charAt(0).toUpperCase(),
+        entityId: String(n.entityId || ""), message: String(n.message || "Aktivitas baru di akunmu."),
+        read: String(n.read).toLowerCase() === "true" || Number(n.read) === 1, createdAt: Number(n.createdAt) || Date.now()
+      };
+    }),
     unread: items.filter(n => !(String(n.read).toLowerCase() === "true" || Number(n.read) === 1)).length
   };
 }
@@ -326,7 +345,9 @@ function getFeed(req, token) {
     posts = posts.filter(p => p.text.toLowerCase().includes(tag));
   }
 
-  posts.sort((a, b) => (req.sort === "terbaru" ? b.createdAt - a.createdAt : b.id - a.id));
+  // Id postingan berbentuk "P_<timestamp>", jadi pengurangan langsung
+  // menghasilkan NaN dan urutan feed menjadi acak — gunakan createdAt.
+  posts.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
   const items = posts.map(p => {
     const owner = users.find(u => String(u.id) === String(p.userId));
@@ -470,21 +491,35 @@ function addComment(req, user) {
 }
 
 /* ================= FOLLOW ================= */
+function normalizeHandle(value) {
+  return ("@" + String(value || "").replace(/^@/, "")).toLowerCase();
+}
+
+function getFollowingHandles(user) {
+  const mine = normalizeHandle(user.username);
+  return getRows("Followers")
+    .filter(f => normalizeHandle(f.followerHandle) === mine)
+    .map(f => String(f.targetHandle || ""));
+}
+
 function toggleFollow(req, user) {
   const followerHandle = "@" + user.username;
-  const targetHandle = req.handle;
+  const targetHandle = String(req.handle || "").trim();
+  if (!targetHandle) throw new Error("Akun tujuan tidak valid.");
+  if (normalizeHandle(targetHandle) === normalizeHandle(user.username)) throw new Error("Kamu tidak dapat mengikuti akunmu sendiri.");
+
   const sheet = getSheet("Followers");
   const data = sheet.getDataRange().getValues();
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === followerHandle && data[i][1] === targetHandle) {
+    if (normalizeHandle(data[i][0]) === normalizeHandle(followerHandle) && normalizeHandle(data[i][1]) === normalizeHandle(targetHandle)) {
       sheet.deleteRow(i + 1);
       return { on: false };
     }
   }
   sheet.appendRow([followerHandle, targetHandle]);
-  const target = getRows("Users").find(u => ("@" + String(u.username)).toLowerCase() === String(targetHandle).toLowerCase());
-  if (target) createNotification(target.id, "follow", user, targetHandle, user.name + " mulai mengikutimu.");
+  const target = getRows("Users").find(u => normalizeHandle("@" + u.username) === normalizeHandle(targetHandle));
+  if (target) createNotification(target.id, "follow", user, normalizeHandle(targetHandle), user.name + " mulai mengikutimu.");
   return { on: true };
 }
 
@@ -595,6 +630,7 @@ function getRooms(req, token) {
 
   const items = rooms.map(r => {
     const isJoined = user ? members.some(m => String(m.roomId) === String(r.id) && String(m.userId) === String(user.id)) : false;
+    const isOwner = user ? normalizeHandle(r.ownerHandle) === normalizeHandle(user.username) : false;
     return {
       id: String(r.id),
       name: r.name,
@@ -603,8 +639,10 @@ function getRooms(req, token) {
       emoji: r.emoji,
       access: r.access,
       verified: r.verified === true || r.verified === "true",
+      ownerHandle: String(r.ownerHandle || ""),
+      mine: isOwner,
       members: members.filter(m => String(m.roomId) === String(r.id)).length + 1,
-      joined: isJoined
+      joined: isJoined || isOwner
     };
   });
 
@@ -618,9 +656,10 @@ function getRoomDetail(req, token) {
 
   const members = getRows("RoomMembers");
   const isJoined = user ? members.some(m => String(m.roomId) === String(room.id) && String(m.userId) === String(user.id)) : false;
+  const isOwner = user ? normalizeHandle(room.ownerHandle) === normalizeHandle(user.username) : false;
 
-  if (room.access === "private" && !isJoined && String(room.ownerHandle) !== (user ? "@" + user.username : "")) {
-    return { locked: true, room: { id: room.id, name: room.name } };
+  if (room.access === "private" && !isJoined && !isOwner) {
+    return { locked: true, room: { id: room.id, name: room.name, emoji: room.emoji, access: room.access } };
   }
 
   let posts = getRows("RoomPosts").filter(rp => String(rp.roomId) === String(room.id));
@@ -637,17 +676,22 @@ function getRoomDetail(req, token) {
       description: room.description,
       category: room.category,
       emoji: room.emoji,
+      access: room.access,
+      ownerHandle: String(room.ownerHandle || ""),
+      mine: isOwner,
       members: members.filter(m => String(m.roomId) === String(room.id)).length + 1,
-      joined: isJoined
+      joined: isJoined || isOwner
     },
-    posts: posts.map(p => ({
-      id: String(p.id),
-      name: p.name,
-      handle: p.handle,
-      text: p.text,
-      likes: Number(p.likes) || 0,
-      createdAt: Number(p.createdAt)
-    }))
+    posts: posts
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+      .map(p => ({
+        id: String(p.id),
+        name: p.name,
+        handle: p.handle,
+        text: p.text,
+        likes: Number(p.likes) || 0,
+        createdAt: Number(p.createdAt)
+      }))
   };
 }
 
@@ -671,13 +715,22 @@ function joinRoom(req, user) {
   const room = getRows("Rooms").find(r => String(r.id) === String(req.id));
   if (!room) throw new Error("Ruang tidak ditemukan.");
 
-  if (room.access === "private" && req.password !== room.password) {
+  if (room.access === "private" && String(req.password || "") !== String(room.password || "")) {
     throw new Error("Password Ruang salah.");
   }
 
   const sheet = getSheet("RoomMembers");
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(req.id) && String(data[i][1]) === String(user.id)) {
+      return { joined: true, members: data.length - 1 + 1 };
+    }
+  }
   sheet.appendRow([req.id, user.id]);
-  return true;
+  return {
+    joined: true,
+    members: getRows("RoomMembers").filter(m => String(m.roomId) === String(req.id)).length + 1
+  };
 }
 
 function leaveRoom(req, user) {
@@ -710,13 +763,13 @@ function likeRoomPost(req, user) {
     if (String(data[i][0]) === String(req.id)) {
       const current = Number(data[i][6]) || 0;
       sheet.getRange(i + 1, 7).setValue(current + 1);
+      const author = getUserByUsername(String(data[i][4] || "").replace(/^@/, ""));
       const room = getRows("Rooms").find(r => String(r.id) === String(data[i][1]));
-      const owner = room && getUserByUsername(String(room.ownerHandle || "").replace(/^@/, ""));
-      if (owner) createNotification(owner.id, "room_like", user, req.id, user.name + " menyukai diskusi di Ruangmu.");
-      return true;
+      if (author) createNotification(author.id, "room_like", user, req.id, user.name + " menyukai diskusimu di Ruang " + (room ? room.name : "RUMA") + ".");
+      return { likes: current + 1 };
     }
   }
-  return true;
+  throw new Error("Diskusi tidak ditemukan.");
 }
 
 /* ================= REELS & GIFTS ================= */
@@ -729,7 +782,7 @@ function reelItem(r, user, likes, saves, users) {
     id: id,
     user: name,
     handle: handle,
-    initial: String(r.initial || name.charAt(0) || "R").toUpperCase(),
+    initial: String(r.initial || name.charAt(0) || "?").toUpperCase(),
     emoji: String(r.emoji || "🎬"),
     caption: String(r.caption || ""),
     audio: String(r.audio || ""),
@@ -778,7 +831,7 @@ function createReel(req, user) {
   const id = "RL_" + Date.now();
   const createdAt = Date.now();
   const handle = "@" + user.username;
-  const initial = String(user.name || user.username || "R").charAt(0).toUpperCase();
+  const initial = String(user.name || user.username || "?").charAt(0).toUpperCase();
   const audio = String(req.audio || "").trim() || ("♫ Original audio · " + user.name);
 
   getSheet("Reels").appendRow([id, user.name, handle, initial, emoji, caption, audio, createdAt, mediaUrl, mediaType]);
@@ -793,7 +846,7 @@ function deleteReel(req, user) {
   const sheet = getSheet("Reels");
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(req.id) && String(data[i][2]) === "@" + String(user.username).toLowerCase()) {
+    if (String(data[i][0]) === String(req.id) && normalizeHandle(data[i][2]) === normalizeHandle(user.username)) {
       sheet.deleteRow(i + 1);
       return true;
     }

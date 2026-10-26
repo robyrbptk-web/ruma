@@ -85,6 +85,8 @@ a{color:inherit;text-decoration:none}
 /* ===== Kartu: composer, post, room ===== */
 .composer,.post,.room-card,.side-card,.search-people{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
 .composer,.post,.room-card{padding:16px;margin-bottom:14px}
+.post-flash{animation:postFlash 1.7s ease-out}
+@keyframes postFlash{0%{box-shadow:0 0 0 3px #2563eb66}70%{box-shadow:0 0 0 3px #2563eb22}100%{box-shadow:var(--shadow)}}
 .composer-top{display:flex;align-items:flex-start;gap:12px}
 .composer textarea{flex:1;width:100%;min-height:56px;max-height:180px;resize:vertical;border:0;outline:0;padding:7px 0;background:transparent;font-size:14px;line-height:1.6}
 .composer-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:10px;margin-top:8px}
@@ -156,12 +158,29 @@ a{color:inherit;text-decoration:none}
 .permission-card p{margin:7px 0 12px;line-height:1.5}
 .permission-actions{display:flex;flex-wrap:wrap;gap:7px}
 .permission-actions .secondary{padding:8px 11px;color:#2859a8}
-.notification-list{display:grid;gap:8px;max-height:360px;overflow:auto}
-.notification-item{display:flex;gap:10px;padding:12px;border-radius:13px;background:#fafbfc;border:1px solid #eef0f4}
+.notification-list{display:grid;gap:6px;max-height:min(56dvh,440px);overflow:auto;padding-right:2px}
+.notification-bar{display:flex;align-items:center;gap:8px;margin-bottom:13px}
+.notification-filters{display:flex;gap:4px;padding:3px;border-radius:999px;background:var(--soft)}
+.notification-filters button{border:0;border-radius:999px;background:transparent;padding:6px 13px;font-size:11px;font-weight:700;color:var(--muted)}
+.notification-filters button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px #0000001f}
+.notification-mark{margin-left:auto;border:0;background:transparent;color:#2563eb;font-size:11px;font-weight:700;padding:6px 4px}
+.notification-day{margin:11px 2px 3px;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#969da8}
+.notification-day:first-child{margin-top:0}
+.notification-item{display:flex;gap:11px;padding:11px 12px;border-radius:14px;background:#fafbfc;border:1px solid #eef0f4}
 .notification-item.unread{background:#eef5ff;border-color:#d9e7ff}
-.notification-item strong{font-size:12px}
-.notification-item p{margin:3px 0 0;font-size:12px;line-height:1.45}
-.notification-item time{display:block;margin-top:5px;color:#969da8;font-size:10px}
+.notification-item.clickable{cursor:pointer}
+.notification-avatar{position:relative;flex:0 0 auto;width:40px;height:40px}
+.notification-avatar .avatar{width:40px;height:40px;font-size:14px}
+.notification-avatar b{position:absolute;right:-3px;bottom:-3px;display:grid;place-items:center;width:18px;height:18px;border:2px solid #fff;border-radius:50%;background:#e8efff;color:#2859a8;font-size:9px;line-height:1}
+.notification-avatar.like b{background:#ffe1e6;color:#d6335b}
+.notification-avatar.comment b{background:#e2ecff;color:#2563eb}
+.notification-avatar.repost b{background:#dcf7e6;color:#17864a}
+.notification-avatar.follow b{background:#ece4ff;color:#6d3bd6}
+.notification-avatar.gift b{background:#fff0d6;color:#b5730c}
+.notification-text{flex:1 1 auto;min-width:0}
+.notification-text p{margin:0;font-size:12.5px;line-height:1.5;color:#3f4650}
+.notification-text strong{color:var(--ink);font-weight:800}
+.notification-text time{display:block;margin-top:4px;color:#969da8;font-size:10px}
 .image-preview-modal{position:relative;max-width:min(92vw,760px);max-height:92dvh}
 .image-preview-modal img{display:block;max-width:92vw;max-height:88dvh;object-fit:contain;border-radius:16px;box-shadow:0 20px 60px #0008}
 .image-preview-close{position:absolute;right:-12px;top:-12px;z-index:1;background:#fff}
@@ -169,6 +188,12 @@ a{color:inherit;text-decoration:none}
 .field label{font-size:12px;font-weight:700}
 .field input,.field textarea,.field select{width:100%;min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px 13px;font-size:13px;background:#fff;transition:border-color .15s,box-shadow .15s}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:#9db8f3;box-shadow:0 0 0 4px #2563eb14;outline:0}
+.pick-row{display:flex;align-items:center;gap:11px}
+.pick-thumb,.pick-banner{flex:0 0 auto;border:1px solid var(--line);border-radius:12px;background:#f4f6fa center/cover no-repeat;overflow:hidden}
+.pick-thumb{width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
+.pick-thumb .avatar{width:100%;height:100%;font-size:17px}
+.pick-banner{width:96px;height:52px}
+.pick-row input[type=file]{flex:1 1 auto;min-width:0;border:0;padding:0;font-size:11.5px;background:transparent}
 .field textarea{min-height:85px;resize:vertical}
 .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .choice{border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;background:#fff}
@@ -237,21 +262,17 @@ a{color:inherit;text-decoration:none}
 .reels-view{overflow:hidden;background:#101114;color:#fff;border-radius:20px}
 .reels-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px}
 .reels-stage{display:flex;justify-content:center;padding:0 12px 14px}
-.reel-card{position:relative;width:min(100%,390px);height:min(72vh,690px);min-height:480px;border-radius:19px;overflow:hidden;background:linear-gradient(155deg,#ffb36b,#d94675 48%,#362c72);isolation:isolate}
-.reel-card:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 70% 20%,#ffffff40,transparent 28%),linear-gradient(0deg,#000c,transparent 58%)}
-.reel-art{position:absolute;inset:0;display:grid;place-items:center;font-size:110px;filter:drop-shadow(0 15px 25px #0005);z-index:0}
-.reel-media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:0}
-.reel-frame{border:0;background:#000}
+/* Kartu video memakai kolom flex: media menempati areanya sendiri tanpa overlay,
+   sehingga tombol pemutar asli — termasuk layar penuh — tidak pernah tertutup. */
+.reel-card{display:flex;flex-direction:column;width:min(100%,390px);height:min(78vh,720px);min-height:480px;border-radius:19px;overflow:hidden;background:#101114;color:#fff;isolation:isolate}
+.reel-media-wrap{position:relative;flex:1 1 auto;min-height:0;background:#000;overflow:hidden}
+.reel-art{position:absolute;inset:0;display:grid;place-items:center;font-size:110px;background:linear-gradient(155deg,#ffb36b,#d94675 48%,#362c72)}
+.reel-media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;border:0}
 .post-frame{display:block;width:100%;height:420px;max-height:420px;border:0;border-radius:12px;margin-top:12px;background:#000}
-.reel-card.has-media:before{background:transparent}
-.reel-card.has-media:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,#000b,transparent 42%)}
-.reel-card.has-media .reel-content{bottom:62px}
-.reel-card.has-media .reel-side{bottom:120px}
-.reel-fallback{display:none;position:absolute;left:14px;right:14px;top:44%;z-index:2;padding:12px;border-radius:12px;background:#000000b3;font-size:12px;line-height:1.55;text-align:center}
+.reel-fallback{display:none;position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%);z-index:2;padding:12px;border-radius:12px;background:#000000b3;font-size:12px;line-height:1.55;text-align:center}
 .reel-card.media-failed .reel-fallback{display:block}
 .reel-card.media-failed .reel-media{display:none}
-.reel-counter{position:absolute;top:12px;left:14px;z-index:2;padding:5px 10px;border-radius:999px;background:#00000059;font-size:11px;font-weight:700;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.reel-open-original{position:absolute;top:12px;right:14px;z-index:3;padding:6px 11px;border:0;border-radius:999px;background:#00000059;color:#fff;font-size:11px;font-weight:700;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.reel-counter{position:absolute;top:10px;left:12px;z-index:2;padding:4px 9px;border-radius:999px;background:#000000a6;font-size:11px;font-weight:700;pointer-events:none}
 .reels-empty{padding:46px 20px;text-align:center;color:#c5c7cc}
 .reels-empty strong{display:block;color:#fff;font-size:17px;margin-bottom:9px}
 .reels-empty p{font-size:12px;line-height:1.6;margin-bottom:4px}
@@ -260,15 +281,18 @@ a{color:inherit;text-decoration:none}
 .reel-thumb video,.reel-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .reel-thumb-emoji{position:absolute;inset:0;display:grid;place-items:center;font-size:34px}
 .reel-thumb-caption{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 7px;font-size:10px;line-height:1.35;color:#fff;text-align:left;background:linear-gradient(0deg,#000c,transparent);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.reel-content{position:absolute;left:17px;right:64px;bottom:20px;text-shadow:0 1px 5px #0008;z-index:2}
-.reel-user{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;margin-bottom:10px}
-.reel-user .avatar{width:30px;height:30px;font-size:11px}
-.reel-user>span:nth-of-type(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.reel-caption{font-size:13px;line-height:1.55}
-.reel-audio{font-size:11px}
-.reel-side{position:absolute;right:10px;bottom:75px;display:flex;flex-direction:column;align-items:center;gap:14px;z-index:2}
-.reel-action{width:44px;height:44px;border:0;border-radius:50%;background:#ffffff24;color:#fff;font-size:18px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.reel-action span{display:block;font-size:9px;margin-top:2px}
+.reel-info{flex:0 0 auto;display:flex;flex-direction:column;gap:9px;padding:12px 14px 14px;background:#101114;border-top:1px solid #ffffff14}
+.reel-user{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800}
+.reel-user .avatar{width:32px;height:32px;font-size:12px;flex:0 0 auto}
+.reel-user>span:nth-of-type(2){flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reel-user .follow{flex:0 0 auto;border-color:#ffffff38;background:#ffffff14;color:#fff}
+.reel-user .follow.following{background:#fff;border-color:#fff;color:#17181b}
+.reel-caption{font-size:13px;line-height:1.55;max-height:4.65em;overflow:auto}
+.reel-audio{font-size:11px;opacity:.72}
+.reel-actions{display:flex;gap:7px}
+.reel-action{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid #ffffff1f;border-radius:12px;background:#ffffff12;color:#fff;font-size:15px;padding:8px 2px}
+.reel-action span{display:block;font-size:9px;font-weight:700;opacity:.9;white-space:nowrap}
+.reel-action.danger{border-color:#ff8088;color:#ffb3b8}
 .reel-bottom{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 12px 15px}
 .reel-bottom button{border:1px solid #ffffff30;border-radius:999px;background:#ffffff12;color:#fff;padding:9px 12px;font-size:11px}
 .gift-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}
@@ -366,6 +390,12 @@ a{color:inherit;text-decoration:none}
   .reels-view{margin:0 -12px;border-radius:0}
   .reels-stage{padding:0}
   .reel-card{width:100%;height:calc(100dvh - var(--top-h) - var(--nav-h) - 150px);min-height:440px;border-radius:0}
+  /* Bilah info diringkas di layar kecil agar area media — dan tombol layar
+     penuh pemutar — tetap mendapat bagian terbesar dari tinggi kartu. */
+  .reel-info{gap:7px;padding:10px 12px 12px}
+  .reel-caption{max-height:3.1em;font-size:12.5px}
+  .reel-audio{display:none}
+  .reel-action{padding:7px 2px}
   .reels-head{position:sticky;top:0}
 }
 @media(max-width:360px){
@@ -374,6 +404,25 @@ a{color:inherit;text-decoration:none}
   .tool-btn{padding:9px 6px;font-size:11px}
 }
 </style>
+<script>
+// RUMA hanya untuk akun terdaftar: tanpa sesi yang sah pengguna diarahkan ke
+// halaman masuk sebelum antarmuka sempat dirender, sehingga tidak ada data
+// akun lain yang terlihat sekilas.
+(function(){
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem('ruma_user')||'null')}catch(_){session=null}
+  const token=localStorage.getItem('ruma_token')||'';
+  // Sesi lama hasil mode demo tidak punya token server, jadi tidak dianggap sah.
+  const valid=!!token&&token.indexOf('LOCAL_')!==0&&!!session&&!!session.username;
+  if(!valid){
+    localStorage.removeItem('ruma_token');
+    localStorage.removeItem('ruma_user');
+    localStorage.removeItem('ruma_demo_session');
+    localStorage.removeItem('ruma_demo_users');
+    location.replace('./auth.html?mode=login');
+  }
+})();
+</script>
 </head>
 
 <body>
@@ -388,12 +437,9 @@ a{color:inherit;text-decoration:none}
     <input id="searchInput" type="search" placeholder="Cari Ruang, topik, atau #hashtag..." aria-label="Cari">
   </label>
   <div class="top-actions">
-    <div class="auth-actions" aria-label="Akun">
-      <a class="auth-link" href="./auth.html?mode=login">Masuk</a>
-      <a class="auth-link primary-link" href="./auth.html?mode=register">Daftar</a>
-    </div>
+    <div class="auth-actions" aria-label="Akun"></div>
     <button class="icon-btn notification-button" id="notificationButton" onclick="openNotifications()" aria-label="Notifikasi"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="notification-badge hidden" id="notificationBadge">0</span></button>
-    <button class="avatar" onclick="openMyProfile()" aria-label="Profil saya">R</button>
+    <button class="avatar" id="topbarAvatar" onclick="openMyProfile()" aria-label="Profil saya"></button>
   </div>
 </header>
 
@@ -430,7 +476,7 @@ a{color:inherit;text-decoration:none}
 
     <section class="composer" id="composer">
       <div class="composer-top">
-        <div class="avatar">R</div>
+        <div class="avatar" id="composerAvatar"></div>
         <textarea id="postInput" maxlength="700" placeholder="Apa yang ingin kamu diskusikan? Tambahkan #hashtag agar mudah ditemukan..." aria-label="Tulis postingan"></textarea>
       </div>
       <input id="mediaInput" type="file" accept="image/*,video/*" hidden onchange="handleMedia(event)">
@@ -503,9 +549,9 @@ a{color:inherit;text-decoration:none}
     <section class="profile-hero">
       <div class="profile-cover" id="fullProfileCover"></div>
       <div class="profile-main">
-        <div class="profile-row"><div class="avatar" id="fullProfileAvatar">R</div><div style="display:flex;gap:8px"><button type="button" class="secondary hidden" id="fullProfileEdit" onclick="editCurrentProfile()">Edit profil</button><button class="follow" id="fullProfileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
-        <h2 id="fullProfileName">Roby <span id="fullProfileVerified" class="verified-mark hidden">✓</span></h2>
-        <div id="fullProfileHandle" class="muted small">@roby</div>
+        <div class="profile-row"><div class="avatar" id="fullProfileAvatar">?</div><div style="display:flex;gap:8px"><button type="button" class="secondary hidden" id="fullProfileEdit" onclick="editCurrentProfile()">Edit profil</button><button class="follow" id="fullProfileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
+        <h2 id="fullProfileName">Memuat profil…</h2>
+        <div id="fullProfileHandle" class="muted small"></div>
         <p id="fullProfileBio" class="profile-bio"></p>
         <div id="verificationNote" class="verification-note hidden">Centang biru tersedia melalui langganan berbayar.</div>
         <div class="profile-stats"><span><strong id="fullProfilePosts">0</strong> postingan</span><span><strong id="fullProfileFollowers">0</strong> pengikut</span><span><strong id="fullProfileFollowing">0</strong> mengikuti</span></div>
@@ -579,25 +625,6 @@ a{color:inherit;text-decoration:none}
   </section>
 </div>
 
-<div class="modal-backdrop" id="profileModal" onclick="if(event.target===this)closeModal('profileModal')">
-  <section class="modal">
-    <div class="modal-head"><h2>Profil pengguna</h2><button class="close" onclick="closeModal('profileModal')" aria-label="Tutup">×</button></div>
-    <div class="profile-cover"></div>
-    <div class="profile-row"><div class="avatar" id="profileAvatar">R</div><div style="display:flex;gap:8px"><button type="button" class="secondary hidden" id="profileEdit" onclick="editCurrentProfile()">Edit profil</button><button class="follow" id="profileFollow" onclick="toggleProfileFollow()">＋ Ikuti</button></div></div>
-    <h3 id="profileName">Roby</h3>
-    <div id="profileHandle" class="muted small">@roby</div>
-    <p id="profileBio" class="profile-bio"></p>
-    <div class="profile-tabs">
-      <button class="active" onclick="showProfilePosts('posts',this)">Postingan</button>
-      <button onclick="showProfilePosts('liked',this)">Disukai</button>
-      <button onclick="showProfilePosts('reposted',this)">Repost</button>
-      <button onclick="showProfilePosts('videos',this)">Video</button>
-    </div>
-    <div id="profileContent"></div>
-    <div class="profile-stats"><span><strong id="profilePosts">0</strong> postingan</span><span><strong id="profileFollowers">128</strong> pengikut</span><span><strong id="profileFollowing">86</strong> mengikuti</span></div>
-  </section>
-</div>
-
 <div class="modal-backdrop" id="imagePreviewModal" onclick="if(event.target===this)closeModal('imagePreviewModal')">
   <section class="image-preview-modal" role="dialog" aria-modal="true" aria-label="Pratinjau foto profil">
     <button class="close image-preview-close" onclick="closeModal('imagePreviewModal')" aria-label="Tutup">×</button>
@@ -605,11 +632,18 @@ a{color:inherit;text-decoration:none}
   </section>
 </div>
 
-<div class="modal-backdrop" id="notificationModal" onclick="if(event.target===this)closeModal('notificationModal')">
+<div class="modal-backdrop" id="notificationModal" onclick="if(event.target===this)closeNotifications()">
   <section class="modal notification-modal" role="dialog" aria-modal="true" aria-labelledby="notificationTitle">
-    <div class="modal-head"><h2 id="notificationTitle">Notifikasi</h2><button class="close" onclick="closeModal('notificationModal')" aria-label="Tutup">×</button></div>
-    <div class="permission-card"><strong>Perangkat Android</strong><p class="muted small">Aktifkan izin agar RUMA dapat mengirim notifikasi dan memakai fitur kamera serta lokasi saat kamu membutuhkannya.</p><div class="permission-actions"><button class="secondary" onclick="requestNotificationPermission()">Notifikasi</button><button class="secondary" onclick="requestCameraPermission()">Kamera</button><button class="secondary" onclick="requestLocationPermission()">Lokasi</button></div><div id="permissionStatus" class="muted small"></div></div>
-    <div id="notificationList" class="notification-list"><div class="empty">Memuat notifikasi...</div></div>
+    <div class="modal-head"><h2 id="notificationTitle">Notifikasi</h2><button class="close" onclick="closeNotifications()" aria-label="Tutup">×</button></div>
+    <div class="notification-bar">
+      <div class="notification-filters" role="tablist">
+        <button type="button" data-notification-filter="all" class="active" onclick="setNotificationFilter('all')">Semua</button>
+        <button type="button" data-notification-filter="unread" onclick="setNotificationFilter('unread')">Belum dibaca</button>
+      </div>
+      <button type="button" id="notificationMarkAll" class="notification-mark hidden" onclick="markAllNotificationsRead()">Tandai semua dibaca</button>
+    </div>
+    <div id="notificationList" class="notification-list"><div class="empty">Memuat notifikasi…</div></div>
+    <div class="permission-card" style="margin:16px 0 0"><strong>Perangkat Android</strong><p class="muted small">Aktifkan izin agar RUMA dapat mengirim notifikasi dan memakai fitur kamera serta lokasi saat kamu membutuhkannya.</p><div class="permission-actions"><button class="secondary" onclick="requestNotificationPermission()">Notifikasi</button><button class="secondary" onclick="requestCameraPermission()">Kamera</button><button class="secondary" onclick="requestLocationPermission()">Lokasi</button></div><div id="permissionStatus" class="muted small"></div></div>
   </section>
 </div>
 
@@ -657,7 +691,8 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
 }[ch]));
 
 function avatarMarkup(url,alt,fallback){
-  const initial=String(fallback||'R').charAt(0).toUpperCase();
+  const source=String(fallback||alt||'').trim();
+  const initial=(source?source.charAt(0):'?').toUpperCase();
   const imageUrl=normalizeImageUrl(url);
   return imageUrl?'<img src="'+esc(imageUrl)+'" alt="'+esc(alt||'Profil')+'" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'"> <span class="avatar-fallback">'+esc(initial)+'</span>':esc(initial);
 }
@@ -752,12 +787,12 @@ let reelsLoaded=false;
 let reelsLoading=false;
 let selectedReelMedia=null;
 
-let rooms = [
-  {id:'r1',name:'Teknologi Indonesia',description:'Diskusi AI, pemrograman dan produk digital.',category:'Teknologi',emoji:'💻',access:'public',verified:true,owner:'@adminruma',members:2400,joined:false,posts:[{name:'Dimas Pratama',handle:'@dimaspr',text:'Apa teknologi AI yang paling menarik bagimu?',time:'20 menit lalu',likes:18}]},
-  {id:'r2',name:'Diskusi Publik',description:'Bertukar pendapat mengenai isu sosial dan kebijakan publik.',category:'Sosial',emoji:'💬',access:'public',verified:true,owner:'@komunitasdiskusi',members:1280,joined:true,posts:[]},
-  {id:'r3',name:'Belajar dan Pendidikan',description:'Bahan belajar, beasiswa dan pengembangan diri.',category:'Pendidikan',emoji:'📚',access:'public',verified:false,owner:'@nadiaputri',members:735,joined:false,posts:[]},
-  {id:'r4',name:'Kawan Startup',description:'Membangun produk, usaha dan mencari rekan kolaborasi.',category:'Bisnis',emoji:'🚀',access:'private',password:'ruma1234',verified:false,owner:'@roby',members:42,joined:false,posts:[]}
-];
+// Daftar Ruang sepenuhnya berasal dari server; tidak ada Ruang atau anggota
+// contoh yang dikarang di sisi klien.
+let rooms=[];
+let roomsLoaded=false;
+let roomsLoading=false;
+let currentRoom=null;
 
 restoreDemoState();
 
@@ -780,10 +815,11 @@ let giftTargetReelId='';
 let coinBalance=1250;
 let selectedMedia=null;
 const followed=new Set();
-const unlockedRooms=new Set();
 const configuredApiUrl=localStorage.getItem('ruma_api_url')||'https://script.google.com/macros/s/AKfycbyl6evQ9sGyZExU57dPz5JGr2ZdZUFZYefj3cziUCpp7lRPGldNstmnv7ZgjaPLs3rg/exec';
 let notifications=[];
-restoreLocalNotifications();
+let notificationsLoaded=false;
+let notificationFilter='all';
+let pendingPostId='';
 
 async function apiRequest(action,payload={}){
   if(!configuredApiUrl)return null;
@@ -799,20 +835,20 @@ async function apiRequest(action,payload={}){
   return result.data;
 }
 
-function saveLocalNotifications(){
-  try{localStorage.setItem('ruma_demo_notifications',JSON.stringify(notifications.slice(0,100)))}catch(_){}
-}
+// Notifikasi sepenuhnya berasal dari server, dan server sudah menolak
+// mencatat aktivitas milik sendiri — jadi daftar ini murni interaksi orang
+// lain terhadap kontenmu, bukan gema dari tindakanmu sendiri.
+const NOTIFICATION_KINDS={
+  like:{icon:'❤',tone:'like',go:'post'},
+  repost:{icon:'🔁',tone:'repost',go:'post'},
+  comment:{icon:'💬',tone:'comment',go:'post'},
+  follow:{icon:'✚',tone:'follow',go:'profile'},
+  room_like:{icon:'❤',tone:'like',go:'room'},
+  reel_like:{icon:'❤',tone:'like',go:'reel'},
+  reel_gift:{icon:'🎁',tone:'gift',go:'reel'}
+};
 
-function restoreLocalNotifications(){
-  try{const saved=JSON.parse(localStorage.getItem('ruma_demo_notifications')||'[]');if(Array.isArray(saved))notifications=saved}catch(_){notifications=[]}
-}
-
-function addLocalNotification(message,type='activity'){
-  notifications.unshift({id:'local-'+Date.now(),type,actorName:'Aktivitas RUMA',message,read:false,createdAt:Date.now()});
-  notifications=notifications.slice(0,100);
-  saveLocalNotifications();
-  updateNotificationBadge();
-}
+function notificationKind(item){return NOTIFICATION_KINDS[String(item&&item.type||'')]||{icon:'🔔',tone:'other',go:''}}
 
 function notificationTime(value){
   const diff=Math.max(0,Date.now()-Number(value||Date.now()));
@@ -820,6 +856,16 @@ function notificationTime(value){
   if(diff<3600000)return Math.floor(diff/60000)+' menit lalu';
   if(diff<86400000)return Math.floor(diff/3600000)+' jam lalu';
   return new Date(Number(value)).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+}
+
+function notificationDayLabel(value){
+  const date=new Date(Number(value||Date.now()));
+  const startOf=day=>new Date(day.getFullYear(),day.getMonth(),day.getDate()).getTime();
+  const days=Math.round((startOf(new Date())-startOf(date))/86400000);
+  if(days<=0)return'Hari ini';
+  if(days===1)return'Kemarin';
+  if(days<7)return days+' hari lalu';
+  return date.toLocaleDateString('id-ID',{day:'numeric',month:'long'});
 }
 
 function updateNotificationBadge(){
@@ -830,34 +876,122 @@ function updateNotificationBadge(){
   badge.classList.toggle('hidden',unread===0);
 }
 
+function setNotificationFilter(filter){
+  notificationFilter=filter==='unread'?'unread':'all';
+  renderNotifications();
+}
+
 function renderNotifications(){
   const list=$('notificationList');
   if(!list)return;
-  list.innerHTML=notifications.length?notifications.map(item=>'<article class="notification-item '+(item.read?'':'unread')+'"><div class="avatar">'+esc((item.actorName||'R').charAt(0).toUpperCase())+'</div><div><strong>'+esc(item.actorName||'Aktivitas RUMA')+'</strong><p>'+esc(item.message||'Ada aktivitas baru di akunmu.')+'</p><time>'+notificationTime(item.createdAt)+'</time></div></article>').join(''):'<div class="empty">Belum ada notifikasi baru.</div>';
+  document.querySelectorAll('[data-notification-filter]').forEach(button=>
+    button.classList.toggle('active',button.dataset.notificationFilter===notificationFilter)
+  );
+  const markAll=$('notificationMarkAll');
+  if(markAll)markAll.classList.toggle('hidden',!notifications.some(item=>!item.read));
+
+  if(!notificationsLoaded){list.innerHTML='<div class="empty">Memuat notifikasi…</div>';return}
+
+  const items=notificationFilter==='unread'?notifications.filter(item=>!item.read):notifications;
+  if(!items.length){
+    list.innerHTML=notifications.length
+      ?'<div class="empty">Tidak ada notifikasi belum dibaca.</div>'
+      :'<div class="empty"><strong>Belum ada notifikasi</strong><p>Suka, komentar, repost, pengikut baru, dan gift dari pengguna lain akan muncul di sini.</p></div>';
+    return;
+  }
+
+  let html='';
+  let lastDay='';
+  items.forEach(item=>{
+    const day=notificationDayLabel(item.createdAt);
+    if(day!==lastDay){html+='<h3 class="notification-day">'+esc(day)+'</h3>';lastDay=day}
+    html+=notificationItemHTML(item);
+  });
+  list.innerHTML=html;
+}
+
+function notificationItemHTML(item){
+  const kind=notificationKind(item);
+  const actor=String(item.actorName||'Pengguna RUMA');
+  const message=String(item.message||'Ada aktivitas baru di akunmu.');
+  const at=message.indexOf(actor);
+  const text=at>=0
+    ?esc(message.slice(0,at))+'<strong>'+esc(actor)+'</strong>'+esc(message.slice(at+actor.length))
+    :esc(message);
+  const id=esc(String(item.id||''));
+  const clickable=kind.go==='profile'||!!(kind.go&&item.entityId);
+  return'<article class="notification-item'+(item.read?'':' unread')+(clickable?' clickable':'')+'"'
+    +(clickable?' onclick="openNotificationTarget(\''+id+'\')" role="link" tabindex="0" onkeydown="if(event.key===\'Enter\')openNotificationTarget(\''+id+'\')"':'')
+    +'>'
+    +'<span class="notification-avatar '+kind.tone+'"><span class="avatar">'+avatarMarkup(item.actorAvatarUrl,actor,actor)+'</span><b>'+kind.icon+'</b></span>'
+    +'<div class="notification-text"><p>'+text+'</p><time>'+notificationTime(item.createdAt)+'</time></div>'
+    +'</article>';
+}
+
+function openNotificationTarget(id){
+  const item=notifications.find(entry=>String(entry.id)===String(id));
+  if(!item)return;
+  const kind=notificationKind(item);
+  closeNotifications();
+  if(kind.go==='profile'){
+    const handle=String(item.actorHandle||'').replace(/^@/,'');
+    if(handle)openProfile(0,item.actorName||handle,'@'+handle,item.actorAvatarUrl||'');
+    return;
+  }
+  if(kind.go==='reel'){
+    setView('beranda');
+    pendingReelId=String(item.entityId||'');
+    setSort('video');
+    loadRemoteReels(true);
+    return;
+  }
+  if(kind.go==='room'){setView('ruang');return}
+  if(kind.go==='post'){
+    setView('beranda');
+    setSort('rekomendasi');
+    const target=String(item.entityId||'');
+    if(target)pendingPostId=target;
+    renderFeed();
+  }
 }
 
 async function refreshNotifications(){
   try{
-    if(configuredApiUrl&&localStorage.getItem('ruma_token')){
-      const data=await apiRequest('notifications');
-      if(data&&Array.isArray(data.items))notifications=data.items;
-    }else{
-      restoreLocalNotifications();
+    const data=await apiRequest('notifications');
+    if(data&&Array.isArray(data.items)){
+      const known=new Set(notifications.map(item=>String(item.id)));
+      const incoming=data.items.filter(entry=>!known.has(String(entry.id)));
+      notifications=data.items;
+      notificationsLoaded=true;
+      if(incoming.length&&document.hidden)notifyIncoming(incoming[0]);
     }
   }catch(_){}
   updateNotificationBadge();
   renderNotifications();
 }
 
-async function openNotifications(){
-  openModal('notificationModal');
-  renderNotifications();
-  await refreshNotifications();
+function notifyIncoming(item){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  try{new Notification('RUMA · '+String(item.actorName||'Aktivitas baru'),{body:String(item.message||''),tag:String(item.id||'ruma')})}catch(_){}
+}
+
+async function markAllNotificationsRead(){
   notifications=notifications.map(item=>({...item,read:true}));
-  if(configuredApiUrl&&localStorage.getItem('ruma_token'))apiRequest('markNotificationsRead').catch(()=>{});
-  saveLocalNotifications();
   updateNotificationBadge();
   renderNotifications();
+  try{await apiRequest('markNotificationsRead')}catch(_){}
+}
+
+function openNotifications(){
+  openModal('notificationModal');
+  renderNotifications();
+  refreshNotifications();
+}
+function closeNotifications(){
+  closeModal('notificationModal');
+  // Penanda "dibaca" diterapkan saat panel ditutup, bukan saat dibuka, supaya
+  // filter "Belum dibaca" tetap bisa dipakai selama panel terlihat.
+  if(notifications.some(item=>!item.read))markAllNotificationsRead();
 }
 
 async function requestNotificationPermission(){
@@ -883,15 +1017,13 @@ function requestLocationPermission(){
   navigator.geolocation.getCurrentPosition(()=>{$('permissionStatus').textContent='Izin lokasi aktif.';toast('Izin lokasi diberikan.')},()=>{$('permissionStatus').textContent='Izin lokasi belum diberikan atau diblokir.';toast('Lokasi tidak dapat diakses.')},{enableHighAccuracy:false,timeout:10000});
 }
 
+// RUMA sekarang sepenuhnya bersumber dari server. Salinan demo lama di
+// localStorage dibersihkan supaya akun, postingan, dan Ruang karangan tidak
+// pernah muncul lagi di perangkat yang pernah membuka versi sebelumnya.
 function restoreDemoState(){
-  try{
-    const savedPosts=JSON.parse(localStorage.getItem('ruma_demo_posts')||'null');
-    const savedRooms=JSON.parse(localStorage.getItem('ruma_demo_rooms')||'null');
-    const demoHandles=new Set(['@nadiaputri','@dimaspr','@alyarahma','@fajarmahendra']);
-    if(Array.isArray(savedPosts)){posts.splice(0,posts.length,...savedPosts.filter(post=>!demoHandles.has(String(post.handle||'').toLowerCase())))}
-    if(Array.isArray(savedRooms)){rooms.splice(0,rooms.length,...savedRooms)}
-    localStorage.removeItem('ruma_demo_reels');
-  }catch(_){ }
+  ['ruma_demo_posts','ruma_demo_rooms','ruma_demo_reels','ruma_demo_users','ruma_demo_notifications'].forEach(key=>{
+    try{localStorage.removeItem(key)}catch(_){}
+  });
 }
 
 function remotePost(item){
@@ -906,23 +1038,16 @@ async function loadRemoteFeed(){
     const data=await apiRequest('feed',{sort:sort==='terbaru'?'terbaru':'rekomendasi'});
     if(data&&Array.isArray(data.items)){
       const remoteItems=data.items.map(remotePost);
-      const remoteKeys=new Set(remoteItems.map(item=>String(item.handle||'').toLowerCase()+'|'+String(item.text||'')));
-      const localOnly=posts.filter(item=>!remoteKeys.has(String(item.handle||'').toLowerCase()+'|'+String(item.text||'')));
+      // Postingan yang dibuat di sesi ini tetapi belum selesai disimpan server
+      // tetap ditampilkan sampai server mengembalikan versinya.
+      const localOnly=posts.filter(item=>item.pending);
       posts.splice(0,posts.length,...remoteItems,...localOnly);
       renderFeed();
     }
   }catch(error){toast('Postingan belum dapat dimuat: '+error.message)}
 }
 
-function persistDemoState(){
-  try{
-    // Data URL base64 berukuran beberapa MB dan langsung menghabiskan kuota
-    // localStorage, jadi hanya URL server yang disimpan.
-    const storablePosts=posts.map(post=>({...post,mediaUrl:String(post.mediaUrl||'').indexOf('data:')===0?'':post.mediaUrl}));
-    localStorage.setItem('ruma_demo_posts',JSON.stringify(storablePosts));
-    localStorage.setItem('ruma_demo_rooms',JSON.stringify(rooms));
-  }catch(_){toast('Penyimpanan lokal penuh. Media besar sebaiknya diunggah ke Apps Script.');}
-}
+
 
 function syncSessionUI(){
   let session=null;
@@ -935,7 +1060,6 @@ function syncSessionUI(){
     localStorage.removeItem('ruma_user');
     localStorage.removeItem('ruma_token');
   }
-  if(session&&session.name==='Demo Ruma'){session={...session,name:'Roby',username:'roby',initial:'R',role:session.role||'admin',verified:true};localStorage.setItem('ruma_demo_session',JSON.stringify(session))}
   document.querySelectorAll('.auth-actions').forEach(el=>{
     el.style.display='flex';
     if(session&&session.role==='admin'){
@@ -945,10 +1069,12 @@ function syncSessionUI(){
     }
   });
   const avatar=document.querySelector('.top-actions .avatar');
+  const composerAvatar=document.getElementById('composerAvatar');
   if(avatar&&session){
-    avatar.innerHTML=avatarMarkup(session.avatarUrl,session.name,session.initial||session.name?.charAt(0)||'R');
+    avatar.innerHTML=avatarMarkup(session.avatarUrl,session.name,session.initial||session.name||session.username);
     avatar.setAttribute('aria-label','Profil '+session.name);
     avatar.setAttribute('onclick','openMyProfile()');
+    if(composerAvatar)composerAvatar.innerHTML=avatarMarkup(session.avatarUrl,session.name,session.initial||session.name||session.username);
     const profileNav=document.querySelector('.leftnav > .professional-item:nth-of-type(6)');
     const mobileProfile=document.querySelector('.mobile-nav button:last-child');
     const profileClick='openMyProfile()';
@@ -961,8 +1087,12 @@ function logoutDemo(){
   localStorage.removeItem('ruma_demo_session');
   localStorage.removeItem('ruma_token');
   localStorage.removeItem('ruma_user');
+  // Sisa data lokal dibersihkan supaya akun berikutnya tidak mewarisi draf
+  // maupun notifikasi milik pengguna sebelumnya.
+  localStorage.removeItem('ruma_demo_posts');
+  localStorage.removeItem('ruma_demo_notifications');
   toast('Kamu sudah keluar dari RUMA.');
-  setTimeout(()=>location.reload(),350);
+  setTimeout(()=>{location.href='./auth.html?mode=login'},450);
 }
 
 function toast(message){
@@ -986,7 +1116,7 @@ function openProfileEncoded(id,name,avatarUrl='',bannerUrl='',verified=''){
 function avatarHTML(person){
   const color=person.color||'#e8efff';
   const ink=person.ink||'#2859a8';
-  const image=avatarMarkup(person.avatarUrl,person.name,person.initial||person.name?.charAt(0)||'R');
+  const image=avatarMarkup(person.avatarUrl,person.name,person.initial||person.name||person.username);
   return `<button class="avatar" style="background:${esc(color)};color:${esc(ink)}" onclick="openProfileEncoded('${profileArg(person.handle)}','${profileArg(person.name)}','${profileArg(person.avatarUrl||'')}','${profileArg(person.bannerUrl||'')}','${profileArg(person.verified?'true':'')}')">${image}</button>`;
 }
 
@@ -1042,8 +1172,6 @@ function renderFeed(){
     list=list.filter(p=>(p.text+' '+p.name+' '+p.handle+' '+p.topic).toLocaleLowerCase('id').includes(q));
   }
 
-  if(sort==='terbaru')list.reverse();
-
   const peopleMarkup=matchingPeople.length?'<section class="search-people"><h2 class="side-title">Pengguna</h2>'+matchingPeople.map(personSearchCard).join('')+'</section>':'';
   $('feed').innerHTML=peopleMarkup+(list.length
     ? list.map((p,i)=>postHTML(p)+(i===1?adCardHTML():'')).join('')
@@ -1052,6 +1180,20 @@ function renderFeed(){
   renderTrends();
   renderPeople();
   armMediaWatchdogs($('feed'));
+  focusPendingPost();
+}
+
+// Server sudah mengirim postingan terbaru lebih dulu, jadi tidak ada urutan
+// yang perlu dibalik di sini.
+function focusPendingPost(){
+  if(!pendingPostId)return;
+  const id=pendingPostId;
+  pendingPostId='';
+  const card=document.getElementById('post-'+id);
+  if(!card)return;
+  card.classList.add('post-flash');
+  card.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>card.classList.remove('post-flash'),1800);
 }
 
 function renderTrends(){
@@ -1074,10 +1216,9 @@ function renderPeople(){
 }
 
 function getVisiblePeople(){
+  // Hanya direktori dari server yang dipakai; akun di localStorage pernah
+  // membocorkan akun demo ke daftar "Orang yang mungkin kamu kenal".
   let people=peopleDirectory.slice();
-  if(!people.length){
-    try{people=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){people=[]}
-  }
   const session=getCurrentSession();
   people=people.filter(person=>String(person.username||person.handle||'').toLowerCase().replace(/^@/,'')!==String(session?.username||'').toLowerCase());
   if(searchTerm){
@@ -1137,7 +1278,7 @@ async function publishPost(){
   const authorUsername=session.username;
   const localId=Date.now();
   posts.unshift({
-    id:localId,name:authorName,handle:'@'+authorUsername,initial:session?.initial||authorName.charAt(0).toUpperCase(),
+    id:localId,pending:true,name:authorName,handle:'@'+authorUsername,initial:session?.initial||authorName.charAt(0).toUpperCase(),
     color:'#e8efff',ink:'#2859a8',time:'Baru saja',
     topic:tags.length?tags[0].slice(1):'Diskusi umum',
     text,likes:0,comments:[],reposts:0,liked:false,saved:false,reposted:false,
@@ -1146,29 +1287,35 @@ async function publishPost(){
 
   input.value='';
   clearMedia();
-  persistDemoState();
+
   const token=localStorage.getItem('ruma_token')||'';
   setView('beranda');
-  toast('Postingan berhasil diterbitkan.');
-  if(configuredApiUrl&&token&&!token.startsWith('LOCAL_')){
-    (async()=>{
-      try{
-        let mediaUrl='';
-        if(mediaToUpload){
-          const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});
-          if(!uploaded||!uploaded.url)throw new Error('Media gagal diunggah ke server.');
-          mediaUrl=uploaded.url;
-          const pending=posts.find(item=>item.id===localId);
-          if(pending){pending.mediaUrl=mediaUrl;pending.mediaType=uploaded.type||mediaToUpload.type}
-        }
-        const created=await apiRequest('createPost',{text,mediaUrl,mediaType:mediaToUpload?.type||'',mediaName:mediaToUpload?.name||''});
+  toast('Menerbitkan postingan…');
+  (async()=>{
+    try{
+      let mediaUrl='';
+      if(mediaToUpload){
+        const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});
+        if(!uploaded||!uploaded.url)throw new Error('Media gagal diunggah ke server.');
+        mediaUrl=uploaded.url;
         const pending=posts.find(item=>item.id===localId);
-        if(created&&created.id&&pending)pending.id=created.id;
-        persistDemoState();
-        renderFeed();
-      }catch(error){toast('Postingan tersimpan di perangkat, sinkronisasi server gagal: '+error.message);}
-    })();
-  }
+        if(pending){pending.mediaUrl=mediaUrl;pending.mediaType=uploaded.type||mediaToUpload.type;renderFeed()}
+      }
+      const created=await apiRequest('createPost',{text,mediaUrl,mediaType:mediaToUpload?.type||'',mediaName:mediaToUpload?.name||''});
+      if(!created||!created.id)throw new Error('Server tidak mengembalikan postingan.');
+      if(created){
+        const pending=posts.find(item=>item.id===localId);
+        if(pending){pending.id=created.id;pending.pending=false}
+      }
+      toast('Postingan berhasil diterbitkan.');
+      await loadRemoteFeed();
+    }catch(error){
+      const pending=posts.find(item=>item.id===localId);
+      if(pending)pending.pending=false;
+      toast('Postingan gagal diterbitkan: '+error.message);
+      renderFeed();
+    }
+  })();
 }
 
 function insertTag(){
@@ -1204,38 +1351,47 @@ function clearMedia(){selectedMedia=null;$('mediaInput').value='';$('mediaPrevie
 function toggleLike(id){
   const p=posts.find(x=>x.id===id);
   if(!p)return;
-  const session=getCurrentSession();
-  const isOwn=!!(session&&String(p.handle||'').toLowerCase()==='@'+String(session.username||'').toLowerCase());
   p.liked=!p.liked;
   p.likes+=p.liked?1:-1;
-  persistDemoState();
-  apiRequest('toggleLike',{id}).catch(()=>{});
-  if(p.liked&&!isOwn)addLocalNotification('Kamu menyukai sebuah postingan.','like');
+  
   renderFeed();
+  reconcilePostToggle('toggleLike',{id},p,'liked','likes');
+}
+
+// Hitungan di server adalah sumber kebenaran; nilai optimistis di layar
+// disamakan setelah jawaban tiba agar angka suka tidak melenceng.
+async function reconcilePostToggle(action,payload,target,flagField,countField){
+  try{
+    const result=await apiRequest(action,payload);
+    if(!result||typeof result.on!=='boolean')return;
+    const changed=target[flagField]!==result.on||(result.count!=null&&Number(target[countField])!==Number(result.count));
+    target[flagField]=result.on;
+    if(result.count!=null)target[countField]=Number(result.count);
+    if(changed){renderFeed()}
+  }catch(error){toast(error.message||'Perubahan belum tersinkron ke server.')}
 }
 
 function toggleSave(id){
   const p=posts.find(x=>x.id===id);
   if(!p)return;
   p.saved=!p.saved;
-  persistDemoState();
-  apiRequest('toggleSave',{id}).catch(()=>{});
+  
   renderFeed();
   toast(p.saved?'Postingan disimpan.':'Postingan dihapus dari simpanan.');
+  apiRequest('toggleSave',{id}).then(result=>{
+    if(result&&typeof result.on==='boolean'&&result.on!==p.saved){p.saved=result.on;renderFeed()}
+  }).catch(()=>{});
 }
 
 function toggleRepost(id){
   const p=posts.find(x=>x.id===id);
   if(!p)return;
-  const session=getCurrentSession();
-  const isOwn=!!(session&&String(p.handle||'').toLowerCase()==='@'+String(session.username||'').toLowerCase());
   p.reposted=!p.reposted;
   p.reposts+=p.reposted?1:-1;
-  persistDemoState();
-  apiRequest('toggleRepost',{id}).catch(()=>{});
-  if(p.reposted&&!isOwn)addLocalNotification('Kamu merepost sebuah postingan.','repost');
+  
   renderFeed();
   toast(p.reposted?'Postingan direpost.':'Repost dibatalkan.');
+  reconcilePostToggle('toggleRepost',{id},p,'reposted','reposts');
 }
 
 async function toggleComments(id){
@@ -1248,7 +1404,7 @@ async function toggleComments(id){
       const remote=await apiRequest('comments',{postId:id});
       if(Array.isArray(remote)){
         p.comments=remote.map(comment=>({...comment,name:comment.name||comment.handle?.replace(/^@/,'')||'Pengguna RUMA',handle:comment.handle||''}));
-        persistDemoState();
+        
         renderFeed();
       }
     }catch(_){ }
@@ -1263,19 +1419,18 @@ async function addComment(event,id){
   if(!p||!text)return;
   const session=await refreshCurrentSession();
   if(!session?.username){toast('Silakan masuk untuk berkomentar.');return}
-  const comment={name:session.name||session.username,handle:'@'+session.username,text};
+  const comment={name:session.name||session.username,handle:'@'+session.username,text,createdAt:Date.now()};
   p.comments.push(comment);
-  persistDemoState();
+  
   apiRequest('addComment',{postId:id,text}).then(remote=>{
-    if(remote?.name&&p.comments.length){
-      const last=p.comments[p.comments.length-1];
-      last.name=remote.name;
-      last.handle=remote.handle||last.handle;
+    if(remote&&remote.id){
+      comment.id=remote.id;
+      comment.name=remote.name||comment.name;
+      comment.handle=remote.handle||comment.handle;
+      comment.createdAt=Number(remote.createdAt)||comment.createdAt;
     }
-    persistDemoState();
-  }).catch(()=>{});
-  const ownerIsCurrent=String(p.handle||'').toLowerCase()==='@'+String(session.username||'').toLowerCase();
-  if(!ownerIsCurrent)addLocalNotification('Kamu mengomentari sebuah postingan.','comment');
+    
+  }).catch(error=>toast(error.message||'Komentar belum terkirim ke server.'));
   p.commentsOpen=true;
   renderFeed();
   toast('Komentar ditambahkan.');
@@ -1316,13 +1471,12 @@ async function toggleFollow(handle){
     if(result&&typeof result.on==='boolean'){
       if(result.on)followed.add(handle);else followed.delete(handle);
     }
-  }catch(_){}
-  if(followed.has(handle))addLocalNotification('Kamu mulai mengikuti '+handle+'.','follow');
+  }catch(error){toast(error.message||'Gagal memperbarui status ikuti.')}
   renderPeople();
-  if(profileUser&&profileUser.handle===handle)updateProfileFollow();
-  if(profileUser&&profileUser.handle===handle)loadProfileDetails(handle);
-  toast(followed.has(handle)?'Kamu mulai mengikuti akun ini.':'Kamu berhenti mengikuti akun ini.');
-}
+  const same=(a,b)=>String(a||'').toLowerCase().replace(/^@/,'')===String(b||'').toLowerCase().replace(/^@/,'');
+  if(profileUser&&same(profileUser.handle,handle)){updateProfileFollow();loadProfileDetails(handle)}
+  if(sort==='video')renderReels();
+  toast(followed.has(handle)?'Kamu mulai mengikuti akun ini.':'Kamu berhenti mengikuti akun ini.');}
 
 function openPostMenu(id){
   const post=posts.find(item=>item.id===id);
@@ -1350,7 +1504,7 @@ function postMenuDelete(){
   const id=selectedPostId;
   const index=posts.findIndex(item=>item.id===id);
   if(index>=0)posts.splice(index,1);
-  persistDemoState();
+  
   apiRequest('deletePost',{id}).catch(()=>{});
   closeModal('postMenuModal');
   renderFeed();
@@ -1373,13 +1527,13 @@ function openProfile(id,name,handle,avatarUrl='',bannerUrl='',verified=''){
   try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   const isOwn=!!(session&&handle.toLowerCase()==='@'+session.username.toLowerCase());
   if(isOwn){avatarUrl=session.avatarUrl||avatarUrl;bannerUrl=session.bannerUrl||bannerUrl;verified=session.verified||verified}
-  $('fullProfileAvatar').innerHTML=avatarMarkup(avatarUrl,name,name||'R');
+  const isVerified=verified===true||verified==='true';
+  $('fullProfileAvatar').innerHTML=avatarMarkup(avatarUrl,name,name||handle);
   $('fullProfileAvatar').dataset.image=normalizeImageUrl(avatarUrl);
   $('fullProfileAvatar').dataset.name=name||'Foto profil';
-  $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
-  $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
-  $('fullProfileVerified')?.classList.toggle('hidden',!(verified===true||verified==='true'||handle.toLowerCase()==='@roby'));
-  $('verificationNote')?.classList.toggle('hidden',isOwn||verified===true||verified==='true'||handle.toLowerCase()==='@roby');
+  applyProfileBanner(bannerUrl);
+  $('fullProfileName').innerHTML=esc(name)+(isVerified?'<span class="verified-mark">✓</span>':'');
+  $('verificationNote')?.classList.toggle('hidden',isOwn||isVerified);
   $('fullProfileHandle').textContent=handle;
   $('fullProfilePosts').textContent=posts.filter(p=>p.handle===handle).length;
   $('fullProfileBio').textContent=isOwn
@@ -1404,13 +1558,12 @@ async function loadProfileDetails(handle){
     const currentSession=getCurrentSession();
     const resolvedAvatar=person.avatarUrl||'';
     const resolvedBanner=person.bannerUrl||'';
-    $('fullProfileAvatar').innerHTML=avatarMarkup(resolvedAvatar,person.name,person.name||'R');
+    $('fullProfileAvatar').innerHTML=avatarMarkup(resolvedAvatar,person.name,person.name||person.username);
     $('fullProfileAvatar').dataset.image=normalizeImageUrl(resolvedAvatar);
     $('fullProfileAvatar').dataset.name=person.name||'Foto profil';
-    $('fullProfileCover').style.backgroundImage=resolvedBanner?'url("'+String(resolvedBanner).replace(/"/g,'&quot;')+'")':'';
-    $('fullProfileName').innerHTML=esc(person.name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
-    $('fullProfileVerified')?.classList.toggle('hidden',!person.verified);
-    $('verificationNote')?.classList.toggle('hidden',profileUser.handle.toLowerCase()==='@roby'||!!person.verified);
+    applyProfileBanner(resolvedBanner);
+    $('fullProfileName').innerHTML=esc(person.name)+(person.verified?'<span class="verified-mark">✓</span>':'');
+    $('verificationNote')?.classList.toggle('hidden',!!person.verified);
     $('fullProfileHandle').textContent=profileUser.handle;
     $('fullProfileBio').textContent=person.bio||'Anggota RUMA yang senang berbagi cerita dan berdiskusi.';
     $('fullProfilePosts').textContent=String(data.posts||0);
@@ -1434,8 +1587,46 @@ function openEditProfile(){
   let session=null;
   try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){}
   if(!session||profileUser.handle.toLowerCase()!=='@'+session.username.toLowerCase())return;
-  $('profilePageContent').innerHTML='<form onsubmit="saveLocalProfile(event)"><div class="field"><label for="editProfileName">Nama lengkap</label><input id="editProfileName" maxlength="40" value="'+esc(session?.name||profileUser.name)+'" required></div><div class="field"><label for="editProfileUsername">Username</label><input id="editProfileUsername" maxlength="20" value="'+esc(session?.username||'roby')+'" pattern="[a-z0-9_]{3,20}" required></div><div class="field"><label for="editProfileBio">Bio</label><textarea id="editProfileBio" maxlength="160" required>'+esc(session?.bio||'')+'</textarea></div><button class="primary" type="submit">Simpan perubahan</button></form>';
-  $('editProfileBio').insertAdjacentHTML('afterend','<div class="field"><label for="profileAvatarFile">Foto profil</label><input id="profileAvatarFile" type="file" accept="image/*"></div><div class="field"><label for="profileBannerFile">Banner profil</label><input id="profileBannerFile" type="file" accept="image/*"></div><p id="profileUploadStatus" class="muted small"></p>');
+  $('profilePageContent').innerHTML='<form onsubmit="saveLocalProfile(event)">'
+    +'<div class="field"><label for="editProfileName">Nama lengkap</label><input id="editProfileName" maxlength="40" value="'+esc(session.name||profileUser.name)+'" required></div>'
+    +'<div class="field"><label for="editProfileUsername">Username</label><input id="editProfileUsername" maxlength="20" value="'+esc(session.username||'')+'" pattern="[a-z0-9_]{3,20}" required></div>'
+    +'<div class="field"><label for="editProfileBio">Bio</label><textarea id="editProfileBio" maxlength="160" required>'+esc(session.bio||'')+'</textarea></div>'
+    +'<div class="field"><label for="profileAvatarFile">Foto profil</label>'
+      +'<div class="pick-row"><span class="pick-thumb" id="profileAvatarThumb"><span class="avatar">'+avatarMarkup(session.avatarUrl,session.name||'Profil',session.initial||session.name)+'</span></span>'
+      +'<input id="profileAvatarFile" type="file" accept="image/*" onchange="previewProfileImage(this,\'avatar\')"></div></div>'
+    +'<div class="field"><label for="profileBannerFile">Banner profil</label>'
+      +'<div class="pick-row"><span class="pick-banner" id="profileBannerThumb"'+(session.bannerUrl?' style="background-image:url(\''+esc(normalizeImageUrl(session.bannerUrl))+'\')"':'')+'></span>'
+      +'<input id="profileBannerFile" type="file" accept="image/*" onchange="previewProfileImage(this,\'banner\')"></div></div>'
+    +'<p id="profileUploadStatus" class="muted small"></p>'
+    +'<button class="primary" type="submit">Simpan perubahan</button></form>';
+}
+
+function previewProfileImage(input,kind){
+  const file=input.files&&input.files[0];
+  const target=$(kind==='banner'?'profileBannerThumb':'profileAvatarThumb');
+  if(!file||!target)return;
+  prepareProfileImage(file,kind).then(dataUrl=>{
+    if(kind==='banner')target.style.backgroundImage='url("'+dataUrl+'")';
+    else target.innerHTML='<span class="avatar"><img src="'+dataUrl+'" alt="Pratinjau foto profil"></span>';
+    $('profileUploadStatus').textContent='Pratinjau '+(kind==='banner'?'banner':'foto profil')+' siap. Tekan "Simpan perubahan" untuk mengunggah.';
+  }).catch(error=>{
+    input.value='';
+    $('profileUploadStatus').textContent=error.message;
+    toast(error.message);
+  });
+}
+
+// Banner selalu lewat endpoint thumbnail Drive; endpoint unduh biasa diblokir
+// peramban sehingga gambar tidak pernah tampil.
+function applyProfileBanner(url){
+  const cover=$('fullProfileCover');
+  if(!cover)return;
+  const image=normalizeImageUrl(url);
+  if(!image){cover.style.backgroundImage='';return}
+  const probe=new Image();
+  probe.onload=()=>{cover.style.backgroundImage='url("'+image.replace(/"/g,'%22')+'")'};
+  probe.onerror=()=>{cover.style.backgroundImage='';toast('Banner gagal dimuat, tampilan dikembalikan ke bawaan.')};
+  probe.src=image;
 }
 
 function editCurrentProfile(){
@@ -1451,69 +1642,99 @@ function editCurrentProfile(){
   openEditProfile();
 }
 
-function readProfileFile(file){
+// Foto dari kamera HP hampir selalu lebih besar dari batas unggah, jadi gambar
+// diperkecil lewat canvas lebih dulu: banner/avatar tetap tajam di layar, tetapi
+// ukuran berkasnya kecil sehingga unggahan tidak gagal.
+function prepareProfileImage(file,kind){
   return new Promise((resolve,reject)=>{
     if(!file){resolve('');return}
-    if(file.size>5*1024*1024){reject(new Error('Ukuran gambar maksimal 5 MB.'));return}
-    const reader=new FileReader();
-    reader.onload=()=>resolve(String(reader.result||''));
-    reader.onerror=()=>reject(new Error('Gambar tidak dapat dibaca.'));
-    reader.readAsDataURL(file);
+    if(!/^image\//.test(file.type)){reject(new Error('Pilih berkas gambar yang valid.'));return}
+    if(file.size>25*1024*1024){reject(new Error('Ukuran gambar maksimal 25 MB.'));return}
+    const maxEdge=kind==='banner'?1600:640;
+    const url=URL.createObjectURL(file);
+    const image=new Image();
+    image.onload=()=>{
+      URL.revokeObjectURL(url);
+      const scale=Math.min(1,maxEdge/Math.max(image.naturalWidth,image.naturalHeight));
+      const width=Math.max(1,Math.round(image.naturalWidth*scale));
+      const height=Math.max(1,Math.round(image.naturalHeight*scale));
+      const canvas=document.createElement('canvas');
+      canvas.width=width;
+      canvas.height=height;
+      const context=canvas.getContext('2d');
+      context.fillStyle='#ffffff';
+      context.fillRect(0,0,width,height);
+      context.drawImage(image,0,0,width,height);
+      resolve(canvas.toDataURL('image/jpeg',0.86));
+    };
+    image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Gambar tidak dapat dibaca.'))};
+    image.src=url;
   });
 }
 
 async function uploadProfileImage(file,kind){
-  const dataUrl=await readProfileFile(file);
+  const dataUrl=await prepareProfileImage(file,kind);
   if(!dataUrl)return'';
   const token=localStorage.getItem('ruma_token')||'';
-  if(configuredApiUrl&&token&&!token.startsWith('LOCAL_')){
-    const uploaded=await apiRequest('uploadMedia',{dataUrl,mediaType:'image',name:'ruma-'+kind+'-'+Date.now()+'.jpg'});
-    return uploaded?.url||dataUrl;
-  }
-  return dataUrl;
+  if(!configuredApiUrl||!token||token.indexOf('LOCAL_')===0)throw new Error('Masuk dengan akun server untuk mengubah '+kind+'.');
+  const uploaded=await apiRequest('uploadMedia',{dataUrl,mediaType:'image',name:'ruma-'+kind+'-'+Date.now()+'.jpg'});
+  if(!uploaded||!uploaded.url)throw new Error('Gambar gagal diunggah ke server.');
+  return uploaded.url;
 }
 
 async function saveLocalProfile(event){
   event.preventDefault();
   let session=null;
   try{session=JSON.parse(localStorage.getItem('ruma_user')||localStorage.getItem('ruma_demo_session')||'null')}catch(_){session=null}
-  if(!session){toast('Sesi login tidak ditemukan. Silakan masuk kembali.');return}
+  if(!session||!session.username){toast('Sesi login tidak ditemukan. Silakan masuk kembali.');return}
   const name=$('editProfileName').value.trim();
   const username=$('editProfileUsername').value.trim().toLowerCase().replace(/^@/,'');
   const bio=$('editProfileBio').value.trim();
   const status=$('profileUploadStatus');
-  if(!/^[a-z0-9_]{3,20}$/.test(username)){toast('Username harus 3-20 karakter dan hanya boleh huruf kecil, angka, atau _.');return;}
-  let users=[];
-  try{users=JSON.parse(localStorage.getItem('ruma_demo_users')||'[]')}catch(_){}
-  const current=users.find(user=>user.username===String(session.username||'roby'));
-  if(current&&users.some(user=>user!==current&&user.username===username)){toast('Username sudah digunakan.');return;}
-  let avatarUrl=current?.avatarUrl||session.avatarUrl||'';
-  let bannerUrl=current?.bannerUrl||session.bannerUrl||'';
+  if(!name){toast('Nama lengkap tidak boleh kosong.');return}
+  if(!/^[a-z0-9_]{3,20}$/.test(username)){toast('Username harus 3-20 karakter dan hanya boleh huruf kecil, angka, atau _.');return}
+
+  const submit=event.target.querySelector('button[type=submit]');
+  if(submit)submit.disabled=true;
+  let avatarUrl=session.avatarUrl||'';
+  let bannerUrl=session.bannerUrl||'';
   try{
-    status.textContent='Mengunggah gambar...';
-    avatarUrl=await uploadProfileImage($('profileAvatarFile')?.files[0],'avatar')||avatarUrl;
-    bannerUrl=await uploadProfileImage($('profileBannerFile')?.files[0],'banner')||bannerUrl;
-  }catch(error){status.textContent=error.message;return}
-  const updated={...(current||{}),name,username,initial:name.charAt(0).toUpperCase(),bio,avatarUrl,bannerUrl,verified:current?.verified||username==='roby'};
-  users=users.filter(user=>user!==current);
-  users.push(updated);
-  localStorage.setItem('ruma_demo_users',JSON.stringify(users));
-  localStorage.setItem('ruma_demo_session',JSON.stringify(updated));
-  localStorage.setItem('ruma_user',JSON.stringify(updated));
-  persistDemoState();
-  try{
+    const avatarFile=$('profileAvatarFile')?.files[0];
+    const bannerFile=$('profileBannerFile')?.files[0];
+    if(avatarFile){status.textContent='Mengunggah foto profil…';avatarUrl=await uploadProfileImage(avatarFile,'avatar')}
+    if(bannerFile){status.textContent='Mengunggah banner…';bannerUrl=await uploadProfileImage(bannerFile,'banner')}
+    status.textContent='Menyimpan profil…';
+    // Server adalah sumber kebenaran; tidak ada lagi salinan akun di
+    // localStorage yang dulu membuat data profil saling menimpa.
     const remote=await apiRequest('updateProfile',{name,bio,username,avatarUrl,bannerUrl});
-    if(remote?.username){updated.username=remote.username;updated.name=remote.name||updated.name;updated.bio=remote.bio||updated.bio;updated.avatarUrl=remote.avatarUrl||updated.avatarUrl;updated.bannerUrl=remote.bannerUrl||updated.bannerUrl;localStorage.setItem('ruma_demo_session',JSON.stringify(updated));localStorage.setItem('ruma_user',JSON.stringify(updated));}
-  }catch(error){status.textContent='Tersimpan di perangkat, tetapi sinkronisasi server gagal: '+error.message;toast('Profil belum tersinkron ke server.');return}
-  profileUser={id:'@'+username,name,handle:'@'+username};
-  $('fullProfileName').innerHTML=esc(name)+' <span id="fullProfileVerified" class="verified-mark hidden">✓</span>';
+    if(!remote||!remote.username)throw new Error('Server tidak mengembalikan profil yang diperbarui.');
+    const updated={...session,name:remote.name||name,username:remote.username,bio:remote.bio||bio,
+      avatarUrl:remote.avatarUrl||avatarUrl,bannerUrl:remote.bannerUrl||bannerUrl,
+      initial:String(remote.initial||name.charAt(0)).toUpperCase(),verified:!!remote.verified};
+    localStorage.setItem('ruma_demo_session',JSON.stringify(updated));
+    localStorage.setItem('ruma_user',JSON.stringify(updated));
+    avatarUrl=updated.avatarUrl;
+    bannerUrl=updated.bannerUrl;
+    session=updated;
+  }catch(error){
+    status.textContent=error.message||'Profil gagal diperbarui.';
+    toast(error.message||'Profil gagal diperbarui.');
+    if(submit)submit.disabled=false;
+    return;
+  }
+  if(submit)submit.disabled=false;
+
+  const verified=!!session.verified;
+  profileUser={id:session.id||'@'+username,name:session.name||name,handle:'@'+username,avatarUrl,bannerUrl,verified};
+  $('fullProfileName').innerHTML=esc(session.name||name)+(verified?'<span class="verified-mark">✓</span>':'');
   $('fullProfileHandle').textContent='@'+username;
   $('fullProfileBio').textContent=bio||'Senang bertukar ide dan belajar hal baru bersama komunitas.';
-  $('fullProfileAvatar').innerHTML=avatarMarkup(avatarUrl,name,updated.initial);
-  $('fullProfileCover').style.backgroundImage=bannerUrl?'url("'+String(bannerUrl).replace(/"/g,'&quot;')+'")':'';
-  $('fullProfileVerified')?.classList.toggle('hidden',!(updated.verified||username==='roby'));
+  $('fullProfileAvatar').innerHTML=avatarMarkup(avatarUrl,session.name||name,session.initial||session.name||name);
+  applyProfileBanner(bannerUrl);
   $('profilePageContent').innerHTML='<p class="muted small">Profil berhasil diperbarui.</p>';
+  status.textContent='';
   syncSessionUI();
+  loadProfileDetails('@'+username);
   toast('Profil berhasil diperbarui.');
 }
 
@@ -1552,6 +1773,7 @@ function showProfilePosts(tab,button){
 function setView(nextView){
   view=nextView;
   currentRoomId=null;
+  currentRoom=null;
   searchTerm='';
   $('searchInput').value='';
 
@@ -1598,11 +1820,11 @@ function setView(nextView){
     b.classList.toggle('active',b.dataset.sort===sort)
   );
 
-  if(nextView==='ruang')renderRooms();
+  if(nextView==='ruang')loadRooms();
   else if(nextView==='profit')renderCreatorContent();
   else if(nextView==='profile'){}
   else if(feedPages.includes(nextView)){
-    if(isVideo)loadRemoteReels();
+    if(isVideo)loadRemoteReels(true);
     else renderFeed();
   }
 
@@ -1620,7 +1842,7 @@ function setSort(nextSort){
   $('feed').classList.toggle('hidden',isVideo);
   $('reelsView').classList.toggle('hidden',!isVideo);
 
-  if(isVideo)loadRemoteReels();
+  if(isVideo)loadRemoteReels(true);
   else renderFeed();
 }
 
@@ -1631,34 +1853,69 @@ function focusComposer(){
   setTimeout(()=>$('postInput').focus(),200);
 }
 
+async function loadRooms(force){
+  if(!$('roomList'))return;
+  if((roomsLoaded&&!force)||roomsLoading){renderRooms();return}
+  roomsLoading=true;
+  if(!rooms.length)renderRooms();
+  try{
+    const data=await apiRequest('rooms');
+    const items=Array.isArray(data)?data:data&&data.items;
+    if(Array.isArray(items)){
+      rooms.splice(0,rooms.length,...items.map(room=>({
+        ...room,
+        id:String(room.id),
+        members:Number(room.members||0),
+        joined:!!room.joined,
+        mine:!!room.mine
+      })));
+      roomsLoaded=true;
+    }
+  }catch(error){
+    $('roomList').innerHTML='<div class="empty"><strong>Ruang gagal dimuat</strong>'+esc(error.message||'Periksa koneksi lalu coba lagi.')+'<div><button class="secondary" style="margin-top:14px" onclick="loadRooms(true)">Coba lagi</button></div></div>';
+    roomsLoading=false;
+    return;
+  }
+  roomsLoading=false;
+  renderRooms();
+}
+
 function renderRooms(){
   let list=[...rooms];
 
   if(roomFilter==='verified')list=list.filter(r=>r.verified);
   if(roomFilter==='public')list=list.filter(r=>r.access==='public');
   if(roomFilter==='private')list=list.filter(r=>r.access==='private');
-  if(roomFilter==='mine')list=list.filter(r=>r.owner==='@roby');
+  if(roomFilter==='mine')list=list.filter(r=>r.mine);
 
   if(searchTerm){
     const q=searchTerm.toLocaleLowerCase('id');
-    list=list.filter(r=>(r.name+' '+r.description+' '+r.category+' '+r.posts.map(p=>p.text).join(' ')).toLocaleLowerCase('id').includes(q));
+    list=list.filter(r=>[r.name,r.description,r.category].filter(Boolean).join(' ').toLocaleLowerCase('id').includes(q));
   }
 
-  $('roomList').innerHTML=list.length?list.map(roomCard).join(''):
-    '<div class="empty"><strong>Ruang tidak ditemukan</strong>Coba kata kunci lain atau buat Ruang baru.</div>';
+  let emptyTitle='Memuat Ruang…';
+  let emptyHint='';
+  if(roomsLoaded){
+    if(roomFilter==='mine'){emptyTitle='Kamu belum punya Ruang';emptyHint='Buat Ruang untuk mengumpulkan diskusi komunitasmu.'}
+    else if(!rooms.length){emptyTitle='Belum ada Ruang';emptyHint='Jadilah yang pertama membuat Ruang di RUMA.'}
+    else {emptyTitle='Ruang tidak ditemukan';emptyHint='Coba kata kunci atau filter lain.'}
+  }
+  $('roomList').innerHTML=list.length?list.map(roomCard).join('')
+    :'<div class="empty"><strong>'+emptyTitle+'</strong>'+(emptyHint?'<p>'+emptyHint+'</p>':'')+'</div>';
 }
 
 function roomCard(r){
+  const members=Number(r.members||0);
   return `<article class="room-card">
     <div class="room-top">
-      <div class="room-icon">${esc(r.emoji)}</div>
+      <div class="room-icon">${esc(r.emoji||'💬')}</div>
       <div class="room-info">
-        <div class="room-title">${esc(r.name)} ${r.verified?'<span class="verified">✓ TERVERIFIKASI</span>':''}</div>
-        <div class="room-meta">${esc(r.category)} · <span class="pill">${r.access==='private'?'🔒 Privat':'🌐 Publik'}</span></div>
+        <div class="room-title">${esc(r.name||'Ruang')} ${r.verified?'<span class="verified">✓ TERVERIFIKASI</span>':''}${r.mine?'<span class="pill">Milikmu</span>':''}</div>
+        <div class="room-meta">${esc(r.category||'Umum')} · <span class="pill">${r.access==='private'?'🔒 Privat':'🌐 Publik'}</span></div>
       </div>
     </div>
-    <p class="room-desc">${esc(r.description)}</p>
-    <div class="room-foot"><span class="room-members">${r.members.toLocaleString('id-ID')} anggota</span><button class="${r.joined?'secondary':'primary'}" onclick="enterRoom('${r.id}')">${r.joined?'Buka Ruang':r.access==='private'?'🔒 Masuk':'Lihat Ruang'}</button></div>
+    <p class="room-desc">${esc(r.description||'')}</p>
+    <div class="room-foot"><span class="room-members">${members.toLocaleString('id-ID')} anggota</span><button class="${r.joined?'secondary':'primary'}" onclick="enterRoom('${esc(r.id)}')">${r.joined?'Buka Ruang':r.access==='private'?'🔒 Masuk':'Lihat Ruang'}</button></div>
   </article>`;
 }
 
@@ -1684,7 +1941,7 @@ function openCreateRoom(){
   openModal('createRoomModal');
 }
 
-function createRoom(event){
+async function createRoom(event){
   event.preventDefault();
 
   const name=$('roomName').value.trim();
@@ -1697,42 +1954,59 @@ function createRoom(event){
     return;
   }
 
-  rooms.unshift({
-    id:'r'+Date.now(),name,description,
-    category:$('roomCategory').value,
-    emoji:$('roomEmoji').value,
-    access:accessChoice,
-    password:accessChoice==='private'?password:'',
-    verified:false,owner:'@roby',members:1,joined:true,posts:[]
-  });
-  apiRequest('createRoom',{name,description,category:$('roomCategory').value,emoji:$('roomEmoji').value,access:accessChoice,password:accessChoice==='private'?password:''}).catch(()=>{});
-  persistDemoState();
+  const submit=event.target.querySelector('button[type=submit]');
+  if(submit)submit.disabled=true;
+  let created=null;
+  try{
+    created=await apiRequest('createRoom',{name,description,category:$('roomCategory').value,emoji:$('roomEmoji').value,access:accessChoice,password:accessChoice==='private'?password:''});
+  }catch(error){
+    toast(error.message||'Ruang gagal dibuat.');
+    if(submit)submit.disabled=false;
+    return;
+  }
+  if(submit)submit.disabled=false;
 
   closeModal('createRoomModal');
+  await loadRooms(true);
   setView('ruang');
   setRoomFilter('mine');
   toast('Ruang berhasil dibuat.');
+  if(created&&created.id)enterRoom(created.id);
 }
 
-function enterRoom(id){
-  const room=rooms.find(r=>r.id===id);
-  if(!room)return;
+async function enterRoom(id){
+  const known=rooms.find(r=>r.id===id)||{id};
 
-  if(room.access==='private'&&!room.joined&&!unlockedRooms.has(id)){
+  let detail=null;
+  try{
+    detail=await apiRequest('room',{id});
+  }catch(error){
+    toast(error.message||'Ruang tidak dapat dibuka.');
+    return;
+  }
+
+  // Ruang privat meminta password; pemeriksaannya dilakukan server, bukan
+  // dengan membandingkan password yang ikut terkirim ke peramban.
+  if(detail&&detail.locked){
     pendingRoomId=id;
-    $('passwordRoomLabel').textContent='Masukkan password untuk mengakses “'+room.name+'”.';
+    $('passwordRoomLabel').textContent='Masukkan password untuk mengakses “'+(detail.room?.name||known.name||'Ruang ini')+'”.';
     $('accessPassword').value='';
     openModal('passwordModal');
     return;
   }
 
   currentRoomId=id;
+  currentRoom={...known,...(detail?.room||{}),posts:Array.isArray(detail?.posts)?detail.posts:[]};
+  const index=rooms.findIndex(r=>r.id===id);
+  if(index>=0)rooms[index]={...rooms[index],...currentRoom};
+  else rooms.unshift(currentRoom);
+
   view='roomdetail';
   $('feedView').classList.add('hidden');
   $('roomsView').classList.add('hidden');
   $('profitView').classList.add('hidden');
   $('roomDetailView').classList.remove('hidden');
-  $('pageTitle').textContent=room.name;
+  $('pageTitle').textContent=currentRoom.name;
   $('pageSubtitle').textContent='Diskusi di dalam Ruang';
   $('headAction').textContent='← Ruang';
   $('headAction').onclick=backToRooms;
@@ -1741,37 +2015,44 @@ function enterRoom(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function unlockRoom(event){
+async function unlockRoom(event){
   event.preventDefault();
-  const room=rooms.find(r=>r.id===pendingRoomId);
-  if(!room)return;
-
-  if($('accessPassword').value!==room.password){
-    toast('Password belum tepat. Coba lagi.');
-    return;
+  const id=pendingRoomId;
+  if(!id)return;
+  try{
+    const result=await apiRequest('joinRoom',{id,password:$('accessPassword').value});
+    if(!result)throw new Error('Ruang tidak dapat dibuka.');
+    closeModal('passwordModal');
+    pendingRoomId=null;
+    toast('Password benar. Ruang terbuka.');
+    roomsLoaded=false;
+    await loadRooms(true);
+    enterRoom(id);
+  }catch(error){
+    toast(error.message||'Password belum tepat. Coba lagi.');
   }
-
-  unlockedRooms.add(room.id);
-  closeModal('passwordModal');
-  toast('Password benar. Ruang terbuka.');
-  enterRoom(room.id);
 }
 
 function renderRoomDetail(){
-  const r=rooms.find(x=>x.id===currentRoomId);
+  const r=currentRoom;
   if(!r)return;
 
-  const canPost=r.access==='public'||r.joined||unlockedRooms.has(r.id);
+  const canPost=r.access==='public'||r.joined;
+  currentRoomId=r.id;
 
   $('roomDetail').innerHTML=`
     <div class="room-detail-head">
-      <div class="room-top"><div class="room-icon">${esc(r.emoji)}</div><div class="room-info"><div class="room-title">${esc(r.name)}</div><div class="room-meta">${esc(r.category)} · ${r.members} anggota</div></div></div>
-      <p class="room-desc">${esc(r.description)}</p>
-      <div class="room-detail-actions"><button class="secondary" onclick="toggleJoinRoom('${r.id}')">${r.joined?'Keluar':'＋ Bergabung'}</button><button class="secondary" onclick="shareRoom('${r.id}')">Bagikan</button></div>
+      <div class="room-top"><div class="room-icon">${esc(r.emoji||'💬')}</div><div class="room-info"><div class="room-title">${esc(r.name)}</div><div class="room-meta">${esc(r.category||'Umum')} · ${Number(r.members||0)} anggota</div></div></div>
+      <p class="room-desc">${esc(r.description||'')}</p>
+      <div class="room-detail-actions"><button class="secondary" onclick="toggleJoinRoom('${esc(r.id)}')">${r.joined?'Keluar':'＋ Bergabung'}</button><button class="secondary" onclick="shareRoom('${esc(r.id)}')">Bagikan</button></div>
     </div>
-    ${canPost?`<div class="room-composer"><input id="roomPostInput" maxlength="500" placeholder="Mulai diskusi..."><button class="primary" onclick="publishRoomPost('${r.id}')">Kirim</button></div>`:'<p class="muted small">Gabung ke Ruang untuk mulai berdiskusi.</p>'}
+    ${canPost?'<div class="room-composer"><input id="roomPostInput" maxlength="500" placeholder="Mulai diskusi..."><button class="primary" onclick="publishRoomPost(\''+esc(r.id)+'\')">Kirim</button></div>':'<p class="muted small">Gabung ke Ruang untuk mulai berdiskusi.</p>'}
     <div class="room-search"><input id="roomSearchInput" type="search" placeholder="Cari kata atau #hashtag dalam Ruang..." oninput="filterRoomPosts(this.value)"></div>
-    <div id="roomPosts">${r.posts.length?r.posts.map((p,i)=>`<article class="room-post"><strong>${esc(p.name)}</strong> <span class="muted small">${esc(p.handle||'')} · ${esc(p.time||'')}</span><p>${formatText(p.text)}</p><button class="action" onclick="likeRoomPost('${r.id}',${i})">♡ ${p.likes||0}</button></article>`).join(''):'<div class="empty"><strong>Belum ada diskusi</strong>Jadilah orang pertama yang memulai percakapan.</div>'}</div>`;
+    <div id="roomPosts">${r.posts&&r.posts.length?r.posts.map((p,i)=>roomPostHTML(p,i)).join(''):'<div class="empty"><strong>Belum ada diskusi</strong>Jadilah orang pertama yang memulai percakapan.</div>'}</div>`;
+}
+
+function roomPostHTML(post,index){
+  return `<article class="room-post"><strong>${esc(post.name||'Pengguna RUMA')}</strong> <span class="muted small">${esc(post.handle||'')} · ${esc(notificationTime(post.createdAt))}</span><p>${formatText(post.text||'')}</p><button class="action" onclick="likeRoomPost('${esc(String(post.id||''))}',${index})">♡ ${Number(post.likes||0)}</button></article>`;
 }
 
 function filterRoomPosts(value){
@@ -1781,47 +2062,66 @@ function filterRoomPosts(value){
   );
 }
 
-function toggleJoinRoom(id){
+async function toggleJoinRoom(id){
   const r=rooms.find(x=>x.id===id);
   if(!r)return;
 
-  if(r.access==='private'&&!r.joined&&!unlockedRooms.has(id)){
+  if(r.access==='private'&&!r.joined){
     enterRoom(id);
     return;
   }
 
-  r.joined=!r.joined;
-  r.members=Math.max(0,r.members+(r.joined?1:-1));
-  apiRequest(r.joined?'joinRoom':'leaveRoom',{id}).catch(()=>{});
-  persistDemoState();
-  renderRoomDetail();
-  toast(r.joined?'Kamu bergabung ke Ruang.':'Kamu keluar dari Ruang.');
+  const joining=!r.joined;
+  try{
+    const result=await apiRequest(joining?'joinRoom':'leaveRoom',{id});
+    const members=result&&result.members!=null?Number(result.members):Math.max(0,Number(r.members||0)+(joining?1:-1));
+    r.joined=joining;
+    r.members=members;
+    if(currentRoom&&currentRoom.id===id){currentRoom.joined=joining;currentRoom.members=members}
+    toast(joining?'Kamu bergabung ke Ruang.':'Kamu keluar dari Ruang.');
+    if(currentRoom&&currentRoom.id===id)renderRoomDetail();
+    else renderRooms();
+  }catch(error){
+    toast(error.message||'Status keanggotaan gagal diperbarui.');
+  }
 }
 
-function publishRoomPost(id){
-  const r=rooms.find(x=>x.id===id);
+async function publishRoomPost(id){
   const input=$('roomPostInput');
-  if(!r||!input)return;
+  if(!input)return;
 
   const text=input.value.trim();
   if(!text){toast('Tulis pesan terlebih dahulu.');return;}
 
-  const session=getCurrentSession();
-  r.posts.unshift({name:session?.name||'Pengguna RUMA',handle:session?.username?'@'+session.username:'',text,time:'Baru saja',likes:0});
-  apiRequest('createRoomPost',{roomId:id,text}).catch(()=>{});
-  persistDemoState();
   input.value='';
-  renderRoomDetail();
-  toast('Diskusi berhasil ditambahkan.');
+  try{
+    await apiRequest('createRoomPost',{roomId:id,text});
+    const detail=await apiRequest('room',{id});
+    if(currentRoom&&currentRoom.id===id){
+      currentRoom.posts=Array.isArray(detail?.posts)?detail.posts:currentRoom.posts;
+      renderRoomDetail();
+    }
+    toast('Diskusi berhasil ditambahkan.');
+  }catch(error){
+    input.value=text;
+    toast(error.message||'Diskusi gagal dikirim.');
+  }
 }
 
-function likeRoomPost(id,index){
-  const r=rooms.find(x=>x.id===id);
-  if(!r||!r.posts[index])return;
-  r.posts[index].likes=(r.posts[index].likes||0)+1;
-  apiRequest('likeRoomPost',{id:r.posts[index].id}).catch(()=>{});
-  persistDemoState();
+async function likeRoomPost(id,index){
+  const r=currentRoom;
+  if(!r||!r.posts||!r.posts[index])return;
+  if(!id)return;
+  const post=r.posts[index];
+  post.likes=Number(post.likes||0)+1;
   renderRoomDetail();
+  try{
+    const result=await apiRequest('likeRoomPost',{id});
+    if(result&&result.likes!=null){
+      post.likes=Number(result.likes);
+      renderRoomDetail();
+    }
+  }catch(error){toast(error.message||'Suka gagal dikirim.')}
 }
 
 function shareRoom(id){
@@ -1841,6 +2141,7 @@ function normalizeReel(item){
   const name=item.user||item.name||'Pengguna RUMA';
   return{
     id:String(item.id||''),
+    source:'reel',
     user:name,
     handle:item.handle||'',
     initial:item.initial||String(name).charAt(0).toUpperCase(),
@@ -1850,6 +2151,7 @@ function normalizeReel(item){
     avatarUrl:item.avatarUrl||'',
     mediaUrl:item.mediaUrl||'',
     mediaType:item.mediaType||'',
+    createdAt:Number(item.createdAt||0),
     likes:Number(item.likes||0),
     liked:!!item.liked,
     saved:!!item.saved,
@@ -1857,20 +2159,64 @@ function normalizeReel(item){
   };
 }
 
+function postAsReel(post){
+  const name=post.name||'Pengguna RUMA';
+  return{
+    id:String(post.id||''),
+    source:'post',
+    user:name,
+    handle:post.handle||'',
+    initial:post.initial||String(name).charAt(0).toUpperCase(),
+    emoji:'🎬',
+    caption:post.text||'',
+    audio:'',
+    avatarUrl:post.avatarUrl||'',
+    mediaUrl:post.mediaUrl||'',
+    mediaType:post.mediaType||'',
+    createdAt:Number(post.createdAt||0),
+    likes:Number(post.likes||0),
+    liked:!!post.liked,
+    saved:!!post.saved,
+    mine:!!post.mine
+  };
+}
+
+function hasVideoMedia(item){
+  if(isVideoMedia(item.mediaType))return true;
+  const hint=String(item.mediaName||'')+' '+String(item.mediaUrl||'');
+  return/\.(mp4|webm|m4v|mov|ogv|ogg|3gp)(\?|#|$)/i.test(hint.trim());
+}
+
 async function loadRemoteReels(force){
   const stage=$('reelsStage');
   if(!stage)return;
-  if((reelsLoaded&&!force)||reelsLoading){renderReels();pendingReelId='';return}
+  if((reelsLoaded&&!force)||reelsLoading){renderReels();return}
   reelsLoading=true;
-  renderReels();
+  if(!reelData.length)renderReels();
   try{
-    const data=await apiRequest('reels');
-    const items=Array.isArray(data)?data:(data&&data.items);
-    if(Array.isArray(items)){
-      const remoteIds=new Set(items.map(item=>String(item.id)));
-      const localOnly=reelData.filter(item=>item.local&&!remoteIds.has(String(item.id)));
-      reelData.splice(0,reelData.length,...items.map(normalizeReel),...localOnly);
-      reelsLoaded=true;
+    // Video bisa masuk dari dua pintu — komposer postingan (lembar Posts) dan
+    // "Unggah video" (lembar Reels). Keduanya digabung di sini supaya tidak ada
+    // video unggahan pengguna yang hilang dari tab Video.
+    const [reelPayload,feedPayload]=await Promise.all([apiRequest('reels'),apiRequest('feed')]);
+    const reelItems=Array.isArray(reelPayload)?reelPayload:reelPayload&&reelPayload.items;
+    const feedItems=Array.isArray(feedPayload)?feedPayload:feedPayload&&feedPayload.items;
+    const merged=Array.isArray(reelItems)?reelItems.map(normalizeReel):[];
+    const seenMedia=new Set(merged.map(item=>String(item.mediaUrl||'')));
+    if(Array.isArray(feedItems)){
+      feedItems.forEach(post=>{
+        const url=String(post.mediaUrl||'');
+        if(!url||url.indexOf('data:')===0||seenMedia.has(url)||!hasVideoMedia(post))return;
+        seenMedia.add(url);
+        merged.push(postAsReel(post));
+      });
+    }
+    merged.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+    const currentId=String((reelData[reelIndex]||{}).id||'');
+    reelData.splice(0,reelData.length,...merged);
+    reelsLoaded=true;
+    if(currentId){
+      const moved=reelData.findIndex(item=>String(item.id)===currentId);
+      if(moved>=0)reelIndex=moved;
     }
   }catch(error){
     if(!reelData.length)stage.innerHTML='<div class="reels-empty"><strong>Video belum dapat dimuat</strong><p>'+esc(error.message||'Periksa koneksi atau muat ulang halaman.')+'</p><button class="secondary" style="margin-top:14px" onclick="loadRemoteReels(true)">Coba lagi</button></div>';
@@ -1878,7 +2224,6 @@ async function loadRemoteReels(force){
   reelsLoading=false;
   if(reelIndex>=reelData.length)reelIndex=0;
   renderReels();
-  pendingReelId='';
 }
 
 function reelMediaHTML(r){
@@ -1917,25 +2262,27 @@ function renderReels(){
   const streamUrl=hasMedia?normalizeMediaUrl(r.mediaUrl,r.mediaType):'';
 
   stage.innerHTML=`
-    <article class="reel-card${hasMedia?' has-media':''}">
-      ${reelMediaHTML(r)}
-      ${hasMedia?`<div class="reel-fallback">Video tidak dapat diputar di sini.<br><a href="${esc(streamUrl)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline">Buka berkas asli ↗</a></div>`:''}
-      <div class="reel-counter">${reelIndex+1} / ${reelData.length}</div>
-      <div class="reel-content">
+    <article class="reel-card">
+      <div class="reel-media-wrap">
+        ${reelMediaHTML(r)}
+        ${hasMedia?`<div class="reel-fallback">Video tidak dapat diputar di sini.<br><a href="${esc(streamUrl)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline">Buka berkas asli ↗</a></div>`:''}
+        <div class="reel-counter">${reelIndex+1} / ${reelData.length}</div>
+      </div>
+      <div class="reel-info">
         <div class="reel-user">
           <span class="avatar">${avatarMarkup(r.avatarUrl,r.user,r.initial)}</span>
           <span>${esc(r.user)} <span style="opacity:.7;font-weight:500">${esc(r.handle)}</span></span>
           ${r.mine?'':`<button class="follow${followed.has(r.handle)?' following':''}" onclick="followCurrentReel(this)">${followed.has(r.handle)?'Mengikuti':'Ikuti'}</button>`}
         </div>
         <p class="reel-caption">${formatText(r.caption)||'<span style="opacity:.7">Tanpa caption</span>'}</p>
-        <div class="reel-audio">${esc(r.audio||'')}</div>
-      </div>
-      <div class="reel-side">
-        <button class="reel-action" onclick="toggleReelLike()">${r.liked?'❤️':'♡'}<span>${Number(r.likes||0).toLocaleString('id-ID')}</span></button>
-        <button class="reel-action" onclick="openCurrentGift()">🎁<span>Gift</span></button>
-        <button class="reel-action" onclick="toggleReelSave()">${r.saved?'▣':'▢'}<span>Simpan</span></button>
-        <button class="reel-action" onclick="shareReel()">↗<span>Bagikan</span></button>
-        ${r.mine?'<button class="reel-action" onclick="deleteCurrentReel()">🗑<span>Hapus</span></button>':''}
+        ${r.audio?`<div class="reel-audio">${esc(r.audio)}</div>`:''}
+        <div class="reel-actions">
+          <button class="reel-action" id="reelLike" onclick="toggleReelLike()">${r.liked?'❤️':'♡'}<span>${Number(r.likes||0).toLocaleString('id-ID')}</span></button>
+          ${r.source==='post'?'':`<button class="reel-action" onclick="openCurrentGift()">🎁<span>Gift</span></button>`}
+          <button class="reel-action" id="reelSave" onclick="toggleReelSave()">${r.saved?'▣':'▢'}<span>Simpan</span></button>
+          <button class="reel-action" onclick="shareReel()">↗<span>Bagikan</span></button>
+          ${r.mine?'<button class="reel-action danger" onclick="deleteCurrentReel()">🗑<span>Hapus</span></button>':''}
+        </div>
       </div>
     </article>`;
 
@@ -1971,19 +2318,32 @@ function nextReel(step){
   renderReels();
 }
 
+// Suka/simpan hanya mengecat ulang tombolnya sendiri. renderReels() akan
+// melepas elemen video/iframe sehingga pemutaran ikut terulang dari awal.
+function paintReelActions(){
+  const r=currentReel();
+  if(!r)return;
+  const like=document.getElementById('reelLike');
+  if(like)like.innerHTML=(r.liked?'❤️':'♡')+'<span>'+Number(r.likes||0).toLocaleString('id-ID')+'</span>';
+  const save=document.getElementById('reelSave');
+  if(save)save.innerHTML=(r.saved?'▣':'▢')+'<span>Simpan</span>';
+}
 async function toggleReelLike(){
   const r=currentReel();
   if(!r)return;
   if(!r.id){toast('Video ini belum tersimpan di server.');return}
+  const isPost=r.source==='post';
   r.liked=!r.liked;
   r.likes=Math.max(0,Number(r.likes||0)+(r.liked?1:-1));
-  renderReels();
+  paintReelActions();
   try{
-    const result=await apiRequest('toggleReelLike',{id:r.id});
+    const result=await apiRequest(isPost?'toggleLike':'toggleReelLike',{id:r.id});
     if(result&&typeof result.on==='boolean'){
       r.liked=result.on;
       if(result.count!=null)r.likes=Number(result.count);
-      renderReels();
+      const post=posts.find(item=>String(item.id)===String(r.id));
+      if(post){post.liked=r.liked;post.likes=r.likes}
+      paintReelActions();
     }
   }catch(error){toast(error.message||'Gagal memperbarui suka.')}
 }
@@ -1992,25 +2352,32 @@ async function toggleReelSave(){
   const r=currentReel();
   if(!r)return;
   if(!r.id){toast('Video ini belum tersimpan di server.');return}
+  const isPost=r.source==='post';
   r.saved=!r.saved;
-  renderReels();
+  paintReelActions();
   toast(r.saved?'Video disimpan.':'Video dihapus dari simpanan.');
   try{
-    const result=await apiRequest('toggleReelSave',{id:r.id});
-    if(result&&typeof result.on==='boolean'&&result.on!==r.saved){r.saved=result.on;renderReels()}
+    const result=await apiRequest(isPost?'toggleSave':'toggleReelSave',{id:r.id});
+    if(result&&typeof result.on==='boolean'&&result.on!==r.saved){r.saved=result.on;paintReelActions()}
+    const post=posts.find(item=>String(item.id)===String(r.id));
+    if(post)post.saved=r.saved;
   }catch(error){toast(error.message||'Gagal memperbarui simpanan.')}
 }
 
 async function deleteCurrentReel(){
   const r=currentReel();
   if(!r||!r.id)return;
-  if(!confirm('Hapus video ini?'))return;
+  const isPost=r.source==='post';
+  if(!confirm(isPost?'Hapus postingan video ini?':'Hapus video ini?'))return;
   try{
-    await apiRequest('deleteReel',{id:r.id});
+    await apiRequest(isPost?'deletePost':'deleteReel',{id:r.id});
     reelData.splice(reelIndex,1);
     if(reelIndex>=reelData.length)reelIndex=0;
+    const index=posts.findIndex(item=>String(item.id)===String(r.id));
+    if(index>=0)posts.splice(index,1);
+    
     renderReels();
-    toast('Video dihapus.');
+    toast(isPost?'Postingan video dihapus.':'Video dihapus.');
   }catch(error){toast(error.message||'Video gagal dihapus.')}
 }
 
@@ -2126,11 +2493,23 @@ async function renderProfileVideos(){
   container.innerHTML='<p class="muted small">Memuat video…</p>';
   let list=[];
   try{
-    const data=await apiRequest('reels',{handle});
-    const items=Array.isArray(data)?data:(data&&data.items);
-    if(Array.isArray(items))list=items.map(normalizeReel).filter(r=>String(r.handle||'').toLowerCase()===wanted);
+    const [reelPayload,feedPayload]=await Promise.all([apiRequest('reels',{handle}),apiRequest('feed',{filter:'user',handle})]);
+    const reelItems=Array.isArray(reelPayload)?reelPayload:reelPayload&&reelPayload.items;
+    const feedItems=Array.isArray(feedPayload)?feedPayload:feedPayload&&feedPayload.items;
+    if(Array.isArray(reelItems))list=reelItems.map(normalizeReel);
+    const seenMedia=new Set(list.map(item=>String(item.mediaUrl||'')));
+    if(Array.isArray(feedItems)){
+      feedItems.forEach(post=>{
+        const url=String(post.mediaUrl||'');
+        if(!url||url.indexOf('data:')===0||seenMedia.has(url)||!hasVideoMedia(post))return;
+        seenMedia.add(url);
+        list.push(postAsReel(post));
+      });
+    }
+    list=list.filter(r=>String(r.handle||'').toLowerCase().replace(/^@/,'')===wanted.replace(/^@/,''));
+    list.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
   }catch(_){ }
-  if(!list.length)list=reelData.filter(r=>String(r.handle).toLowerCase()===wanted);
+  if(!list.length)list=reelData.filter(r=>String(r.handle||'').toLowerCase().replace(/^@/,'')===wanted.replace(/^@/,''));
   if(!profileUser||profileUser.handle!==handle||profileTab!=='videos')return;
   container.innerHTML=list.length
     ?'<div class="reel-grid">'+list.map(r=>`<button class="reel-thumb" type="button" onclick="openReelById('${encodeURIComponent(r.id)}')">${reelThumbHTML(r)}<span class="reel-thumb-caption">${esc(r.caption||'Video')}</span></button>`).join('')+'</div>'
@@ -2298,13 +2677,61 @@ document.addEventListener('keydown',event=>{
 $('fullProfileAvatar')?.addEventListener('click',()=>openImagePreview($('fullProfileAvatar').dataset.image,$('fullProfileAvatar').dataset.name));
 syncSessionUI();
 refreshCurrentSession().finally(()=>{
+  seedFollowing();
   refreshNotifications();
   renderFeed();
   loadRemoteFeed();
   loadPeopleDirectory();
 });
 renderRooms();
-loadRemoteReels();
+handleDeepLink();
+window.addEventListener('hashchange',handleDeepLink);
+
+// Tautan bagikan memakai hash (#post-, #video-, #ruang-); tanpa ini tautan
+// tersebut hanya membuka halaman awal.
+function handleDeepLink(){
+  const raw=String(location.hash||'').replace(/^#/,'');
+  if(!raw)return;
+  const separator=raw.indexOf('-');
+  if(separator<0)return;
+  const kind=raw.slice(0,separator);
+  const id=decodeURIComponent(raw.slice(separator+1));
+  if(!id)return;
+  if(kind==='post'){
+    setView('beranda');
+    setSort('rekomendasi');
+    pendingPostId=id;
+    renderFeed();
+    return;
+  }
+  if(kind==='video'){
+    openReelById(encodeURIComponent(id));
+    return;
+  }
+  if(kind==='ruang'){
+    setView('ruang');
+    enterRoom(id);
+  }
+}
+
+// Status "Mengikuti" dimuat sekali di awal supaya tombol Ikuti tidak salah
+// menampilkan keadaan pada daftar orang, profil, dan kartu video.
+async function seedFollowing(){
+  try{
+    const data=await apiRequest('following');
+    const handles=Array.isArray(data)?data:(data&&data.handles);
+    if(!Array.isArray(handles))return;
+    followed.clear();
+    handles.forEach(handle=>followed.add(String(handle)));
+    renderPeople();
+    if(sort==='video')renderReels();
+  }catch(_){}
+}
+
+// Notifikasi diperiksa berkala supaya lencana dan daftar tetap mutakhir tanpa
+// membuat pengguna memuat ulang halaman.
+setInterval(()=>{if(!document.hidden)refreshNotifications()},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNotifications()});
 </script>
 </body>
 </html>
