@@ -269,7 +269,6 @@ a{color:inherit;text-decoration:none}
 .reel-media-wrap{position:relative;flex:1 1 auto;min-height:0;background:#000;overflow:hidden}
 .reel-art{position:absolute;inset:0;display:grid;place-items:center;font-size:110px;background:linear-gradient(155deg,#ffb36b,#d94675 48%,#362c72)}
 .reel-media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;border:0}
-.post-frame{display:block;width:100%;height:420px;max-height:420px;border:0;border-radius:12px;margin-top:12px;background:#000}
 
 /* ===== Pemutar video postingan ===== */
 .post-video{position:relative;margin-top:12px;border-radius:14px;overflow:hidden;background:#000;isolation:isolate;line-height:0}
@@ -295,6 +294,18 @@ a{color:inherit;text-decoration:none}
 @keyframes pvSpin{to{transform:rotate(360deg)}}
 .post-video:fullscreen{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:0;background:#000}
 .post-video:fullscreen video{width:100%;height:100%;max-height:none}
+/* Kalau berkas Drive tidak bisa diputar langsung, tampilkan kartu bersih dulu;
+   pemutar Drive baru dibuka layar penuh supaya kontrolnya tidak menutupi feed. */
+.post-video-fallback{position:relative;display:block;width:100%;min-height:180px;margin-top:12px;padding:0;border:0;border-radius:14px;overflow:hidden;background:#0b1220;cursor:pointer;line-height:0}
+.post-video-fallback img{display:block;width:100%;max-height:460px;object-fit:contain;opacity:.92}
+.post-video-fallback .pvf-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62px;height:62px;border-radius:50%;background:#0f172acc;color:#fff;display:grid;place-items:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 8px 24px #00000059;transition:transform .16s}
+.post-video-fallback:active .pvf-play{transform:translate(-50%,-50%) scale(.94)}
+.post-video-fallback .pvf-play svg{width:26px;height:26px;fill:currentColor;margin-left:3px}
+.post-video-fallback .pvf-tag{position:absolute;left:10px;bottom:10px;padding:5px 10px;border-radius:999px;background:#0f172ab3;color:#fff;font-size:11px;font-weight:700;line-height:1}
+.video-overlay{position:fixed;inset:0;z-index:70;display:none;background:#000}
+.video-overlay.open{display:block}
+.video-overlay iframe{display:block;width:100%;height:100%;border:0;background:#000}
+.video-overlay .vo-close{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:1;width:40px;height:40px;border:0;border-radius:50%;background:#ffffff2e;color:#fff;font-size:20px;line-height:1;display:grid;place-items:center}
 .reel-fallback{display:none;position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%);z-index:2;padding:12px;border-radius:12px;background:#000000b3;font-size:12px;line-height:1.55;text-align:center}
 .reel-card.media-failed .reel-fallback{display:block}
 .reel-card.media-failed .reel-media{display:none}
@@ -673,6 +684,11 @@ a{color:inherit;text-decoration:none}
   </section>
 </div>
 
+<div class="video-overlay" id="videoOverlay" role="dialog" aria-modal="true" aria-label="Pemutar video">
+  <button class="vo-close" type="button" onclick="closeVideoOverlay()" aria-label="Tutup pemutar">×</button>
+  <iframe title="Pemutar video" allow="autoplay; encrypted-media; fullscreen"></iframe>
+</div>
+
 <div class="modal-backdrop" id="notificationModal" onclick="if(event.target===this)closeNotifications()">
   <section class="modal notification-modal" role="dialog" aria-modal="true" aria-labelledby="notificationTitle">
     <div class="modal-head"><h2 id="notificationTitle">Notifikasi</h2><button class="close" onclick="closeNotifications()" aria-label="Tutup">×</button></div>
@@ -797,14 +813,47 @@ function mediaFallback(video){
     if(video.classList.contains('reel-media'))reelMediaFailed(video);
     return;
   }
-  const frame=document.createElement('iframe');
-  frame.className=video.classList.contains('reel-media')?'reel-media reel-frame':'post-frame';
-  frame.src=embed;
-  frame.allow='autoplay; encrypted-media; fullscreen';
-  const shell=video.closest('.post-video');
-  if(shell)shell.replaceWith(frame);
-  else video.replaceWith(frame);
+  if(video.classList.contains('reel-media')){
+    const frame=document.createElement('iframe');
+    frame.className='reel-media reel-frame';
+    frame.src=embed;
+    frame.allow='autoplay; encrypted-media; fullscreen';
+    video.replaceWith(frame);
+    return;
+  }
+  const poster=video.getAttribute('poster')||'';
+  const card=document.createElement('button');
+  card.type='button';
+  card.className='post-video-fallback';
+  card.setAttribute('aria-label','Putar video');
+  card.innerHTML=(poster?'<img loading="lazy" src="'+esc(poster)+'" alt="">':'')
+    +'<span class="pvf-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>'
+    +'<span class="pvf-tag">Putar video</span>';
+  const target=video.closest('.post-video')||video;
+  card.addEventListener('click',()=>openVideoOverlay(embed));
+  target.replaceWith(card);
 }
+
+function openVideoOverlay(embed){
+  const overlay=$('videoOverlay');
+  if(!overlay||!embed)return;
+  overlay.querySelector('iframe').src=embed;
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeVideoOverlay(){
+  const overlay=$('videoOverlay');
+  if(!overlay||!overlay.classList.contains('open'))return;
+  overlay.classList.remove('open');
+  // Kosongkan iframe agar pemutaran Drive benar-benar berhenti.
+  overlay.querySelector('iframe').src='about:blank';
+  document.body.style.overflow='';
+}
+
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape')closeVideoOverlay();
+});
 
 // Endpoint unduh Drive (uc?export=download) diblokir atau dibiarkan menggantung
 // oleh sebagian jaringan tanpa memicu event error, jadi kegagalan juga harus
