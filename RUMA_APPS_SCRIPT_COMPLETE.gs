@@ -53,6 +53,8 @@ function doPost(e) {
     if (action === "addComment") return reply(true, "", null, addComment(req, user));
     if (action === "toggleFollow") return reply(true, "", null, toggleFollow(req, user));
     if (action === "updateProfile") return reply(true, "", null, updateProfile(req, user));
+    if (action === "changePassword") return reply(true, "", null, changePassword(req, user));
+    if (action === "logout") return reply(true, "", null, doLogout(req, user));
     if (action === "createRoom") return reply(true, "", null, createRoom(req, user));
     if (action === "joinRoom") return reply(true, "", null, joinRoom(req, user));
     if (action === "leaveRoom") return reply(true, "", null, leaveRoom(req, user));
@@ -147,10 +149,32 @@ function getRows(sheetName) {
   });
 }
 
+// Satu akun boleh punya beberapa sesi aktif (misalnya HP dan desktop). Daftar
+// token disimpan sebagai JSON di kolom "token"; token lama berbentuk teks biasa
+// tetap terbaca.
+function readTokens(user) {
+  const raw = String((user && user.token) || "").trim();
+  if (!raw) return [];
+  if (raw.charAt(0) === "[") {
+    try {
+      const list = JSON.parse(raw);
+      return Array.isArray(list) ? list.filter(Boolean).map(String) : [];
+    } catch (_) {
+      return [];
+    }
+  }
+  return [raw];
+}
+
 function getUserByToken(token) {
   if (!token) return null;
   const users = getRows("Users");
-  return users.find(u => String(u.token) === String(token)) || null;
+  return users.find(u => readTokens(u).indexOf(String(token)) >= 0) || null;
+}
+
+function saveUserTokens(sheet, rowIndex, tokens) {
+  sheet.getRange(rowIndex, 5).setValue(tokens.length ? JSON.stringify(tokens) : "");
+  return tokens;
 }
 
 function getUserByUsername(username) {
@@ -176,7 +200,7 @@ function setupAdminAccount() {
     }
   }
   const temporary = "ruma-" + Utilities.getUuid().slice(0, 8);
-  sheet.appendRow(["U_" + Utilities.getUuid(), "roby", temporary, "Roby", "", "Administrator RUMA", "#e8efff", "#2859a8", 1250, Date.now(), "admin", "active", "", "", true]);
+  sheet.appendRow(["U_" + Utilities.getUuid(), "roby", hashPassword(temporary), "Roby", "", "Administrator RUMA", "#e8efff", "#2859a8", 1250, Date.now(), "admin", "active", "", "", true]);
   return "Admin roby dibuat. Password sementara: " + temporary + " (ganti setelah login pertama).";
 }
 
@@ -253,27 +277,72 @@ function markNotificationsRead(user) {
 }
 
 /* ================= AUTHENTICATION ================= */
+
+// Kata sandi disimpan sebagai "sha256$<salt>$<hash>". Akun lama yang masih
+// menyimpan kata sandi apa adanya tetap bisa masuk, lalu otomatis dipindahkan
+// ke bentuk hash saat login berikutnya.
+const PASSWORD_HASH_PREFIX = "sha256$";
+
+function sha256Hex(value) {
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(value), Utilities.Charset.UTF_8);
+  return bytes.map(function (byte) {
+    return ((byte < 0 ? byte + 256 : byte) + 0x100).toString(16).slice(1);
+  }).join("");
+}
+
+function hashPassword(password) {
+  const salt = Utilities.getUuid().replace(/-/g, "").slice(0, 16);
+  return PASSWORD_HASH_PREFIX + salt + "$" + sha256Hex(salt + ":" + String(password));
+}
+
+function verifyPassword(stored, password) {
+  const value = String(stored || "");
+  if (!value) return false;
+  if (value.indexOf(PASSWORD_HASH_PREFIX) !== 0) return value === String(password);
+  const parts = value.slice(PASSWORD_HASH_PREFIX.length).split("$");
+  if (parts.length !== 2) return false;
+  return sha256Hex(parts[0] + ":" + String(password)) === parts[1];
+}
+
+function needsPasswordUpgrade(stored) {
+  return String(stored || "").indexOf(PASSWORD_HASH_PREFIX) !== 0;
+}
+
 function doLogin(req) {
   const username = (req.username || "").toLowerCase().trim().replace(/^@/, "");
   const password = req.password || "";
 
-  const users = getRows("Users");
-  const user = users.find(u => String(u.username).toLowerCase() === username && String(u.password) === password);
-  
-  if (!user) throw new Error("Username atau password salah.");
+  const user = getRows("Users").find(u => String(u.username).toLowerCase() === username);
+  if (!user || !verifyPassword(user.password, password)) throw new Error("Username atau password salah.");
   if (String(user.status || "active") === "blocked") throw new Error("Akun ini diblokir.");
 
   const newToken = "TK_" + Utilities.getUuid();
   const sheet = getSheet("Users");
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][1]).toLowerCase() === username) {
-      sheet.getRange(i + 1, 5).setValue(newToken);
+    if (String(data[i][0]) === String(user.id)) {
+      const tokens = readTokens(user);
+      tokens.push(newToken);
+      saveUserTokens(sheet, i + 1, tokens.slice(-5));
+      if (needsPasswordUpgrade(user.password)) sheet.getRange(i + 1, 3).setValue(hashPassword(password));
       user.token = newToken;
       break;
     }
   }
   return { user: sanitizeUser(user), token: newToken };
+}
+
+function doLogout(req, user) {
+  const sheet = getSheet("Users");
+  const data = sheet.getDataRange().getValues();
+  const current = String(req.token || "");
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(user.id)) {
+      saveUserTokens(sheet, i + 1, readTokens(user).filter(token => token !== current));
+      break;
+    }
+  }
+  return true;
 }
 
 function doRegister(req) {
@@ -300,7 +369,7 @@ function doRegister(req) {
   const palette = colors[Math.floor(Math.random() * colors.length)];
 
   const newUser = [
-    id, username, password, name, token, 
+    id, username, hashPassword(password), name, token, 
     "Anggota RUMA yang senang berbagi cerita.", 
     palette[0], palette[1], 1250, Date.now(), "user", "active"
   ];
@@ -312,6 +381,27 @@ function doRegister(req) {
     }),
     token
   };
+}
+
+function changePassword(req, user) {
+  const current = String(req.currentPassword || "");
+  const next = String(req.nextPassword || "");
+  if (!verifyPassword(user.password, current)) throw new Error("Kata sandi saat ini salah.");
+  if (next.length < 8) throw new Error("Kata sandi baru minimal 8 karakter.");
+  const sheet = getSheet("Users");
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(user.id)) {
+      const hashed = hashPassword(next);
+      sheet.getRange(i + 1, 3).setValue(hashed);
+      // Sesi di perangkat lain dicabut; perangkat yang mengganti tetap masuk.
+      const keep = String(req.token || "");
+      saveUserTokens(sheet, i + 1, keep ? [keep] : []);
+      user.password = hashed;
+      return true;
+    }
+  }
+  throw new Error("Akun tidak ditemukan.");
 }
 
 /* ================= FEED & POSTS ================= */
@@ -543,11 +633,15 @@ function getProfile(req, token) {
 }
 
 function updateProfile(req, user) {
-  const name = (req.name || user.name).trim();
-  const bio = (req.bio || "").trim();
-  const avatarUrl = String(req.avatarUrl || user.avatarUrl || "");
-  const bannerUrl = String(req.bannerUrl || user.bannerUrl || "");
-  const username = String(req.username || user.username).toLowerCase().trim().replace(/^@/, "");
+  // Hanya field yang benar-benar dikirim yang diubah. Nilai kosong yang dikirim
+  // eksplisit dipakai untuk menghapus avatar atau banner.
+  const sent = function (key) { return Object.prototype.hasOwnProperty.call(req, key); };
+  const name = String(sent("name") ? req.name || "" : user.name || "").trim();
+  const bio = String(sent("bio") ? req.bio || "" : user.bio || "").trim();
+  const avatarUrl = String(sent("avatarUrl") ? req.avatarUrl || "" : user.avatarUrl || "");
+  const bannerUrl = String(sent("bannerUrl") ? req.bannerUrl || "" : user.bannerUrl || "");
+  const username = String(sent("username") ? req.username || "" : user.username || "").toLowerCase().trim().replace(/^@/, "");
+  if (!name) throw new Error("Nama tidak boleh kosong.");
   if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error("Username hanya boleh 3-20 karakter: huruf kecil, angka, atau _.");
   if (getRows("Users").some(u => String(u.id) !== String(user.id) && String(u.username).toLowerCase() === username)) {
     throw new Error("Username sudah digunakan.");
@@ -565,6 +659,7 @@ function updateProfile(req, user) {
       const bannerColumn = headers.indexOf("bannerUrl") + 1;
       if (avatarColumn > 0) sheet.getRange(i + 1, avatarColumn).setValue(avatarUrl);
       if (bannerColumn > 0) sheet.getRange(i + 1, bannerColumn).setValue(bannerUrl);
+      if (String(user.username).toLowerCase() !== username) renameHandleEverywhere(user.username, username);
       user.name = name;
       user.username = username;
       user.bio = bio;
@@ -574,6 +669,42 @@ function updateProfile(req, user) {
     }
   }
   return sanitizeUser(user);
+}
+
+// Ganti username harus ikut memperbarui semua data yang menyimpan handle, kalau
+// tidak postingan lama menunjuk ke profil yang sudah tidak ada.
+function renameHandleEverywhere(oldUsername, newUsername) {
+  const oldHandle = normalizeHandle(oldUsername);
+  const newHandle = normalizeHandle(newUsername);
+  if (oldHandle === newHandle) return;
+  [
+    ["Posts", ["handle"]],
+    ["Comments", ["handle"]],
+    ["RoomPosts", ["handle"]],
+    ["Reels", ["handle"]],
+    ["Followers", ["followerHandle", "targetHandle"]],
+    ["Rooms", ["ownerHandle"]],
+    ["Reports", ["reporterHandle"]],
+    ["Notifications", ["actorHandle"]]
+  ].forEach(function (entry) {
+    const sheet = getSheet(entry[0]);
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) return;
+    const headers = data[0].map(String);
+    entry[1].forEach(function (column) {
+      const index = headers.indexOf(column);
+      if (index < 0) return;
+      let changed = false;
+      const values = data.slice(1).map(function (row) {
+        if (normalizeHandle(row[index]) === oldHandle) {
+          changed = true;
+          return [newHandle];
+        }
+        return [row[index]];
+      });
+      if (changed) sheet.getRange(2, index + 1, values.length, 1).setValues(values);
+    });
+  });
 }
 
 function getTrends() {

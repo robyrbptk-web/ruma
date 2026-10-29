@@ -16,18 +16,20 @@ Gunakan file lengkap [RUMA_APPS_SCRIPT_COMPLETE.gs](./RUMA_APPS_SCRIPT_COMPLETE.
 6. Login menggunakan:
 
    - Username: roby
-   - Password: tauhid12
+   - Password: kata sandi sementara yang tercetak pada log eksekusi `setupRuma`
 
-Dashboard admin tersedia di [admin.html](./admin.html). Jika URL Web App belum diisi, frontend tetap menyediakan mode lokal untuk pemeriksaan tampilan. Data produksi akan tersimpan di Spreadsheet setelah URL Web app dipasang.
+Dashboard admin tersedia di [admin.html](./admin.html). URL Web App wajib diisi: tanpa backend, aplikasi tidak dapat dipakai karena semua akun diverifikasi server dan tidak ada mode lokal.
 
-Fungsi `setupAdminAccount()` membuat atau memperbaiki akun admin berikut:
+Fungsi `setupAdminAccount()` membuat akun admin berikut:
 
 - Username: `roby`
-- Password: `tauhid12`
+- Password: kata sandi sementara buatan server, ditampilkan sekali di log eksekusi
 - Role: `admin`
 - Status: `active`
 
-File [appscript_admin_patch.gs](./appscript_admin_patch.gs) dipertahankan sebagai arsip patch lama. File itu tidak perlu disalin jika memakai file lengkap.
+Kata sandi disimpan sebagai hash `sha256$salt$hash`, bukan teks biasa. Jika akun admin sudah ada, `setupAdminAccount()` tidak menimpa kata sandinya. Ganti kata sandi lewat **Profil → Ubah profil → Ganti kata sandi**. Akun lama yang masih menyimpan kata sandi apa adanya tetap bisa masuk dan otomatis dipindahkan ke bentuk hash saat login berikutnya.
+
+Jangan menambahkan file patch lama ke project Apps Script: cukup satu file `RUMA_APPS_SCRIPT_COMPLETE.gs`, karena duplikat fungsi dapat menimpa versi yang benar.
 
 ## Upload foto dan video
 

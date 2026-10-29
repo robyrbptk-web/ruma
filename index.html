@@ -1084,6 +1084,9 @@ function syncSessionUI(){
 }
 
 function logoutDemo(){
+  // Token dicabut di server (keepalive agar tetap terkirim saat halaman pindah)
+  // supaya sesi ini tidak bisa dipakai lagi dari perangkat lain.
+  const token=localStorage.getItem('ruma_token')||'';
   localStorage.removeItem('ruma_demo_session');
   localStorage.removeItem('ruma_token');
   localStorage.removeItem('ruma_user');
@@ -1091,6 +1094,9 @@ function logoutDemo(){
   // maupun notifikasi milik pengguna sebelumnya.
   localStorage.removeItem('ruma_demo_posts');
   localStorage.removeItem('ruma_demo_notifications');
+  if(token&&token.indexOf('LOCAL_')!==0){
+    fetch(configuredApiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'logout',token}),keepalive:true}).catch(()=>{});
+  }
   toast('Kamu sudah keluar dari RUMA.');
   setTimeout(()=>{location.href='./auth.html?mode=login'},450);
 }
@@ -1598,7 +1604,33 @@ function openEditProfile(){
       +'<div class="pick-row"><span class="pick-banner" id="profileBannerThumb"'+(session.bannerUrl?' style="background-image:url(\''+esc(normalizeImageUrl(session.bannerUrl))+'\')"':'')+'></span>'
       +'<input id="profileBannerFile" type="file" accept="image/*" onchange="previewProfileImage(this,\'banner\')"></div></div>'
     +'<p id="profileUploadStatus" class="muted small"></p>'
-    +'<button class="primary" type="submit">Simpan perubahan</button></form>';
+    +'<button class="primary" type="submit">Simpan perubahan</button></form>'
+    +'<form onsubmit="changePasswordSubmit(event)" style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px">'
+    +'<h3 style="font-size:14px;margin:0 0 10px">Ganti kata sandi</h3>'
+    +'<div class="field"><label for="currentPassword">Kata sandi saat ini</label><input id="currentPassword" type="password" autocomplete="current-password" required></div>'
+    +'<div class="field"><label for="nextPassword">Kata sandi baru</label><input id="nextPassword" type="password" autocomplete="new-password" minlength="8" required></div>'
+    +'<p id="passwordStatus" class="muted small"></p>'
+    +'<button class="secondary" type="submit">Perbarui kata sandi</button></form>';
+}
+async function changePasswordSubmit(event){
+  event.preventDefault();
+  const status=$('passwordStatus');
+  const currentPassword=$('currentPassword').value;
+  const nextPassword=$('nextPassword').value;
+  const submit=event.target.querySelector('button[type=submit]');
+  if(nextPassword.length<8){status.textContent='Kata sandi baru minimal 8 karakter.';return}
+  if(submit)submit.disabled=true;
+  status.textContent='Menyimpan…';
+  try{
+    await apiRequest('changePassword',{currentPassword,nextPassword});
+    $('currentPassword').value='';
+    $('nextPassword').value='';
+    status.textContent='Kata sandi berhasil diperbarui.';
+    toast('Kata sandi diperbarui.');
+  }catch(error){
+    status.textContent=error.message||'Kata sandi gagal diperbarui.';
+  }
+  if(submit)submit.disabled=false;
 }
 
 function previewProfileImage(input,kind){

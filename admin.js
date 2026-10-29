@@ -86,6 +86,15 @@ async function loadDashboard(){
     else toast(error.message);
   }
 }
-document.getElementById('logoutButton').addEventListener('click',()=>{clearSession();location.href='./index.html'});
+function revokeAndLeave(){
+  const current=token;
+  clearSession();
+  if(current){
+    // Cabut token di server (keepalive agar terkirim saat halaman berpindah).
+    fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'logout',token:current}),keepalive:true}).catch(()=>{});
+  }
+  location.href='./index.html';
+}
+document.getElementById('logoutButton').addEventListener('click',revokeAndLeave);
 if(token&&storedUser&&storedUser.role==='admin'&&localStorage.getItem('ruma_admin_session')==='1')loadDashboard();else loginView();
 setTimeout(()=>{if(!app.innerHTML.trim())loginView('Sesi admin perlu dimulai kembali.')},1500);
