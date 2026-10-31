@@ -14,19 +14,28 @@
 
 <style>
 :root{
-  --ink:#111827;--muted:#6b7280;--line:#e8ebf0;--soft:#f3f5f8;--bg:#f5f7fa;
-  --blue:#2563eb;--blue-soft:#eaf1ff;--green:#16865b;
-  --radius:20px;--shadow:0 1px 2px #1118270a,0 6px 20px #1118270a;
+  --ink:#0f172a;--ink-2:#334155;--muted:#64748b;--line:#e7ebf2;--line-strong:#d8dfea;--soft:#f3f6fb;--bg:#f6f8fc;--surface:#fff;
+  --blue:#2563eb;--blue-600:#1d4ed8;--blue-soft:#eaf1ff;--green:#0f9d63;--amber:#b45309;--red:#e11d48;
+  --radius:20px;--radius-sm:12px;--radius-lg:24px;
+  --shadow:0 1px 2px #0f172a08,0 6px 22px #0f172a0a;
+  --shadow-lift:0 1px 2px #0f172a08,0 12px 30px #0f172a12;
+  --t-fast:.14s cubic-bezier(.2,.8,.2,1);--t:.2s cubic-bezier(.2,.8,.2,1);
   --top-h:60px;--nav-h:64px;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:#fff;color:var(--ink);font-family:'Plus Jakarta Sans',Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scrollbar-color:#cfd7e3 transparent;scrollbar-width:thin}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#d3dae5;border:3px solid #fff;border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:#c0c9d7}
+::selection{background:#2563eb2b;color:inherit}
+body{margin:0;background:#fff;color:var(--ink);font-family:'Plus Jakarta Sans',Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;line-height:1.5}
 button,input,textarea,select{font:inherit}
 button{cursor:pointer;touch-action:manipulation}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2563eb55;outline-offset:2px}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #2563ebcc;outline-offset:2px}
 button:disabled{opacity:.45;cursor:not-allowed}
 a{color:inherit;text-decoration:none}
+img{max-width:100%}
+h1,h2,h3{letter-spacing:-.02em}
 .hidden{display:none!important}
 .muted{color:var(--muted)}
 .small{font-size:12px}
@@ -239,7 +248,7 @@ a{color:inherit;text-decoration:none}
 .profile-tabs button.active{color:var(--ink);border-bottom:2px solid var(--ink)}
 .profile-page{display:grid;gap:16px}
 .profile-hero{overflow:hidden;border:1px solid var(--line);border-radius:22px;background:#fff}
-.profile-page .profile-cover{height:150px;border-radius:0;margin:0;background:linear-gradient(120deg,#1c2940,#6d8ed1) center/cover}
+.profile-page .profile-cover{height:150px;border-radius:0;margin:0;background:radial-gradient(90% 160% at 82% -20%,#7aa2ff5c,transparent 62%),linear-gradient(135deg,#16233a,#2a4472 55%,#1b2a45) center/cover}
 .profile-page .profile-main{padding:0 24px 24px}
 .profile-page .profile-row{margin-top:-25px;align-items:end;padding:0}
 .profile-page .profile-row .avatar{width:76px;height:76px;border:5px solid #fff;font-size:24px}
@@ -311,8 +320,11 @@ a{color:inherit;text-decoration:none}
 .reel-card.media-failed .reel-media{display:none}
 .reel-counter{position:absolute;top:10px;left:12px;z-index:2;padding:4px 9px;border-radius:999px;background:#000000a6;font-size:11px;font-weight:700;pointer-events:none}
 .reels-empty{padding:46px 20px;text-align:center;color:#c5c7cc}
+.reels-empty .empty-icon{background:#ffffff14;color:#cbd5e1}
 .reels-empty strong{display:block;color:#fff;font-size:17px;margin-bottom:9px}
 .reels-empty p{font-size:12px;line-height:1.6;margin-bottom:4px}
+.skeleton.dark{background:#20242c}
+.skeleton.dark:after{background:linear-gradient(90deg,#0000,#ffffff14,#0000)}
 .reel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
 .reel-thumb{position:relative;aspect-ratio:9/16;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#101114;padding:0}
 .reel-thumb video,.reel-thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -342,6 +354,62 @@ a{color:inherit;text-decoration:none}
 /* ===== Navigasi bawah (mobile) ===== */
 .mobile-nav{display:none}
 .mobile-nav .ni{width:22px;height:22px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== Tombol, kartu, dan interaksi ===== */
+.primary,.nav-compose{background:linear-gradient(135deg,#3b82f6,#2563eb 58%,#1d4ed8);box-shadow:0 6px 16px #2563eb33,inset 0 1px 0 #ffffff2e;transition:transform var(--t-fast),box-shadow var(--t),filter var(--t)}
+.primary:hover,.nav-compose:hover{filter:brightness(1.05);box-shadow:0 9px 22px #2563eb3d,inset 0 1px 0 #ffffff2e}
+.primary:active,.nav-compose:active{transform:translateY(1px) scale(.995)}
+.primary:disabled{background:#a8c0f2;box-shadow:none;filter:none}
+.secondary{border-color:var(--line-strong);transition:background var(--t),border-color var(--t),transform var(--t-fast)}
+.secondary:hover{border-color:#c3cedd;background:#f7f9fd}
+.secondary:active{transform:scale(.985)}
+.icon-btn{transition:background var(--t),border-color var(--t),color var(--t)}
+.icon-btn:hover{background:var(--soft);border-color:var(--line-strong);color:var(--ink)}
+.composer,.post,.room-card,.side-card,.search-people,.profile-hero,.profile-page .profile-content{transition:box-shadow var(--t),border-color var(--t)}
+.post:focus-within{border-color:#c9d9f6}
+@media(hover:hover) and (pointer:fine){
+  .post:hover,.room-card:hover{border-color:#d9e2ee;box-shadow:var(--shadow-lift)}
+}
+.side-title{letter-spacing:-.01em}
+.trend{transition:color var(--t)}
+.trend:hover strong{color:var(--blue)}
+
+/* ===== Tindakan postingan ===== */
+.post-actions{gap:2px}
+.action{gap:6px;padding:8px 9px;border-radius:11px;color:#6b7280;font-weight:700;transition:background var(--t),color var(--t),transform var(--t-fast)}
+.action svg{width:17px;height:17px;flex:none;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--t-fast),fill var(--t),stroke var(--t)}
+.action span{font-size:11.5px;line-height:1;font-variant-numeric:tabular-nums}
+.action:hover{background:#f2f5f9;color:var(--ink-2)}
+.action:active{transform:scale(.96)}
+.action.liked{color:#e11d48;background:#fff1f4}
+.action.liked svg{fill:#e11d48;stroke:#e11d48}
+.action.reposted{color:var(--green);background:#eafaf2}
+.action.saved{color:var(--blue);background:var(--blue-soft)}
+.action.saved svg{fill:var(--blue);stroke:var(--blue)}
+.action .lbl{font-size:11.5px}
+
+/* ===== Komposer ===== */
+.composer-count{font-size:11px;font-weight:700;color:#9aa3af;padding:0 4px;align-self:center;font-variant-numeric:tabular-nums;transition:color var(--t)}
+.composer-count.near{color:var(--amber)}
+
+/* ===== Keadaan memuat ===== */
+.skeleton{position:relative;overflow:hidden;background:#edf1f7;border-radius:10px}
+.skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,#0000,#ffffffc4,#0000);animation:shimmer 1.3s infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+.skeleton-post{display:flex;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;margin-bottom:14px;box-shadow:var(--shadow)}
+.skeleton-lines{flex:1;min-width:0;display:grid;gap:9px;align-content:start}
+.skeleton-notif{display:flex;gap:11px;padding:12px;border-radius:14px;background:#fafbfc;border:1px solid #eef0f4}
+
+/* ===== Keadaan kosong ===== */
+.empty-icon{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:var(--soft);color:#94a3b8}
+.empty-icon svg{width:26px;height:26px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.empty-action{margin-top:16px}
+
+/* ===== Toast ===== */
+.toast{display:flex;align-items:center;gap:9px;text-align:left;border:1px solid #ffffff1f}
+.toast-ic{display:grid;place-items:center;width:18px;height:18px;flex:none;color:#93c5fd}
+.toast-ic svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.toast-msg{min-width:0}
 
 @media(max-width:1050px){
   .layout{grid-template-columns:185px minmax(0,1fr);gap:18px}
@@ -396,7 +464,9 @@ a{color:inherit;text-decoration:none}
   .post-text{font-size:15px;line-height:1.65;margin:10px 0 8px}
   .more{width:40px;height:40px;border-radius:50%;flex:none}
   .post-actions{margin:4px -4px 0;padding-top:7px;gap:0}
-  .action{flex:1;min-width:0;min-height:42px;padding:8px 2px;font-size:11px;white-space:nowrap;border-radius:12px}
+  .action{flex:1;min-width:0;min-height:42px;padding:8px 2px;gap:5px;font-size:11px;white-space:nowrap;border-radius:12px}
+  .action svg{width:18px;height:18px}
+  .action .lbl{display:none}
   .comment-form input{font-size:16px;min-height:42px}
   .comment-form button{min-height:42px}
   .side-card,.search-people,.profile-hero,.profile-page .profile-content{border:0;border-radius:22px;box-shadow:0 1px 2px #0f172a08,0 10px 26px #0f172a0a}
@@ -538,6 +608,7 @@ a{color:inherit;text-decoration:none}
         <div>
           <button class="tool-btn" onclick="insertTag()">＃ Hashtag</button>
           <button class="tool-btn" onclick="selectMedia()">▧ Foto/video</button>
+          <span class="composer-count" id="postCounter">0/700</span>
         </div>
         <button class="primary" id="publishBtn" onclick="publishPost()" disabled>Terbitkan</button>
       </div>
@@ -1004,6 +1075,7 @@ function initPostVideos(root){
 }
 
 const posts = [];
+let feedLoading = true;
 
 const reelData=[];
 let reelsLoaded=false;
@@ -1113,13 +1185,16 @@ function renderNotifications(){
   const markAll=$('notificationMarkAll');
   if(markAll)markAll.classList.toggle('hidden',!notifications.some(item=>!item.read));
 
-  if(!notificationsLoaded){list.innerHTML='<div class="empty">Memuat notifikasi…</div>';return}
+  if(!notificationsLoaded){
+    list.innerHTML=Array.from({length:3},()=>'<div class="skeleton-notif" aria-hidden="true"><div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div><div class="skeleton-lines"><div class="skeleton" style="width:78%;height:11px"></div><div class="skeleton" style="width:34%;height:9px"></div></div></div>').join('');
+    return;
+  }
 
   const items=notificationFilter==='unread'?notifications.filter(item=>!item.read):notifications;
   if(!items.length){
     list.innerHTML=notifications.length
-      ?'<div class="empty">Tidak ada notifikasi belum dibaca.</div>'
-      :'<div class="empty"><strong>Belum ada notifikasi</strong><p>Suka, komentar, repost, pengikut baru, dan gift dari pengguna lain akan muncul di sini.</p></div>';
+      ? emptyState('Semua sudah dibaca','Tidak ada notifikasi yang belum dibaca saat ini.','bell')
+      : emptyState('Belum ada notifikasi','Suka, komentar, repost, pengikut baru, dan gift akan muncul di sini.','bell');
     return;
   }
 
@@ -1256,7 +1331,7 @@ function remotePost(item){
 
 async function loadRemoteFeed(){
   const token=localStorage.getItem('ruma_token')||'';
-  if(!token)return;
+  if(!token){feedLoading=false;return}
   try{
     const data=await apiRequest('feed',{sort:sort==='terbaru'?'terbaru':'rekomendasi'});
     if(data&&Array.isArray(data.items)){
@@ -1268,6 +1343,10 @@ async function loadRemoteFeed(){
       renderFeed();
     }
   }catch(error){toast('Postingan belum dapat dimuat: '+error.message)}
+  finally{
+    // Kerangka memuat hanya boleh tampil selama permintaan pertama berjalan.
+    if(feedLoading){feedLoading=false;renderFeed()}
+  }
 }
 
 
@@ -1326,7 +1405,8 @@ function logoutDemo(){
 
 function toast(message){
   const t=$('toast');
-  t.textContent=message;
+  t.innerHTML='<span class="toast-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.4"/><path d="M12 7.8h.01"/></svg></span><span class="toast-msg"></span>';
+  t.querySelector('.toast-msg').textContent=message;
   t.classList.add('show');
   clearTimeout(window.rumaToastTimer);
   window.rumaToastTimer=setTimeout(()=>t.classList.remove('show'),2500);
@@ -1379,10 +1459,23 @@ function postMediaHTML(p){
 function postHTML(p){
   const media=postMediaHTML(p);
   const id=postArg(p.id);
+  const actIcon={
+    like:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.2-4.4-7.2-9.4A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.2 3.2C19.2 15.6 12 20 12 20z"/></svg>',
+    comment:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.6a8 8 0 0 1-11.7 7.1L4.2 20l1.4-4.4A8 8 0 1 1 20.5 11.6z"/></svg>',
+    repost:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h9a3 3 0 0 1 3 3v4"/><path d="m16 4 3 3-3 3"/><path d="M17 17H8a3 3 0 0 1-3-3v-4"/><path d="m8 20-3-3 3-3"/></svg>',
+    save:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.6A1.6 1.6 0 0 1 7.6 3h8.8A1.6 1.6 0 0 1 18 4.6V21l-6-3.5L6 21z"/></svg>',
+    share:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/><path d="M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"/></svg>'
+  };
   return `<article class="post" id="post-${esc(p.id)}">
     <div class="post-head">${avatarHTML(p)}<div class="post-meta"><div><button class="post-name" onclick="openProfileEncoded('${profileArg(p.handle)}','${profileArg(p.name)}','${profileArg(p.avatarUrl||'')}','${profileArg(p.bannerUrl||'')}','${profileArg(p.verified?'true':'')}')">${esc(p.name)}${p.verified?'<span class="verified-mark">✓</span>':''}</button><span class="handle">${esc(p.handle)}</span></div><div class="post-time">${esc(p.time)} · ${esc(p.topic)}</div></div><button class="more" onclick="openPostMenu(${id})" aria-label="Opsi postingan">•••</button></div>
     <div class="post-text">${formatText(p.text)}</div>${media}
-    <div class="post-actions"><button class="action ${p.liked?'liked':''}" onclick="toggleLike(${id})">Like ${p.likes}</button><button class="action" onclick="toggleComments(${id})">Komentar ${p.comments.length||''}</button><button class="action ${p.reposted?'reposted':''}" onclick="toggleRepost(${id})">Repost ${p.reposts}</button><button class="action ${p.saved?'saved':''}" onclick="toggleSave(${id})">${p.saved?'Tersimpan':'Simpan'}</button><button class="action" onclick="sharePost(${id})">Bagikan</button></div>
+    <div class="post-actions">
+      <button class="action ${p.liked?'liked':''}" aria-pressed="${!!p.liked}" aria-label="Suka" onclick="toggleLike(${id})">${actIcon.like}<span>${p.likes||''}</span></button>
+      <button class="action" aria-label="Komentar" onclick="toggleComments(${id})">${actIcon.comment}<span>${p.comments.length||''}</span></button>
+      <button class="action ${p.reposted?'reposted':''}" aria-pressed="${!!p.reposted}" aria-label="Repost" onclick="toggleRepost(${id})">${actIcon.repost}<span>${p.reposts||''}</span></button>
+      <button class="action ${p.saved?'saved':''}" aria-pressed="${!!p.saved}" aria-label="${p.saved?'Hapus dari simpanan':'Simpan'}" onclick="toggleSave(${id})">${actIcon.save}<span class="lbl">${p.saved?'Tersimpan':'Simpan'}</span></button>
+      <button class="action" aria-label="Bagikan" onclick="sharePost(${id})">${actIcon.share}<span class="lbl">Bagikan</span></button>
+    </div>
     <div class="comment-area ${p.commentsOpen?'open':''}" id="comments-${esc(p.id)}"><div class="comment-list">${p.comments.map(c=>`<p><strong>${esc(c.name)}</strong> ${esc(c.text)}</p>`).join('')||'Belum ada komentar.'}</div><form class="comment-form" onsubmit="addComment(event,${id})"><input maxlength="240" placeholder="Tulis komentar..." required><button>Kirim</button></form></div>
   </article>`;
 }
@@ -1411,15 +1504,47 @@ function renderFeed(){
   }
 
   const peopleMarkup=matchingPeople.length?'<section class="search-people"><h2 class="side-title">Pengguna</h2>'+matchingPeople.map(personSearchCard).join('')+'</section>':'';
-  $('feed').innerHTML=peopleMarkup+(list.length
-    ? list.map((p,i)=>postHTML(p)+(i===1?adCardHTML():'')).join('')
-    : (peopleMarkup?'':'<div class="empty"><strong>Belum ada hasil yang cocok</strong>Coba kata kunci lain atau mulai diskusi baru.</div>'));
+  let feedBody;
+  if(list.length){
+    feedBody=list.map((p,i)=>postHTML(p)+(i===1?adCardHTML():'')).join('');
+  }else if(peopleMarkup){
+    feedBody=peopleMarkup;
+  }else if(feedLoading&&!searchTerm){
+    feedBody=feedSkeleton();
+  }else if(searchTerm){
+    feedBody=emptyState('Hasil tidak ditemukan','Coba kata kunci lain atau mulai diskusi baru dengan topik ini.','search');
+  }else{
+    const emptyTitle=view==='tersimpan'?'Belum ada yang disimpan':view==='disukai'?'Belum ada yang disukai':view==='repost'?'Belum ada repost':'Belum ada postingan';
+    const emptyHint=view==='tersimpan'?'Ketuk ikon simpan pada postingan untuk menyimpannya di sini.':view==='disukai'?'Ketuk ikon suka untuk menandai postingan favoritmu.':view==='repost'?'Repost postingan menarik agar muncul kembali di sini.':'Jadilah yang pertama memulai percakapan di RUMA.';
+    const emptyCta=view==='beranda'?'<button class="primary" onclick="focusComposer()">＋ Mulai diskusi</button>':'';
+    feedBody=emptyState(emptyTitle,emptyHint,'spark',emptyCta);
+  }
+  $('feed').innerHTML=feedBody;
 
   renderTrends();
   renderPeople();
   armMediaWatchdogs($('feed'));
   initPostVideos($('feed'));
   focusPendingPost();
+}
+
+function feedSkeleton(count=3){
+  return Array.from({length:count},()=>'<div class="skeleton-post" aria-hidden="true"><div class="skeleton" style="width:42px;height:42px;border-radius:50%"></div><div class="skeleton-lines"><div class="skeleton" style="width:38%;height:12px"></div><div class="skeleton" style="width:90%;height:11px"></div><div class="skeleton" style="width:68%;height:11px"></div><div class="skeleton" style="width:100%;height:132px;border-radius:14px;margin-top:4px"></div></div></div>').join('');
+}
+
+// Ikon garis sederhana untuk keadaan kosong, agar pesan terasa disengaja
+// dan bukan halaman yang gagal memuat.
+function emptyState(title,hint,icon='spark',action=''){
+  const icons={
+    spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/>',
+    search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/>',
+    chat:'<path d="M20.5 11.6a8 8 0 0 1-11.7 7.1L4.2 20l1.4-4.4A8 8 0 1 1 20.5 11.6z"/>',
+    bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+    video:'<rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3z"/>',
+    users:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M17.5 14.4A5.5 5.5 0 0 1 20.5 20"/>',
+    alert:'<path d="M12 4.5 21 20H3z"/><path d="M12 10v4.2"/><path d="M12 17.2h.01"/>'
+  };
+  return '<div class="empty"><span class="empty-icon">'+'<svg viewBox="0 0 24 24" aria-hidden="true">'+(icons[icon]||icons.spark)+'</svg>'+'</span><strong>'+esc(title)+'</strong><p>'+esc(hint)+'</p>'+(action?'<div class="empty-action">'+action+'</div>':'')+'</div>';
 }
 
 // Server sudah mengirim postingan terbaru lebih dulu, jadi tidak ada urutan
@@ -1526,6 +1651,7 @@ async function publishPost(){
 
   input.value='';
   clearMedia();
+  updateComposerState();
 
   const token=localStorage.getItem('ruma_token')||'';
   setView('beranda');
@@ -1563,7 +1689,7 @@ function insertTag(){
   input.value=input.value.slice(0,start)+'#'+input.value.slice(end);
   input.focus();
   input.selectionStart=input.selectionEnd=start+1;
-  $('publishBtn').disabled=!input.value.trim();
+  updateComposerState();
 }
 
 function selectMedia(){ $('mediaInput').click(); }
@@ -2145,7 +2271,7 @@ async function loadRooms(force){
       roomsLoaded=true;
     }
   }catch(error){
-    $('roomList').innerHTML='<div class="empty"><strong>Ruang gagal dimuat</strong>'+esc(error.message||'Periksa koneksi lalu coba lagi.')+'<div><button class="secondary" style="margin-top:14px" onclick="loadRooms(true)">Coba lagi</button></div></div>';
+    $('roomList').innerHTML=emptyState('Ruang gagal dimuat',error.message||'Periksa koneksi lalu coba lagi.','alert','<button class="secondary" onclick="loadRooms(true)">Coba lagi</button>');
     roomsLoading=false;
     return;
   }
@@ -2174,8 +2300,11 @@ function renderRooms(){
     else {emptyTitle='Ruang tidak ditemukan';emptyHint='Coba kata kunci atau filter lain.'}
   }
   const canCreate=roomsLoaded&&!searchTerm&&(roomFilter==='mine'||!rooms.length);
+  const roomEmptyIcon=roomFilter==='mine'?'users':'chat';
   $('roomList').innerHTML=list.length?list.map(roomCard).join('')
-    :'<div class="empty"><strong>'+emptyTitle+'</strong>'+(emptyHint?'<p>'+emptyHint+'</p>':'')+(canCreate?'<button class="primary" style="margin-top:16px" onclick="openCreateRoom()">＋ Buat Ruang</button>':'')+'</div>';
+    : (!roomsLoaded&&!searchTerm
+      ? Array.from({length:3},()=>'<div class="skeleton-post" aria-hidden="true"><div class="skeleton" style="width:50px;height:50px;border-radius:15px"></div><div class="skeleton-lines"><div class="skeleton" style="width:44%;height:12px"></div><div class="skeleton" style="width:82%;height:11px"></div><div class="skeleton" style="width:60%;height:11px"></div></div></div>').join('')
+      : emptyState(emptyTitle,emptyHint,roomEmptyIcon,canCreate?'<button class="primary" onclick="openCreateRoom()">＋ Buat Ruang</button>':''));
 }
 
 function roomCard(r){
@@ -2526,7 +2655,9 @@ function renderReels(){
   }
 
   if(!reelData.length){
-    stage.innerHTML=`<div class="reels-empty"><strong>Belum ada video</strong><p>${reelsLoaded?'Jadilah yang pertama mengunggah video ke RUMA.':'Memuat video dari server…'}</p>${reelsLoaded?'<button class="primary" style="margin-top:14px" onclick="openReelUpload()">＋ Unggah video</button>':''}</div>`;
+    stage.innerHTML=reelsLoaded
+      ? '<div class="reels-empty"><span class="empty-icon reels-empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg></span><strong>Belum ada video</strong><p>Jadilah yang pertama mengunggah video ke RUMA.</p><button class="primary" style="margin-top:14px" onclick="openReelUpload()">＋ Unggah video</button></div>'
+      : '<div class="skeleton dark" style="width:min(100%,390px);height:min(70vh,620px);min-height:420px;border-radius:19px"></div>';
     return;
   }
 
@@ -2876,9 +3007,18 @@ async function loadCreatorStats(){
   }catch(_){ }
 }
 
-$('postInput').addEventListener('input',()=>{
-  $('publishBtn').disabled=!$('postInput').value.trim();
-});
+function updateComposerState(){
+  const input=$('postInput');
+  if(!input)return;
+  $('publishBtn').disabled=!input.value.trim();
+  const counter=$('postCounter');
+  if(counter){
+    counter.textContent=input.value.length+'/700';
+    counter.classList.toggle('near',input.value.length>=650);
+  }
+}
+
+$('postInput').addEventListener('input',updateComposerState);
 
 $('searchInput').addEventListener('input',event=>{
   searchTerm=event.target.value.trim();
