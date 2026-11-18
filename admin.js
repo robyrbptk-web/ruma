@@ -1,6 +1,6 @@
 'use strict';
 
-const API_URL=localStorage.getItem('ruma_api_url')||'https://script.google.com/macros/s/AKfycbyl6evQ9sGyZExU57dPz5JGr2ZdZUFZYefj3cziUCpp7lRPGldNstmnv7ZgjaPLs3rg/exec';
+const API_URL=(window.RUMA_CONFIG&&window.RUMA_CONFIG.API_URL)||localStorage.getItem('ruma_api_url')||'/api/ruma';
 const app=document.getElementById('app');
 const toastEl=document.getElementById('toast');
 let token=localStorage.getItem('ruma_token')||'';
@@ -17,20 +17,32 @@ async function api(action,payload={}){
   if(!result.ok){const error=new Error(result.message||'Permintaan gagal.');error.code=result.code||'';throw error}
   return result.data;
 }
+function adminTurnstileEl(){return document.getElementById('adminTurnstile')}
+function mountAdminTurnstile(){
+  const el=adminTurnstileEl();
+  if(el&&window.RumaTurnstile)window.RumaTurnstile.mount(el);
+}
 function loginView(message=''){
   app.className='login panel';
-  app.innerHTML='<h1>Masuk sebagai admin</h1><p>Gunakan akun admin RUMA untuk membuka panel pengelolaan.</p><form id="loginForm"><div class="field"><label>Username</label><input id="adminUsername" autocomplete="username" required></div><div class="field"><label>Password</label><input id="adminPassword" type="password" autocomplete="current-password" required></div><div class="error">'+esc(message)+'</div><button class="primary" style="width:100%">Masuk</button></form>';
+  app.innerHTML='<h1>Masuk sebagai admin</h1><p>Gunakan akun admin RUMA untuk membuka panel pengelolaan.</p><form id="loginForm"><div class="field"><label>Username</label><input id="adminUsername" autocomplete="username" required></div><div class="field"><label>Password</label><input id="adminPassword" type="password" autocomplete="current-password" required></div><div id="adminTurnstile" class="turnstile" aria-label="Verifikasi keamanan"></div><p id="turnstileStatus" class="turnstile-status hidden" role="status" aria-live="polite"></p><div class="error">'+esc(message)+'</div><button class="primary" style="width:100%">Masuk</button></form>';
   const links=document.createElement('p');
   links.className='login-links';
   links.innerHTML='<a href="./auth.html?mode=login">Login pengguna</a><span>·</span><a href="./auth.html?mode=register">Daftar akun</a>';
   app.appendChild(links);
+  mountAdminTurnstile();
   document.getElementById('loginForm').addEventListener('submit',async event=>{
     event.preventDefault();
     const username=document.getElementById('adminUsername').value.trim().toLowerCase().replace(/^@/,'');
     const password=document.getElementById('adminPassword').value;
+    const turnstileEl=adminTurnstileEl();
+    if(window.RumaTurnstile&&window.RumaTurnstile.enabled()&&!window.RumaTurnstile.token(turnstileEl)){
+      loginView('Selesaikan verifikasi keamanan Cloudflare Turnstile terlebih dahulu.');
+      return;
+    }
+    const turnstileToken=window.RumaTurnstile?window.RumaTurnstile.token(turnstileEl):'';
     try{
       // Panel ini hanya untuk admin. Server yang memutuskan role, bukan peramban.
-      const data=await api('login',{username,password});
+      const data=await api('login',{username,password,turnstileToken});
       if(!data.user||data.user.role!=='admin')throw new Error('Akun ini bukan admin RUMA.');
       token=data.token;
       storedUser=data.user;

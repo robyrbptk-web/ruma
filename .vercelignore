@@ -1,0 +1,10 @@
+# Berkas yang tidak perlu ada di server produksi.
+# Frontend (html/js/css) dan api/ + lib/ tetap diunggah.
+scripts/
+test/
+supabase/
+legacy/
+node_modules/
+README.md
+.env.example
+.vercelignore

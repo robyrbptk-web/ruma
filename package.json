@@ -1,0 +1,19 @@
+{
+  "name": "ruma",
+  "version": "2.0.0",
+  "private": true,
+  "description": "RUMA — frontend statis dengan API Vercel, database & storage Supabase, dan Cloudflare Turnstile.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "doctor": "node --env-file=.env scripts/doctor.mjs",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "create-admin": "node --env-file=.env scripts/create-admin.mjs",
+    "import-sheets": "node --env-file=.env scripts/import-sheets.mjs",
+    "migrate-media": "node --env-file=.env scripts/migrate-drive-media.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0"
+  }
+}

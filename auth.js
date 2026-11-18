@@ -11,7 +11,8 @@ const togglePassword = document.getElementById('togglePassword');
 const submitButton = document.getElementById('submitButton');
 const message = document.getElementById('message');
 const hint = document.getElementById('hint');
-const API_URL = localStorage.getItem('ruma_api_url') || 'https://script.google.com/macros/s/AKfycbyl6evQ9sGyZExU57dPz5JGr2ZdZUFZYefj3cziUCpp7lRPGldNstmnv7ZgjaPLs3rg/exec';
+const turnstileEl = document.getElementById('turnstile');
+const API_URL = (window.RUMA_CONFIG && window.RUMA_CONFIG.API_URL) || localStorage.getItem('ruma_api_url') || '/api/ruma';
 
 let mode = new URLSearchParams(location.search).get('mode') === 'register' ? 'register' : 'login';
 
@@ -41,8 +42,6 @@ function normalizeUsername(value) {
 
 async function apiAuth(action, payload) {
   const controller = new AbortController();
-  // Apps Script butuh beberapa detik untuk menjawab; batas sebelumnya terlalu
-  // ketat sehingga permintaan yang sebenarnya berhasil terlihat gagal.
   const timeout = setTimeout(() => controller.abort(), 20000);
   try {
     const response = await fetch(API_URL, {
@@ -65,6 +64,10 @@ async function apiAuth(action, payload) {
     error.network = true;
     throw error;
   }
+}
+
+function turnstileToken() {
+  return window.RumaTurnstile ? window.RumaTurnstile.token(turnstileEl) : '';
 }
 
 loginTab.addEventListener('click', () => updateMode('login'));
@@ -97,16 +100,21 @@ form.addEventListener('submit', async event => {
     passwordInput.focus();
     return;
   }
+  if (window.RumaTurnstile && window.RumaTurnstile.enabled() && !turnstileToken()) {
+    setMessage('Selesaikan verifikasi keamanan Cloudflare Turnstile terlebih dahulu.');
+    return;
+  }
 
   submitButton.disabled = true;
   setMessage('Menghubungi server RUMA…');
 
-  // Akun hanya diverifikasi server. Tidak ada lagi cadangan akun lokal, jadi
+  // Akun hanya diverifikasi server. Tidak ada cadangan akun lokal, jadi
   // aplikasi tidak bisa dibuka tanpa masuk atau mendaftar lebih dulu.
   try {
     const data = await apiAuth(mode === 'register' ? 'register' : 'login', {
       username,
       password,
+      turnstileToken: turnstileToken(),
       ...(mode === 'register' ? {name} : {})
     });
     if (!data || !data.token || !data.user) throw new Error('Server tidak mengembalikan sesi yang sah.');
@@ -118,6 +126,7 @@ form.addEventListener('submit', async event => {
     setTimeout(() => { location.href = './index.html'; }, 500);
   } catch (error) {
     submitButton.disabled = false;
+    if (window.RumaTurnstile) window.RumaTurnstile.reset(turnstileEl);
     setMessage(
       error.backend
         ? error.message
@@ -128,3 +137,4 @@ form.addEventListener('submit', async event => {
 });
 
 updateMode(mode);
+if (window.RumaTurnstile) window.RumaTurnstile.mount(turnstileEl);

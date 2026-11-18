@@ -269,15 +269,60 @@ h1,h2,h3{letter-spacing:-.02em}
 .creator-tile strong{display:block;font-size:18px;margin:8px 0 4px}
 .creator-tile span{font-size:11px;color:var(--muted)}
 .wallet-line{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
-.reels-view{overflow:hidden;background:#101114;color:#fff;border-radius:20px}
-.reels-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px}
-.reels-stage{display:flex;justify-content:center;padding:0 12px 14px}
-/* Kartu video memakai kolom flex: media menempati areanya sendiri tanpa overlay,
-   sehingga tombol pemutar asli — termasuk layar penuh — tidak pernah tertutup. */
-.reel-card{display:flex;flex-direction:column;width:min(100%,390px);height:min(78vh,720px);min-height:480px;border-radius:19px;overflow:hidden;background:#101114;color:#fff;isolation:isolate}
-.reel-media-wrap{position:relative;flex:1 1 auto;min-height:0;background:#000;overflow:hidden}
+/* ===== Penampil video gaya TikTok ===== */
+.reels-view{position:relative;overflow:hidden;background:#000;color:#fff;border-radius:20px}
+.reels-stage{position:relative;height:min(78vh,760px);min-height:500px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory;scrollbar-width:none;background:#000;-webkit-overflow-scrolling:touch}
+.reels-stage::-webkit-scrollbar{display:none}
+.reel-slide{position:relative;display:flex;height:100%;min-height:100%;overflow:hidden;background:#000;scroll-snap-align:start;scroll-snap-stop:always}
+.reel-media-wrap{position:absolute;inset:0;background:#000;cursor:pointer}
 .reel-art{position:absolute;inset:0;display:grid;place-items:center;font-size:110px;background:linear-gradient(155deg,#ffb36b,#d94675 48%,#362c72)}
 .reel-media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;border:0}
+.reel-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#00000073,#0000 22%,#0000 55%,#000000e6)}
+.reel-topline{position:absolute;z-index:3;top:10px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;pointer-events:none}
+.reel-pill{padding:5px 10px;border-radius:999px;background:#000000a6;color:#fff;font-size:10.5px;font-weight:800;line-height:1;backdrop-filter:blur(6px)}
+button.reel-pill{border:0;cursor:pointer;font-family:inherit}
+.reel-pill.video{display:flex;align-items:center;gap:5px}
+.reel-topline-actions{display:flex;gap:6px;pointer-events:auto}
+.reel-overlay{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-end;gap:10px;padding:14px 12px calc(16px + env(safe-area-inset-bottom));pointer-events:none}
+.reel-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:7px;padding-bottom:2px;text-shadow:0 1px 10px #000c}
+.reel-meta>*{pointer-events:auto}
+.reel-author{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:#fff;text-decoration:none}
+.reel-author .avatar{width:34px;height:34px;font-size:12px;flex:0 0 auto;border:1px solid #ffffff5c}
+.reel-author-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;color:#fff;font:inherit;font-weight:800;text-align:left;padding:0;cursor:pointer}
+.reel-author-name small{display:block;font-size:10.5px;font-weight:600;opacity:.78}
+.reel-follow{margin-left:auto;flex:0 0 auto;border:1px solid #ffffff5c;border-radius:999px;background:#ffffff1f;color:#fff;padding:4px 10px;font-size:10.5px;font-weight:800;backdrop-filter:blur(6px)}
+.reel-follow.following{background:#fff;border-color:#fff;color:#17181b}
+.reel-caption{margin:0;font-size:13px;line-height:1.45;max-height:4.35em;overflow:hidden;cursor:pointer;word-break:break-word;-webkit-line-clamp:3;-webkit-box-orient:vertical;display:-webkit-box}
+.reel-caption.expanded{-webkit-line-clamp:unset;display:block;max-height:42vh;overflow:auto}
+.reel-audio{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;opacity:.9;min-width:0}
+.reel-audio .reel-disc{flex:0 0 auto;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#ffffff24;font-size:10px;animation:reelSpin 3.4s linear infinite}
+.reel-audio .reel-marquee{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes reelSpin{to{transform:rotate(360deg)}}
+.reel-rail{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:13px;pointer-events:auto;padding-bottom:2px}
+.reel-rail-avatar-wrap{position:relative;width:44px;height:44px;margin-bottom:8px}
+.reel-rail-avatar{width:44px;height:44px;border:0;border-radius:50%;background:transparent;padding:0;display:block;cursor:pointer}
+.reel-rail-avatar .avatar{width:44px;height:44px;font-size:15px;border:2px solid #fff;box-shadow:0 2px 10px #0007}
+.reel-rail-follow{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:20px;height:20px;border:0;border-radius:50%;background:#ff2d55;color:#fff;font-size:13px;font-weight:800;line-height:1;display:grid;place-items:center;box-shadow:0 2px 6px #0006}
+.reel-rail-follow.following{display:none}
+.reel-rail-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;color:#fff;padding:0;width:48px;text-shadow:0 1px 8px #000a}
+.reel-rail-btn svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 6px #0008);transition:transform .14s}
+.reel-rail-btn:active svg{transform:scale(.86)}
+.reel-rail-btn small{font-size:10px;font-weight:800;line-height:1.2}
+.reel-rail-btn.liked{color:#ff2d55}
+.reel-rail-btn.liked svg{fill:#ff2d55;stroke:#ff2d55}
+.reel-rail-btn.saved{color:#ffd54a}
+.reel-rail-btn.saved svg{fill:#ffd54a;stroke:#ffd54a}
+.reel-rail-btn.danger{color:#ffb3b8}
+.reel-playhint{position:absolute;z-index:2;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;border-radius:50%;background:#00000073;color:#fff;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;transform:scale(.8);backdrop-filter:blur(4px)}
+.reel-playhint svg{width:30px;height:30px;fill:#fff;margin-left:3px}
+.reel-slide.is-paused .reel-playhint,.reel-slide.media-failed .reel-playhint{opacity:1;transform:scale(1)}
+.reel-burst{position:absolute;z-index:4;left:50%;top:50%;font-size:96px;line-height:1;color:#ff2d55;opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.3);filter:drop-shadow(0 8px 22px #0009)}
+.reel-burst.go{animation:reelBurst .72s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes reelBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-14deg)}28%{opacity:1;transform:translate(-50%,-50%) scale(1.18) rotate(5deg)}62%{opacity:1;transform:translate(-50%,-54%) scale(1)}100%{opacity:0;transform:translate(-50%,-86%) scale(.88)}}
+.reel-progress{position:absolute;z-index:3;left:0;right:0;bottom:0;height:3px;background:#ffffff2e;pointer-events:none}
+.reel-progress span{display:block;width:0;height:100%;background:#fff;transition:width .1s linear}
+.reel-slide.media-failed .reel-media{display:none}
+.reel-slide.media-failed .reel-fallback{display:block}
 
 /* ===== Pemutar video postingan ===== */
 .post-video{position:relative;margin-top:12px;border-radius:14px;overflow:hidden;background:#000;isolation:isolate;line-height:0}
@@ -303,22 +348,10 @@ h1,h2,h3{letter-spacing:-.02em}
 @keyframes pvSpin{to{transform:rotate(360deg)}}
 .post-video:fullscreen{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:0;background:#000}
 .post-video:fullscreen video{width:100%;height:100%;max-height:none}
-/* Kalau berkas Drive tidak bisa diputar langsung, tampilkan kartu bersih dulu;
-   pemutar Drive baru dibuka layar penuh supaya kontrolnya tidak menutupi feed. */
-.post-video-fallback{position:relative;display:block;width:100%;min-height:180px;margin-top:12px;padding:0;border:0;border-radius:14px;overflow:hidden;background:#0b1220;cursor:pointer;line-height:0}
-.post-video-fallback img{display:block;width:100%;max-height:460px;object-fit:contain;opacity:.92}
-.post-video-fallback .pvf-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62px;height:62px;border-radius:50%;background:#0f172acc;color:#fff;display:grid;place-items:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 8px 24px #00000059;transition:transform .16s}
-.post-video-fallback:active .pvf-play{transform:translate(-50%,-50%) scale(.94)}
-.post-video-fallback .pvf-play svg{width:26px;height:26px;fill:currentColor;margin-left:3px}
-.post-video-fallback .pvf-tag{position:absolute;left:10px;bottom:10px;padding:5px 10px;border-radius:999px;background:#0f172ab3;color:#fff;font-size:11px;font-weight:700;line-height:1}
-.video-overlay{position:fixed;inset:0;z-index:70;display:none;background:#000}
-.video-overlay.open{display:block}
-.video-overlay iframe{display:block;width:100%;height:100%;border:0;background:#000}
-.video-overlay .vo-close{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:1;width:40px;height:40px;border:0;border-radius:50%;background:#ffffff2e;color:#fff;font-size:20px;line-height:1;display:grid;place-items:center}
-.reel-fallback{display:none;position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%);z-index:2;padding:12px;border-radius:12px;background:#000000b3;font-size:12px;line-height:1.55;text-align:center}
-.reel-card.media-failed .reel-fallback{display:block}
-.reel-card.media-failed .reel-media{display:none}
-.reel-counter{position:absolute;top:10px;left:12px;z-index:2;padding:4px 9px;border-radius:999px;background:#000000a6;font-size:11px;font-weight:700;pointer-events:none}
+.post-video.media-failed video{display:none}
+.post-video.media-failed{margin-top:12px;border-radius:14px;background:#0b1220;display:grid;place-items:center;min-height:180px}
+.post-video.media-failed:after{content:"Video tidak dapat diputar. Unggah ulang videonya.";padding:22px;color:#cbd5e1;font-size:12px;line-height:1.6;text-align:center;max-width:280px}
+.reel-fallback{display:none;position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%);z-index:2;padding:14px;border-radius:12px;background:#000000b3;font-size:12px;line-height:1.6;text-align:center}
 .reels-empty{padding:46px 20px;text-align:center;color:#c5c7cc}
 .reels-empty .empty-icon{background:#ffffff14;color:#cbd5e1}
 .reels-empty strong{display:block;color:#fff;font-size:17px;margin-bottom:9px}
@@ -330,20 +363,6 @@ h1,h2,h3{letter-spacing:-.02em}
 .reel-thumb video,.reel-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .reel-thumb-emoji{position:absolute;inset:0;display:grid;place-items:center;font-size:34px}
 .reel-thumb-caption{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 7px;font-size:10px;line-height:1.35;color:#fff;text-align:left;background:linear-gradient(0deg,#000c,transparent);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.reel-info{flex:0 0 auto;display:flex;flex-direction:column;gap:9px;padding:12px 14px 14px;background:#101114;border-top:1px solid #ffffff14}
-.reel-user{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800}
-.reel-user .avatar{width:32px;height:32px;font-size:12px;flex:0 0 auto}
-.reel-user>span:nth-of-type(2){flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.reel-user .follow{flex:0 0 auto;border-color:#ffffff38;background:#ffffff14;color:#fff}
-.reel-user .follow.following{background:#fff;border-color:#fff;color:#17181b}
-.reel-caption{font-size:13px;line-height:1.55;max-height:4.65em;overflow:auto}
-.reel-audio{font-size:11px;opacity:.72}
-.reel-actions{display:flex;gap:7px}
-.reel-action{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid #ffffff1f;border-radius:12px;background:#ffffff12;color:#fff;font-size:15px;padding:8px 2px}
-.reel-action span{display:block;font-size:9px;font-weight:700;opacity:.9;white-space:nowrap}
-.reel-action.danger{border-color:#ff8088;color:#ffb3b8}
-.reel-bottom{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 12px 15px}
-.reel-bottom button{border:1px solid #ffffff30;border-radius:999px;background:#ffffff12;color:#fff;padding:9px 12px;font-size:11px}
 .gift-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}
 .gift-option{border:1px solid var(--line);border-radius:14px;padding:10px 4px;background:#fff;text-align:center}
 .gift-option.selected{border-color:var(--blue);background:var(--blue-soft)}
@@ -505,15 +524,11 @@ h1,h2,h3{letter-spacing:-.02em}
   .profile-page .profile-content{padding:14px}
   .creator-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .reels-view{margin:0 -12px;border-radius:0}
-  .reels-stage{padding:0}
-  .reel-card{width:100%;height:calc(100dvh - var(--top-h) - var(--nav-h) - 150px);min-height:440px;border-radius:0}
-  /* Bilah info diringkas di layar kecil agar area media — dan tombol layar
-     penuh pemutar — tetap mendapat bagian terbesar dari tinggi kartu. */
-  .reel-info{gap:7px;padding:10px 12px 12px}
-  .reel-caption{max-height:3.1em;font-size:12.5px}
-  .reel-audio{display:none}
-  .reel-action{padding:7px 2px}
-  .reels-head{position:sticky;top:0}
+  .reels-stage{height:calc(100dvh - var(--top-h) - var(--nav-h) - 150px);min-height:430px}
+  .reel-overlay{padding:12px 10px calc(14px + env(safe-area-inset-bottom))}
+  .reel-rail{gap:11px}
+  .reel-caption{font-size:12.5px;max-height:3.9em}
+  .reel-author{font-size:13px}
 }
 @media(max-width:360px){
   .brand img{height:26px}
@@ -526,6 +541,7 @@ h1,h2,h3{letter-spacing:-.02em}
   .mobile-nav .mobile-add .ni{width:23px;height:23px}
 }
 </style>
+<script src="./config.js"></script>
 <script>
 // RUMA hanya untuk akun terdaftar: tanpa sesi yang sah pengguna diarahkan ke
 // halaman masuk sebelum antarmuka sempat dirender, sehingga tidak ada data
@@ -618,16 +634,14 @@ h1,h2,h3{letter-spacing:-.02em}
 
     <section id="reelsView" class="hidden">
       <div class="reels-view">
-        <div class="reels-head">
-          <strong>▶ RUMA Video</strong>
-          <span style="font-size:11px;color:#c5c7cc">Video pilihan · Trending</span>
+        <div class="reel-topline">
+          <span class="reel-pill video">▶ <span id="reelPosition">0 / 0</span></span>
+          <span class="reel-topline-actions">
+            <button class="reel-pill" id="reelMuteBtn" type="button" onclick="toggleReelMute()">🔇 Suara</button>
+            <button class="reel-pill" type="button" onclick="openReelUpload()">＋ Unggah</button>
+          </span>
         </div>
-        <div class="reels-stage" id="reelsStage"></div>
-        <div class="reel-bottom">
-          <button onclick="nextReel(-1)">↑ Video sebelumnya</button>
-          <button onclick="nextReel(1)">↓ Video berikutnya</button>
-          <button onclick="openReelUpload()">＋ Unggah video</button>
-        </div>
+        <div class="reels-stage" id="reelsStage" aria-label="Feed video RUMA"></div>
       </div>
     </section>
   </section>
@@ -755,11 +769,6 @@ h1,h2,h3{letter-spacing:-.02em}
   </section>
 </div>
 
-<div class="video-overlay" id="videoOverlay" role="dialog" aria-modal="true" aria-label="Pemutar video">
-  <button class="vo-close" type="button" onclick="closeVideoOverlay()" aria-label="Tutup pemutar">×</button>
-  <iframe title="Pemutar video" allow="autoplay; encrypted-media; fullscreen"></iframe>
-</div>
-
 <div class="modal-backdrop" id="notificationModal" onclick="if(event.target===this)closeNotifications()">
   <section class="modal notification-modal" role="dialog" aria-modal="true" aria-labelledby="notificationTitle">
     <div class="modal-head"><h2 id="notificationTitle">Notifikasi</h2><button class="close" onclick="closeNotifications()" aria-label="Tutup">×</button></div>
@@ -799,7 +808,7 @@ h1,h2,h3{letter-spacing:-.02em}
       <div class="field">
         <label for="reelFileInput">Berkas video</label>
         <input id="reelFileInput" type="file" accept="video/*" onchange="handleReelFile(event)">
-        <p class="muted small" style="margin-top:6px">Format MP4/WebM, maksimal 8 MB. Video diunggah ke Drive lalu diputar langsung di tab Video.</p>
+        <p class="muted small" style="margin-top:6px">Format MP4/WebM, maksimal 50 MB. Video diunggah ke penyimpanan RUMA lalu diputar langsung di tab Video.</p>
       </div>
       <div id="reelMediaPreview" class="hidden" style="margin-bottom:12px"></div>
       <div class="field"><label for="reelCaption">Caption</label><textarea id="reelCaption" maxlength="700" placeholder="Tulis caption dan tambahkan #hashtag..."></textarea></div>
@@ -839,113 +848,49 @@ function postArg(id){
   return "'" + String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + "'";
 }
 
-function driveFileId(url){
-  const value=String(url||'');
-  if(!/drive\.(google|usercontent)\./i.test(value))return'';
-  const patterns=[/[?&]id=([^&#]+)/i,/\/file\/d\/([^/?#]+)/i,/\/d\/([^/?#]+)/i];
-  for(const pattern of patterns){
-    const match=value.match(pattern);
-    if(match&&match[1])return match[1];
-  }
-  return'';
+function normalizeImageUrl(url){
+  return String(url||'').trim();
 }
 
-function normalizeImageUrl(url){
-  const value=String(url||'').trim();
-  const match=value.match(/^https?:\/\/drive\.google\.com\/uc\?[^#]*\bid=([^&]+)/i);
-  return match?'https://drive.google.com/thumbnail?id='+encodeURIComponent(match[1])+'&sz=w1000':value;
-}
+const VIDEO_EXT_RE=/\.(mp4|webm|m4v|mov|ogv|ogg|3gp)(?:[?#]|$)/i;
 
 function isVideoMedia(mediaType){return/^video\//i.test(String(mediaType||''))}
 
-function normalizeMediaUrl(url,mediaType){
-  const value=String(url||'').trim();
-  if(!value)return'';
-  if(!isVideoMedia(mediaType))return normalizeImageUrl(value);
-  // Endpoint thumbnail Drive hanya merender bingkai gambar, jadi video harus
-  // diarahkan ke endpoint streaming agar <video> benar-benar bisa memutar.
-  const fileId=driveFileId(value);
-  return fileId?'https://drive.google.com/uc?export=download&id='+encodeURIComponent(fileId):value;
+// Sebagian unggahan lama tidak menyimpan mediaType (mis. berkas .mov dari
+// iPhone), jadi jenis media juga disimpulkan dari nama atau URL berkas.
+function hasVideoMedia(item){
+  if(!item)return false;
+  if(isVideoMedia(item.mediaType))return true;
+  const hint=String(item.mediaName||'')+' '+String(item.mediaUrl||'');
+  return VIDEO_EXT_RE.test(hint.trim());
 }
 
-function mediaPosterUrl(url){
-  const fileId=driveFileId(url);
-  return fileId?'https://drive.google.com/thumbnail?id='+encodeURIComponent(fileId)+'&sz=w1000':'';
+function guessMediaType(file){
+  const direct=String((file&&file.type)||'').toLowerCase();
+  if(/^(image|video)\//.test(direct))return direct;
+  const ext=(String((file&&file.name)||'').match(/\.([a-z0-9]{1,8})$/i)||[])[1];
+  if(!ext)return '';
+  const map={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',avif:'image/avif',mp4:'video/mp4',webm:'video/webm',m4v:'video/x-m4v',mov:'video/quicktime',ogv:'video/ogg',ogg:'video/ogg','3gp':'video/3gpp'};
+  return map[ext.toLowerCase()]||'';
 }
 
-function driveEmbedUrl(url){
-  const fileId=driveFileId(url);
-  return fileId?'https://drive.google.com/file/d/'+encodeURIComponent(fileId)+'/preview':'';
+function normalizeMediaUrl(url){
+  return String(url||'').trim();
 }
 
-function mediaFallback(video){
-  const embed=video.getAttribute('data-embed');
-  if(!embed){
-    if(video.classList.contains('reel-media'))reelMediaFailed(video);
-    return;
-  }
-  if(video.classList.contains('reel-media')){
-    const frame=document.createElement('iframe');
-    frame.className='reel-media reel-frame';
-    frame.src=embed;
-    frame.allow='autoplay; encrypted-media; fullscreen';
-    video.replaceWith(frame);
-    return;
-  }
-  const poster=video.getAttribute('poster')||'';
-  const card=document.createElement('button');
-  card.type='button';
-  card.className='post-video-fallback';
-  card.setAttribute('aria-label','Putar video');
-  card.innerHTML=(poster?'<img loading="lazy" src="'+esc(poster)+'" alt="">':'')
-    +'<span class="pvf-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>'
-    +'<span class="pvf-tag">Putar video</span>';
-  const target=video.closest('.post-video')||video;
-  card.addEventListener('click',()=>openVideoOverlay(embed));
-  target.replaceWith(card);
-}
-
-function openVideoOverlay(embed){
-  const overlay=$('videoOverlay');
-  if(!overlay||!embed)return;
-  overlay.querySelector('iframe').src=embed;
-  overlay.classList.add('open');
-  document.body.style.overflow='hidden';
-}
-
-function closeVideoOverlay(){
-  const overlay=$('videoOverlay');
-  if(!overlay||!overlay.classList.contains('open'))return;
-  overlay.classList.remove('open');
-  // Kosongkan iframe agar pemutaran Drive benar-benar berhenti.
-  overlay.querySelector('iframe').src='about:blank';
-  document.body.style.overflow='';
-}
-
-document.addEventListener('keydown',event=>{
-  if(event.key==='Escape')closeVideoOverlay();
-});
-
-// Endpoint unduh Drive (uc?export=download) diblokir atau dibiarkan menggantung
-// oleh sebagian jaringan tanpa memicu event error, jadi kegagalan juga harus
-// dideteksi lewat batas waktu agar video tetap bisa diputar lewat pemutar Drive.
+// Semua media RUMA disimpan di Supabase Storage. Bila berkas tidak dapat
+// diputar (misalnya URL lama atau objek sudah dihapus), tampilkan penanda yang
+// jelas alih-alih pemutar hitam kosong.
 function armMediaWatchdogs(root){
   const scope=root&&root.querySelectorAll?root:document;
-  scope.querySelectorAll('video[data-embed]').forEach(video=>{
-    if(video.dataset.armed)return;
+  scope.querySelectorAll('video:not([data-armed])').forEach(video=>{
     video.dataset.armed='1';
-    let resolved=false;
-    const giveUp=()=>{
-      if(!resolved&&video.readyState<2&&video.isConnected)mediaFallback(video);
-    };
-    video.addEventListener('loadeddata',()=>{resolved=true},{once:true});
-    video.addEventListener('error',()=>{if(!resolved)mediaFallback(video)},{once:true});
-    // Video feed tidak memuat data sebelum tombol putar ditekan, jadi batas
-    // waktu baru berjalan setelah pengguna mencoba memutar.
-    setTimeout(()=>{
-      if(video.paused)video.addEventListener('play',()=>setTimeout(giveUp,5000),{once:true});
-      else giveUp();
-    },4000);
+    video.addEventListener('error',()=>{
+      const slide=video.closest('.reel-slide');
+      if(slide){slide.classList.add('media-failed')}
+      const box=video.closest('.post-video');
+      if(box)box.classList.add('media-failed');
+    },{once:true});
   });
 }
 
@@ -1110,7 +1055,7 @@ let giftTargetReelId='';
 let coinBalance=1250;
 let selectedMedia=null;
 const followed=new Set();
-const configuredApiUrl=localStorage.getItem('ruma_api_url')||'https://script.google.com/macros/s/AKfycbyl6evQ9sGyZExU57dPz5JGr2ZdZUFZYefj3cziUCpp7lRPGldNstmnv7ZgjaPLs3rg/exec';
+const configuredApiUrl=(window.RUMA_CONFIG&&window.RUMA_CONFIG.API_URL)||localStorage.getItem('ruma_api_url')||'/api/ruma';
 let notifications=[];
 let notificationsLoaded=false;
 let notificationFilter='all';
@@ -1128,6 +1073,25 @@ async function apiRequest(action,payload={}){
   const result=await response.json();
   if(!result.ok)throw new Error(result.message||'Permintaan API gagal.');
   return result.data;
+}
+
+// Unggahan langsung ke Supabase Storage: berkas tidak melewati fungsi Vercel
+// (batas body 4,5 MB), jadi video hingga 50 MB tetap bisa dikirim.
+async function uploadFileToStorage(file,{name='upload'}={}){
+  if(!file)throw new Error('Berkas media tidak ditemukan.');
+  const contentType=guessMediaType(file);
+  if(!contentType)throw new Error('Jenis berkas tidak dikenali. Gunakan foto atau video.');
+  if(file.size>50*1024*1024)throw new Error('Ukuran berkas maksimal 50 MB.');
+  const token=localStorage.getItem('ruma_token')||'';
+  if(!token||token.indexOf('LOCAL_')===0)throw new Error('Masuk dengan akun server untuk mengunggah media.');
+  const info=await apiRequest('createUpload',{contentType,name:name||file.name||'upload'});
+  if(!info||!info.uploadUrl||!info.url)throw new Error('Server tidak menyiapkan alamat unggah.');
+  const response=await fetch(info.uploadUrl,{method:'PUT',headers:{'Content-Type':contentType,'x-upsert':'false'},body:file});
+  if(!response.ok){
+    if(response.status===413)throw new Error('Berkas terlalu besar untuk penyimpanan (maksimal 50 MB).');
+    throw new Error('Unggahan media gagal ('+response.status+').');
+  }
+  return {url:info.url,streamUrl:info.streamUrl||info.url,thumbnail:info.thumbnail||info.url,type:contentType,name:name||file.name||'upload'};
 }
 
 // Notifikasi sepenuhnya berasal dari server, dan server sudah menolak
@@ -1439,11 +1403,9 @@ function postMediaHTML(p){
   const raw=String(p.mediaUrl||'');
   if(!raw)return'';
   const box='width:100%;max-height:420px;border-radius:12px;margin-top:12px';
-  if(isVideoMedia(p.mediaType)){
-    const poster=mediaPosterUrl(raw);
-    const embed=driveEmbedUrl(raw);
+  if(hasVideoMedia(p)){
     return`<div class="post-video">
-      <video tabindex="0" aria-label="Video postingan" playsinline webkit-playsinline preload="metadata" src="${esc(normalizeMediaUrl(raw,p.mediaType))}"${poster?` poster="${esc(poster)}"`:''}${embed?` data-embed="${esc(embed)}"`:''}></video>
+      <video tabindex="0" aria-label="Video postingan" playsinline webkit-playsinline preload="metadata" src="${esc(normalizeMediaUrl(raw))}"></video>
       <button class="pv-big" type="button" aria-label="Putar video"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>
       <div class="pv-bar">
         <button class="pv-toggle" type="button" aria-label="Putar video"><svg class="pv-ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><svg class="pv-ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z"/></svg></button>
@@ -1660,7 +1622,7 @@ async function publishPost(){
     try{
       let mediaUrl='';
       if(mediaToUpload){
-        const uploaded=await apiRequest('uploadMedia',{dataUrl:mediaToUpload.url,mediaType:mediaToUpload.type.split('/')[0],name:mediaToUpload.name});
+        const uploaded=await uploadFileToStorage(mediaToUpload.file,{name:mediaToUpload.name});
         if(!uploaded||!uploaded.url)throw new Error('Media gagal diunggah ke server.');
         mediaUrl=uploaded.url;
         const pending=posts.find(item=>item.id===localId);
@@ -1697,21 +1659,22 @@ function selectMedia(){ $('mediaInput').click(); }
 function handleMedia(event){
   const file=event.target.files&&event.target.files[0];
   if(!file)return;
-  if(file.size>8*1024*1024){toast('Ukuran media maksimal 8 MB.');event.target.value='';return;}
-  if(!/^image\//.test(file.type)&&!/^video\//.test(file.type)){toast('Pilih foto atau video yang valid.');event.target.value='';return;}
-  const reader=new FileReader();
-  reader.onload=()=>{
-    selectedMedia={url:reader.result,type:file.type,name:file.name};
-    const preview=$('mediaPreview');
-    preview.classList.remove('hidden');
-    preview.innerHTML=(file.type.indexOf('video')===0?'<video controls style="max-width:100%;max-height:180px;border-radius:10px"></video>':'<img style="max-width:100%;max-height:180px;border-radius:10px" alt="Pratinjau media">')+'<button type="button" class="tool-btn" onclick="clearMedia()">Hapus media</button>';
-    preview.querySelector('img,video').src=reader.result;
-    toast('Media siap dilampirkan.');
-  };
-  reader.readAsDataURL(file);
+  const type=guessMediaType(file);
+  if(file.size>50*1024*1024){toast('Ukuran media maksimal 50 MB.');event.target.value='';return;}
+  if(!/^(image|video)\//.test(type)){toast('Pilih foto atau video yang valid.');event.target.value='';return;}
+  if(selectedMedia&&selectedMedia.url&&selectedMedia.url.indexOf('blob:')===0)URL.revokeObjectURL(selectedMedia.url);
+  const previewUrl=URL.createObjectURL(file);
+  selectedMedia={file,url:previewUrl,type,name:file.name};
+  const preview=$('mediaPreview');
+  preview.classList.remove('hidden');
+  preview.innerHTML=(isVideoMedia(type)?'<video controls playsinline webkit-playsinline style="max-width:100%;max-height:180px;border-radius:10px"></video>':'<img style="max-width:100%;max-height:180px;border-radius:10px" alt="Pratinjau media">')+'<button type="button" class="tool-btn" onclick="clearMedia()">Hapus media</button>';
+  preview.querySelector('img,video').src=previewUrl;
+  toast('Media siap dilampirkan.');
 }
 
-function clearMedia(){selectedMedia=null;$('mediaInput').value='';$('mediaPreview').innerHTML='';$('mediaPreview').classList.add('hidden');}
+function clearMedia(){
+  selectedMedia=null;$('mediaInput').value='';$('mediaPreview').innerHTML='';$('mediaPreview').classList.add('hidden');
+}
 
 function toggleLike(id){
   const p=posts.find(x=>x.id===id);
@@ -1840,7 +1803,7 @@ async function toggleFollow(handle){
   renderPeople();
   const same=(a,b)=>String(a||'').toLowerCase().replace(/^@/,'')===String(b||'').toLowerCase().replace(/^@/,'');
   if(profileUser&&same(profileUser.handle,handle)){updateProfileFollow();loadProfileDetails(handle)}
-  if(sort==='video')renderReels();
+  if(sort==='video')syncReelFollowButtons(handle);
   toast(followed.has(handle)?'Kamu mulai mengikuti akun ini.':'Kamu berhenti mengikuti akun ini.');}
 
 function openPostMenu(id){
@@ -2008,8 +1971,7 @@ function previewProfileImage(input,kind){
   });
 }
 
-// Banner selalu lewat endpoint thumbnail Drive; endpoint unduh biasa diblokir
-// peramban sehingga gambar tidak pernah tampil.
+// Banner dimuat lewat elemen Image agar URL yang tidak valid tidak merusak cover.
 function applyProfileBanner(url){
   const cover=$('fullProfileCover');
   if(!cover)return;
@@ -2069,7 +2031,8 @@ async function uploadProfileImage(file,kind){
   if(!dataUrl)return'';
   const token=localStorage.getItem('ruma_token')||'';
   if(!configuredApiUrl||!token||token.indexOf('LOCAL_')===0)throw new Error('Masuk dengan akun server untuk mengubah '+kind+'.');
-  const uploaded=await apiRequest('uploadMedia',{dataUrl,mediaType:'image',name:'ruma-'+kind+'-'+Date.now()+'.jpg'});
+  const blob=await (await fetch(dataUrl)).blob();
+  const uploaded=await uploadFileToStorage(blob,{name:'ruma-'+kind+'-'+Date.now()+'.jpg'});
   if(!uploaded||!uploaded.url)throw new Error('Gambar gagal diunggah ke server.');
   return uploaded.url;
 }
@@ -2205,6 +2168,7 @@ function setView(nextView){
   $('reelsView').classList.toggle('hidden',!isVideo);
   $('composer').classList.toggle('hidden',['tersimpan','ruang','profit'].includes(nextView)||isVideo);
   $('feed').classList.toggle('hidden',isVideo);
+  if(!isVideo)pauseReelVideos();
 
   document.querySelectorAll('[data-view]').forEach(b=>
     b.classList.toggle('active',b.dataset.view===nextView)
@@ -2234,6 +2198,7 @@ function setSort(nextSort){
   $('composer').classList.toggle('hidden',isVideo);
   $('feed').classList.toggle('hidden',isVideo);
   $('reelsView').classList.toggle('hidden',!isVideo);
+  if(!isVideo)pauseReelVideos();
 
   if(isVideo)loadRemoteReels(true);
   else renderFeed();
@@ -2538,8 +2503,6 @@ function backToRooms(){
   setView('ruang');
 }
 
-function currentReel(){return reelData[reelIndex]||null}
-
 function normalizeReel(item){
   const name=item.user||item.name||'Pengguna RUMA';
   return{
@@ -2554,6 +2517,7 @@ function normalizeReel(item){
     avatarUrl:item.avatarUrl||'',
     mediaUrl:item.mediaUrl||'',
     mediaType:item.mediaType||'',
+    mediaName:item.mediaName||'',
     createdAt:Number(item.createdAt||0),
     likes:Number(item.likes||0),
     liked:!!item.liked,
@@ -2576,18 +2540,13 @@ function postAsReel(post){
     avatarUrl:post.avatarUrl||'',
     mediaUrl:post.mediaUrl||'',
     mediaType:post.mediaType||'',
+    mediaName:post.mediaName||'',
     createdAt:Number(post.createdAt||0),
     likes:Number(post.likes||0),
     liked:!!post.liked,
     saved:!!post.saved,
     mine:!!post.mine
   };
-}
-
-function hasVideoMedia(item){
-  if(isVideoMedia(item.mediaType))return true;
-  const hint=String(item.mediaName||'')+' '+String(item.mediaUrl||'');
-  return/\.(mp4|webm|m4v|mov|ogv|ogg|3gp)(\?|#|$)/i.test(hint.trim());
 }
 
 async function loadRemoteReels(force){
@@ -2629,20 +2588,292 @@ async function loadRemoteReels(force){
   renderReels();
 }
 
-function reelMediaHTML(r){
-  const raw=String(r.mediaUrl||'');
-  if(!raw)return`<div class="reel-art">${esc(r.emoji||'🎬')}</div>`;
-  if(isVideoMedia(r.mediaType)){
-    const poster=mediaPosterUrl(raw);
-    const embed=driveEmbedUrl(raw);
-    return`<video class="reel-media" src="${esc(normalizeMediaUrl(raw,r.mediaType))}"${poster?` poster="${esc(poster)}"`:''}${embed?` data-embed="${esc(embed)}"`:''} controls muted autoplay loop playsinline webkit-playsinline preload="auto"></video>`;
-  }
-  return`<img class="reel-media" src="${esc(normalizeImageUrl(raw))}" alt="${esc(r.caption||'Sampul video')}" onerror="reelMediaFailed(this)">`;
+/* ---------------- Feed video vertikal (gaya TikTok) ---------------- */
+
+let reelMuted=localStorage.getItem('ruma_reel_muted')!=='0';
+let reelTapTimer=null;
+let reelTapSlide=null;
+let reelScrollTimer=0;
+let reelBound=false;
+
+function findReel(id){return reelData.find(item=>String(item.id)===String(id))||null}
+
+function reelSlideById(id){
+  const stage=$('reelsStage');
+  if(!stage)return null;
+  return [...stage.querySelectorAll('.reel-slide')].find(slide=>slide.dataset.reelId===String(id))||null;
 }
 
-function reelMediaFailed(el){
-  const card=el.closest?el.closest('.reel-card'):null;
-  if(card)card.classList.add('media-failed');
+function ensureReelVideo(video){
+  if(!video||video.getAttribute('src'))return;
+  const source=video.dataset.src||'';
+  if(!source)return;
+  video.src=source;
+  try{video.load()}catch(_){}
+}
+
+function updateReelPosition(){
+  const counter=$('reelPosition');
+  if(!counter)return;
+  counter.textContent=reelData.length?((reelIndex+1)+' / '+reelData.length):'0 / 0';
+}
+
+function updateReelMuteButton(){
+  const button=$('reelMuteBtn');
+  if(!button)return;
+  button.textContent=reelMuted?'🔇 Suara':'🔊 Suara';
+  button.setAttribute('aria-pressed',reelMuted?'false':'true');
+}
+
+function playReelVideo(video){
+  if(!video)return;
+  video.muted=reelMuted;
+  const started=video.play();
+  if(started&&started.catch)started.catch(()=>{
+    // Peramban menolak suara tanpa interaksi pengguna: jatuh kembali ke muted.
+    if(!reelMuted){
+      reelMuted=true;
+      localStorage.setItem('ruma_reel_muted','1');
+      video.muted=true;
+      updateReelMuteButton();
+      const retry=video.play();
+      if(retry&&retry.catch)retry.catch(()=>{});
+    }
+  });
+}
+
+function toggleReelMute(){
+  reelMuted=!reelMuted;
+  localStorage.setItem('ruma_reel_muted',reelMuted?'1':'0');
+  updateReelMuteButton();
+  const stage=$('reelsStage');
+  const active=stage&&stage.querySelector('.reel-slide.is-active video.reel-media');
+  if(active){
+    active.muted=reelMuted;
+    if(!reelMuted)playReelVideo(active);
+  }
+  toast(reelMuted?'Suara video dimatikan.':'Suara video diaktifkan.');
+}
+
+function pauseReelVideos(){
+  const stage=$('reelsStage');
+  if(!stage)return;
+  stage.querySelectorAll('video.reel-media').forEach(video=>{
+    try{video.pause()}catch(_){}
+  });
+}
+
+function activateReel(index,{play=true}={}){
+  const stage=$('reelsStage');
+  if(!stage)return;
+  const slides=[...stage.querySelectorAll('.reel-slide')];
+  if(!slides.length)return;
+  index=Math.max(0,Math.min(slides.length-1,Number(index)||0));
+  reelIndex=index;
+  slides.forEach((slide,i)=>{
+    const active=i===index;
+    slide.classList.toggle('is-active',active);
+    const video=slide.querySelector('video.reel-media');
+    if(!video)return;
+    if(active){
+      ensureReelVideo(video);
+      if(play)playReelVideo(video);
+    }else{
+      try{video.pause()}catch(_){}
+    }
+  });
+  // Muat metadata tetangga agar perpindahan terasa instan tanpa mengunduh semua.
+  [index-1,index+1].forEach(neighbour=>{
+    const slide=slides[neighbour];
+    const video=slide&&slide.querySelector('video.reel-media');
+    if(video)ensureReelVideo(video);
+  });
+  updateReelPosition();
+}
+
+function toggleReelPlayback(slide){
+  const video=slide&&slide.querySelector('video.reel-media');
+  if(!video)return;
+  if(video.paused)playReelVideo(video);
+  else video.pause();
+}
+
+function burstReelHeart(slide){
+  const heart=slide&&slide.querySelector('.reel-burst');
+  if(!heart)return;
+  heart.classList.remove('go');
+  void heart.offsetWidth;
+  heart.classList.add('go');
+}
+
+function handleReelTap(slide){
+  if(!slide)return;
+  if(reelTapTimer&&reelTapSlide===slide){
+    clearTimeout(reelTapTimer);
+    reelTapTimer=null;
+    reelTapSlide=null;
+    burstReelHeart(slide);
+    const reel=findReel(slide.dataset.reelId);
+    if(reel&&!reel.liked)toggleReelLikeById(reel.id);
+    return;
+  }
+  reelTapSlide=slide;
+  reelTapTimer=setTimeout(()=>{
+    reelTapTimer=null;
+    reelTapSlide=null;
+    toggleReelPlayback(slide);
+  },220);
+}
+
+function bindReelStage(){
+  if(reelBound)return;
+  const stage=$('reelsStage');
+  if(!stage)return;
+  reelBound=true;
+
+  stage.addEventListener('scroll',()=>{
+    if(reelScrollTimer)return;
+    reelScrollTimer=setTimeout(()=>{
+      reelScrollTimer=0;
+      if(!reelsVisible())return;
+      const height=stage.clientHeight||1;
+      const index=Math.max(0,Math.min(reelData.length-1,Math.round(stage.scrollTop/height)));
+      if(index!==reelIndex)activateReel(index,{play:true});
+    },60);
+  },{passive:true});
+
+  stage.addEventListener('click',event=>{
+    if(event.target.closest('button,a,.reel-caption,.reel-follow,.reel-author'))return;
+    const wrap=event.target.closest('.reel-media-wrap');
+    if(!wrap)return;
+    const slide=wrap.closest('.reel-slide');
+    if(!slide||slide.classList.contains('media-failed'))return;
+    handleReelTap(slide);
+  });
+
+  stage.addEventListener('play',event=>{
+    const slide=event.target.closest&&event.target.closest('.reel-slide');
+    if(slide)slide.classList.remove('is-paused');
+  },true);
+
+  stage.addEventListener('pause',event=>{
+    const slide=event.target.closest&&event.target.closest('.reel-slide');
+    if(slide&&!slide.classList.contains('media-failed'))slide.classList.add('is-paused');
+  },true);
+
+  stage.addEventListener('timeupdate',event=>{
+    const video=event.target;
+    if(!video||video.tagName!=='VIDEO')return;
+    const slide=video.closest('.reel-slide');
+    const bar=slide&&slide.querySelector('.reel-progress span');
+    const duration=Number(video.duration)||0;
+    if(bar)bar.style.width=(duration?Math.min(100,(video.currentTime/duration)*100):0)+'%';
+  },true);
+
+  stage.addEventListener('error',event=>{
+    const video=event.target;
+    if(!video||video.tagName!=='VIDEO')return;
+    const slide=video.closest('.reel-slide');
+    if(!slide)return;
+    // Coba muat ulang sekali: gangguan jaringan singkat tidak boleh langsung
+    // menampilkan "video tidak dapat diputar".
+    if(video.dataset.retried!=='1'&&video.dataset.src){
+      video.dataset.retried='1';
+      setTimeout(()=>{
+        if(!slide.isConnected)return;
+        try{
+          video.load();
+          if(slide.classList.contains('is-active'))playReelVideo(video);
+        }catch(_){}
+      },800);
+      return;
+    }
+    slide.classList.add('media-failed');
+  },true);
+
+  window.addEventListener('resize',()=>{
+    if(!reelsVisible())return;
+    stage.scrollTop=reelIndex*stage.clientHeight;
+  });
+
+  // Saat tab video ditinggalkan (mis. pindah halaman), hentikan pemutaran agar
+  // suara tidak terus berbunyi di latar belakang.
+  if('IntersectionObserver' in window){
+    const observer=new IntersectionObserver(entries=>{
+      const visible=entries.some(entry=>entry.isIntersecting);
+      if(!visible)pauseReelVideos();
+      else if(reelsVisible()&&!document.hidden)activateReel(reelIndex,{play:true});
+    },{threshold:0.25});
+    observer.observe(stage);
+  }
+}
+
+function reelSlideHTML(r,index){
+  const raw=String(r.mediaUrl||'');
+  const video=!!raw&&hasVideoMedia(r);
+  const streamUrl=raw?normalizeMediaUrl(raw):'';
+  const canFollow=!r.mine&&!!r.handle;
+  const following=followed.has(r.handle);
+  const attr=value=>esc(String(value??''));
+  const media=!raw
+    ?`<div class="reel-art">${esc(r.emoji||'🎬')}</div>`
+    :video
+      ?`<video class="reel-media" data-src="${attr(streamUrl)}" muted loop playsinline webkit-playsinline preload="none" aria-label="Video ${attr(r.user)}"></video>`
+      :`<img class="reel-media" src="${attr(normalizeImageUrl(raw))}" alt="${attr(r.caption||'Video')}" loading="lazy">`;
+
+  const railActions=[
+    `<button class="reel-rail-btn${r.liked?' liked':''}" type="button" data-reel-action="like" data-id="${attr(r.id)}" onclick="toggleReelLikeById(this.dataset.id)" aria-label="Suka video">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.2-4.4-7.2-9.4A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.2 3.2C19.2 15.6 12 20 12 20z"/></svg>
+      <small data-like-count>${Number(r.likes||0).toLocaleString('id-ID')}</small>
+    </button>`,
+    r.source==='post'?'':`<button class="reel-rail-btn" type="button" data-reel-action="gift" data-id="${attr(r.id)}" onclick="openReelGiftById(this.dataset.id)" aria-label="Kirim gift">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7c-2.5 0-4.5-1.2-4.5-2.6C7.5 3 9 2 12 7c3-5 4.5-4 4.5-2.6C16.5 5.8 14.5 7 12 7z"/></svg>
+      <small>Gift</small>
+    </button>`,
+    `<button class="reel-rail-btn${r.saved?' saved':''}" type="button" data-reel-action="save" data-id="${attr(r.id)}" onclick="toggleReelSaveById(this.dataset.id)" aria-label="Simpan video">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z"/></svg>
+      <small data-save-label>${r.saved?'Tersimpan':'Simpan'}</small>
+    </button>`,
+    `<button class="reel-rail-btn" type="button" data-id="${attr(r.id)}" onclick="shareReelById(this.dataset.id)" aria-label="Bagikan video">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/></svg>
+      <small>Bagikan</small>
+    </button>`
+  ];
+  if(r.mine){
+    railActions.push(`<button class="reel-rail-btn danger" type="button" data-id="${attr(r.id)}" onclick="deleteReelById(this.dataset.id)" aria-label="Hapus video">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>
+      <small>Hapus</small>
+    </button>`);
+  }
+
+  return`<article class="reel-slide is-paused" data-index="${index}" data-reel-id="${attr(r.id)}" data-source="${attr(r.source)}" aria-label="Video ${index+1} dari ${reelData.length}">
+    <div class="reel-media-wrap">
+      ${media}
+      <div class="reel-shade"></div>
+      ${raw?`<div class="reel-fallback">Video tidak dapat diputar.<br><a href="${attr(streamUrl)}" target="_blank" rel="noopener">Buka berkas ↗</a></div>`:''}
+      ${video?'<div class="reel-playhint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></div>':''}
+      <div class="reel-burst" aria-hidden="true">❤</div>
+      ${video?'<div class="reel-progress"><span></span></div>':''}
+    </div>
+    <div class="reel-overlay">
+      <div class="reel-meta">
+        <div class="reel-author">
+          <span class="avatar">${avatarMarkup(r.avatarUrl,r.user,r.initial)}</span>
+          <button class="reel-author-name" type="button" data-handle="${attr(r.handle)}" data-name="${attr(r.user)}" data-avatar="${attr(r.avatarUrl)}" onclick="openReelProfile(this)">${esc(r.user)}<small>${esc(r.handle)}</small></button>
+          ${canFollow?`<button class="reel-follow${following?' following':''}" type="button" data-follow-handle="${attr(r.handle)}" onclick="followReel(this)">${following?'Mengikuti':'Ikuti'}</button>`:''}
+        </div>
+        <p class="reel-caption" onclick="this.classList.toggle('expanded')">${formatText(r.caption)||'<span style="opacity:.72">Tanpa caption</span>'}</p>
+        <div class="reel-audio"><span class="reel-disc">♪</span><span class="reel-marquee">${esc(r.audio||('Video asli · '+r.user))}</span></div>
+      </div>
+      <div class="reel-rail">
+        <div class="reel-rail-avatar-wrap">
+          <button class="reel-rail-avatar" type="button" data-handle="${attr(r.handle)}" data-name="${attr(r.user)}" data-avatar="${attr(r.avatarUrl)}" onclick="openReelProfile(this)" aria-label="Buka profil ${attr(r.user)}"><span class="avatar">${avatarMarkup(r.avatarUrl,r.user,r.initial)}</span></button>
+          ${canFollow?`<button class="reel-rail-follow${following?' following':''}" type="button" data-follow-handle="${attr(r.handle)}" onclick="followReel(this)" aria-label="Ikuti ${attr(r.user)}">＋</button>`:''}
+        </div>
+        ${railActions.join('')}
+      </div>
+    </div>
+  </article>`;
 }
 
 function renderReels(){
@@ -2655,92 +2886,100 @@ function renderReels(){
   }
 
   if(!reelData.length){
+    updateReelPosition();
     stage.innerHTML=reelsLoaded
       ? '<div class="reels-empty"><span class="empty-icon reels-empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg></span><strong>Belum ada video</strong><p>Jadilah yang pertama mengunggah video ke RUMA.</p><button class="primary" style="margin-top:14px" onclick="openReelUpload()">＋ Unggah video</button></div>'
-      : '<div class="skeleton dark" style="width:min(100%,390px);height:min(70vh,620px);min-height:420px;border-radius:19px"></div>';
+      : '<div class="skeleton dark" style="width:100%;height:100%;min-height:420px"></div>';
     return;
   }
 
   if(reelIndex<0||reelIndex>=reelData.length)reelIndex=0;
-  const r=reelData[reelIndex];
-  const hasMedia=!!r.mediaUrl;
-  const streamUrl=hasMedia?normalizeMediaUrl(r.mediaUrl,r.mediaType):'';
+  stage.innerHTML=reelData.map(reelSlideHTML).join('');
+  bindReelStage();
+  updateReelMuteButton();
+  updateReelPosition();
 
-  stage.innerHTML=`
-    <article class="reel-card">
-      <div class="reel-media-wrap">
-        ${reelMediaHTML(r)}
-        ${hasMedia?`<div class="reel-fallback">Video tidak dapat diputar di sini.<br><a href="${esc(streamUrl)}" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline">Buka berkas asli ↗</a></div>`:''}
-        <div class="reel-counter">${reelIndex+1} / ${reelData.length}</div>
-      </div>
-      <div class="reel-info">
-        <div class="reel-user">
-          <span class="avatar">${avatarMarkup(r.avatarUrl,r.user,r.initial)}</span>
-          <span>${esc(r.user)} <span style="opacity:.7;font-weight:500">${esc(r.handle)}</span></span>
-          ${r.mine?'':`<button class="follow${followed.has(r.handle)?' following':''}" onclick="followCurrentReel(this)">${followed.has(r.handle)?'Mengikuti':'Ikuti'}</button>`}
-        </div>
-        <p class="reel-caption">${formatText(r.caption)||'<span style="opacity:.7">Tanpa caption</span>'}</p>
-        ${r.audio?`<div class="reel-audio">${esc(r.audio)}</div>`:''}
-        <div class="reel-actions">
-          <button class="reel-action" id="reelLike" onclick="toggleReelLike()">${r.liked?'❤️':'♡'}<span>${Number(r.likes||0).toLocaleString('id-ID')}</span></button>
-          ${r.source==='post'?'':`<button class="reel-action" onclick="openCurrentGift()">🎁<span>Gift</span></button>`}
-          <button class="reel-action" id="reelSave" onclick="toggleReelSave()">${r.saved?'▣':'▢'}<span>Simpan</span></button>
-          <button class="reel-action" onclick="shareReel()">↗<span>Bagikan</span></button>
-          ${r.mine?'<button class="reel-action danger" onclick="deleteCurrentReel()">🗑<span>Hapus</span></button>':''}
-        </div>
-      </div>
-    </article>`;
-
-  const video=stage.querySelector('video.reel-media');
-  if(video){
-    const playing=video.play();
-    if(playing&&playing.catch)playing.catch(()=>{});
-  }
-  armMediaWatchdogs(stage);
+  // Slide aktif dipasang langsung supaya video tetap tampil walau browser
+  // menunda requestAnimationFrame (mis. tab baru dibuka di latar belakang).
+  activateReel(reelIndex,{play:false});
+  let settled=false;
+  const settle=()=>{
+    if(settled)return;
+    settled=true;
+    const target=reelIndex*stage.clientHeight;
+    if(Math.abs(stage.scrollTop-target)>1)stage.scrollTop=target;
+    if(reelsVisible()&&!document.hidden)activateReel(reelIndex,{play:true});
+  };
+  requestAnimationFrame(settle);
+  setTimeout(settle,160);
 }
 
-async function followCurrentReel(button){
-  const r=currentReel();
-  if(!r)return;
-  const paint=()=>{
-    if(!button)return;
-    const on=followed.has(r.handle);
+async function followReel(button){
+  const handle=button&&button.dataset?String(button.dataset.followHandle||''):'';
+  if(!handle)return;
+  const optimistic=!followed.has(handle);
+  button.classList.toggle('following',optimistic);
+  if(button.classList.contains('reel-follow'))button.textContent=optimistic?'Mengikuti':'Ikuti';
+  await toggleFollow(handle);
+  syncReelFollowButtons(handle);
+}
+
+function syncReelFollowButtons(handle){
+  const stage=$('reelsStage');
+  if(!stage)return;
+  const wanted=String(handle||'').toLowerCase();
+  stage.querySelectorAll('[data-follow-handle]').forEach(button=>{
+    const target=String(button.dataset.followHandle||'');
+    if(wanted&&target.toLowerCase()!==wanted)return;
+    const on=followed.has(target);
     button.classList.toggle('following',on);
-    button.textContent=on?'Mengikuti':'Ikuti';
-  };
-  if(button){
-    const optimistic=!followed.has(r.handle);
-    button.classList.toggle('following',optimistic);
-    button.textContent=optimistic?'Mengikuti':'Ikuti';
-  }
-  await toggleFollow(r.handle);
-  paint();
+    if(button.classList.contains('reel-follow'))button.textContent=on?'Mengikuti':'Ikuti';
+  });
+}
+
+function openReelProfile(button){
+  if(!button||!button.dataset)return;
+  const handle=String(button.dataset.handle||'');
+  if(!handle)return;
+  openProfile('',button.dataset.name||handle,handle,button.dataset.avatar||'');
 }
 
 function nextReel(step){
   if(!reelData.length)return;
-  reelIndex=(reelIndex+step+reelData.length)%reelData.length;
-  renderReels();
+  const stage=$('reelsStage');
+  const target=Math.max(0,Math.min(reelData.length-1,reelIndex+Number(step||1)));
+  if(!stage){reelIndex=target;renderReels();return}
+  // Aktifkan dan pindahkan langsung; geser manual tetap memakai scroll-snap.
+  activateReel(target,{play:true});
+  stage.scrollTop=target*stage.clientHeight;
 }
 
-// Suka/simpan hanya mengecat ulang tombolnya sendiri. renderReels() akan
-// melepas elemen video/iframe sehingga pemutaran ikut terulang dari awal.
-function paintReelActions(){
-  const r=currentReel();
-  if(!r)return;
-  const like=document.getElementById('reelLike');
-  if(like)like.innerHTML=(r.liked?'❤️':'♡')+'<span>'+Number(r.likes||0).toLocaleString('id-ID')+'</span>';
-  const save=document.getElementById('reelSave');
-  if(save)save.innerHTML=(r.saved?'▣':'▢')+'<span>Simpan</span>';
+function paintReelVote(r){
+  const slide=reelSlideById(r.id);
+  if(!slide)return;
+  const like=slide.querySelector('[data-reel-action="like"]');
+  if(like){
+    like.classList.toggle('liked',!!r.liked);
+    const count=like.querySelector('[data-like-count]');
+    if(count)count.textContent=Number(r.likes||0).toLocaleString('id-ID');
+  }
+  const save=slide.querySelector('[data-reel-action="save"]');
+  if(save){
+    save.classList.toggle('saved',!!r.saved);
+    const label=save.querySelector('[data-save-label]');
+    if(label)label.textContent=r.saved?'Tersimpan':'Simpan';
+  }
 }
-async function toggleReelLike(){
-  const r=currentReel();
+
+async function toggleReelLikeById(id){
+  const r=findReel(id);
   if(!r)return;
   if(!r.id){toast('Video ini belum tersimpan di server.');return}
   const isPost=r.source==='post';
+  const previous={liked:r.liked,likes:r.likes};
   r.liked=!r.liked;
   r.likes=Math.max(0,Number(r.likes||0)+(r.liked?1:-1));
-  paintReelActions();
+  paintReelVote(r);
   try{
     const result=await apiRequest(isPost?'toggleLike':'toggleReelLike',{id:r.id});
     if(result&&typeof result.on==='boolean'){
@@ -2748,46 +2987,56 @@ async function toggleReelLike(){
       if(result.count!=null)r.likes=Number(result.count);
       const post=posts.find(item=>String(item.id)===String(r.id));
       if(post){post.liked=r.liked;post.likes=r.likes}
-      paintReelActions();
+      paintReelVote(r);
     }
-  }catch(error){toast(error.message||'Gagal memperbarui suka.')}
+  }catch(error){
+    r.liked=previous.liked;
+    r.likes=previous.likes;
+    paintReelVote(r);
+    toast(error.message||'Gagal memperbarui suka.');
+  }
 }
 
-async function toggleReelSave(){
-  const r=currentReel();
+async function toggleReelSaveById(id){
+  const r=findReel(id);
   if(!r)return;
   if(!r.id){toast('Video ini belum tersimpan di server.');return}
   const isPost=r.source==='post';
+  const previous=r.saved;
   r.saved=!r.saved;
-  paintReelActions();
+  paintReelVote(r);
   toast(r.saved?'Video disimpan.':'Video dihapus dari simpanan.');
   try{
     const result=await apiRequest(isPost?'toggleSave':'toggleReelSave',{id:r.id});
-    if(result&&typeof result.on==='boolean'&&result.on!==r.saved){r.saved=result.on;paintReelActions()}
+    if(result&&typeof result.on==='boolean'){r.saved=result.on;paintReelVote(r)}
     const post=posts.find(item=>String(item.id)===String(r.id));
     if(post)post.saved=r.saved;
-  }catch(error){toast(error.message||'Gagal memperbarui simpanan.')}
+  }catch(error){
+    r.saved=previous;
+    paintReelVote(r);
+    toast(error.message||'Gagal memperbarui simpanan.');
+  }
 }
 
-async function deleteCurrentReel(){
-  const r=currentReel();
+async function deleteReelById(id){
+  const r=findReel(id);
   if(!r||!r.id)return;
   const isPost=r.source==='post';
   if(!confirm(isPost?'Hapus postingan video ini?':'Hapus video ini?'))return;
   try{
     await apiRequest(isPost?'deletePost':'deleteReel',{id:r.id});
-    reelData.splice(reelIndex,1);
-    if(reelIndex>=reelData.length)reelIndex=0;
-    const index=posts.findIndex(item=>String(item.id)===String(r.id));
-    if(index>=0)posts.splice(index,1);
-    
+    const index=reelData.findIndex(item=>String(item.id)===String(r.id));
+    if(index>=0)reelData.splice(index,1);
+    if(reelIndex>=reelData.length)reelIndex=Math.max(0,reelData.length-1);
+    const postIndex=posts.findIndex(item=>String(item.id)===String(r.id));
+    if(postIndex>=0)posts.splice(postIndex,1);
     renderReels();
     toast(isPost?'Postingan video dihapus.':'Video dihapus.');
   }catch(error){toast(error.message||'Video gagal dihapus.')}
 }
 
-function shareReel(){
-  const r=currentReel();
+function shareReelById(id){
+  const r=findReel(id);
   if(!r)return;
   const url=location.href.split('#')[0]+'#video-'+(r.id||encodeURIComponent(r.handle));
   if(navigator.share){
@@ -2797,8 +3046,8 @@ function shareReel(){
   }else toast(url);
 }
 
-function openCurrentGift(){
-  const r=currentReel();
+function openReelGiftById(id){
+  const r=findReel(id);
   if(!r)return;
   openGift(r.user,r.id);
 }
@@ -2820,23 +3069,22 @@ function openReelUpload(){
 function handleReelFile(event){
   const file=event.target.files&&event.target.files[0];
   if(!file){clearReelMedia();return}
-  if(!/^video\//.test(file.type)){toast('Pilih berkas video yang valid.');event.target.value='';return}
-  if(file.size>8*1024*1024){toast('Ukuran video maksimal 8 MB.');event.target.value='';return}
-  const reader=new FileReader();
-  reader.onload=()=>{
-    selectedReelMedia={url:String(reader.result||''),type:file.type,name:file.name};
-    const preview=$('reelMediaPreview');
-    preview.classList.remove('hidden');
-    preview.innerHTML='<video controls playsinline webkit-playsinline style="width:100%;max-height:250px;border-radius:12px;background:#000;object-fit:contain"></video><button type="button" class="tool-btn" style="margin-top:8px" onclick="clearReelMedia()">Hapus video</button>';
-    preview.querySelector('video').src=selectedReelMedia.url;
-    $('reelPublishBtn').disabled=false;
-    $('reelUploadStatus').textContent=file.name+' siap diunggah.';
-  };
-  reader.onerror=()=>{$('reelUploadStatus').textContent='Berkas video tidak dapat dibaca.'};
-  reader.readAsDataURL(file);
+  const type=guessMediaType(file);
+  if(!/^video\//.test(type)){toast('Pilih berkas video yang valid.');event.target.value='';return}
+  if(file.size>50*1024*1024){toast('Ukuran video maksimal 50 MB.');event.target.value='';return}
+  if(selectedReelMedia&&selectedReelMedia.url&&selectedReelMedia.url.indexOf('blob:')===0)URL.revokeObjectURL(selectedReelMedia.url);
+  const previewUrl=URL.createObjectURL(file);
+  selectedReelMedia={file,url:previewUrl,type,name:file.name};
+  const preview=$('reelMediaPreview');
+  preview.classList.remove('hidden');
+  preview.innerHTML='<video controls playsinline webkit-playsinline style="width:100%;max-height:250px;border-radius:12px;background:#000;object-fit:contain"></video><button type="button" class="tool-btn" style="margin-top:8px" onclick="clearReelMedia()">Hapus video</button>';
+  preview.querySelector('video').src=previewUrl;
+  $('reelPublishBtn').disabled=false;
+  $('reelUploadStatus').textContent=file.name+' siap diunggah.';
 }
 
 function clearReelMedia(){
+  if(selectedReelMedia&&selectedReelMedia.url&&selectedReelMedia.url.indexOf('blob:')===0)URL.revokeObjectURL(selectedReelMedia.url);
   selectedReelMedia=null;
   const input=$('reelFileInput');
   if(input)input.value='';
@@ -2856,8 +3104,8 @@ async function publishReel(event){
   const caption=$('reelCaption').value.trim();
   button.disabled=true;
   try{
-    status.textContent='Mengunggah video ke Drive…';
-    const uploaded=await apiRequest('uploadMedia',{dataUrl:selectedReelMedia.url,mediaType:'video',name:selectedReelMedia.name});
+    status.textContent='Mengunggah video…';
+    const uploaded=await uploadFileToStorage(selectedReelMedia.file,{name:selectedReelMedia.name});
     if(!uploaded||!(uploaded.url||uploaded.streamUrl))throw new Error('Sesi berakhir. Masuk kembali untuk mengunggah.');
     status.textContent='Menyimpan video ke feed…';
     const created=await apiRequest('createReel',{caption,mediaUrl:uploaded.url||uploaded.streamUrl,mediaType:uploaded.type||selectedReelMedia.type,emoji:$('reelEmoji').value});
@@ -2879,13 +3127,8 @@ async function publishReel(event){
 function reelThumbHTML(r){
   const raw=String(r.mediaUrl||'');
   if(!raw)return`<span class="reel-thumb-emoji">${esc(r.emoji||'🎬')}</span>`;
-  if(isVideoMedia(r.mediaType)){
-    const poster=mediaPosterUrl(raw);
-    // Poster diambil dari endpoint thumbnail Drive yang dialihkan ke CDN gambar,
-    // sedangkan endpoint unduh video sering menggantung dan membanjiri antrean.
-    if(poster)return`<img loading="lazy" src="${esc(poster)}" alt="${esc(r.caption||'Video')}">`;
-    if(!driveFileId(raw))return`<video muted loop playsinline webkit-playsinline preload="metadata" src="${esc(raw)}"></video>`;
-    return`<span class="reel-thumb-emoji">${esc(r.emoji||'🎬')}</span>`;
+  if(hasVideoMedia(r)){
+    return`<video muted loop playsinline webkit-playsinline preload="metadata" src="${esc(normalizeMediaUrl(raw))}"></video>`;
   }
   return`<img loading="lazy" src="${esc(normalizeImageUrl(raw))}" alt="${esc(r.caption||'Video')}">`;
 }
@@ -3047,29 +3290,8 @@ $('searchInput').addEventListener('input',event=>{
   }
 });
 
-// Kontrol native <video> menempati strip bawah, jadi sentuhan di area itu
-// dibiarkan agar tombol play/volume tidak ikut memicu pindah video.
-function isVideoControlTouch(target,touch){
-  if(!target||!target.closest)return false;
-  if(target.closest('button,a,input,select,textarea'))return true;
-  const video=target.closest('video');
-  if(!video)return false;
-  const rect=video.getBoundingClientRect();
-  return touch.clientY>rect.bottom-64;
-}
-
-let touchY=0,swipeBlocked=false;
-$('reelsStage').addEventListener('touchstart',event=>{
-  const touch=event.changedTouches[0];
-  touchY=touch.screenY;
-  swipeBlocked=isVideoControlTouch(event.target,touch);
-},{passive:true});
-
-$('reelsStage').addEventListener('touchend',event=>{
-  if(swipeBlocked)return;
-  const delta=touchY-event.changedTouches[0].screenY;
-  if(Math.abs(delta)>60)nextReel(delta>0?1:-1);
-},{passive:true});
+// Geser antar-video ditangani native scroll-snap; tidak ada handler sentuh
+// tambahan agar satu usapan tidak melompat dua video.
 
 function reelsVisible(){
   const stage=$('reelsView');
@@ -3086,6 +3308,15 @@ document.addEventListener('keydown',event=>{
   if(target&&(target.matches('input,textarea,select')||target.isContentEditable))return;
   if(event.key==='ArrowDown'){event.preventDefault();nextReel(1)}
   if(event.key==='ArrowUp'){event.preventDefault();nextReel(-1)}
+  if(event.key===' '||event.key==='Spacebar'){
+    const slide=$('reelsStage')&&$('reelsStage').querySelector('.reel-slide.is-active');
+    if(slide){event.preventDefault();toggleReelPlayback(slide)}
+  }
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)pauseReelVideos();
+  else if(reelsVisible())activateReel(reelIndex,{play:true});
 });
 
 $('fullProfileAvatar')?.addEventListener('click',()=>openImagePreview($('fullProfileAvatar').dataset.image,$('fullProfileAvatar').dataset.name));
@@ -3138,7 +3369,7 @@ async function seedFollowing(){
     followed.clear();
     handles.forEach(handle=>followed.add(String(handle)));
     renderPeople();
-    if(sort==='video')renderReels();
+    if(sort==='video')syncReelFollowButtons();
   }catch(_){}
 }
 
